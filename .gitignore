@@ -1,0 +1,10 @@
+*.rpyc
+*.rpyb
+*.txt
+*.mtl
+*.bat
+*.blend*
+
+saves/
+OpenGL/
+junk/
