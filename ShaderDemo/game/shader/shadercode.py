@@ -109,7 +109,7 @@ const float TURBULENCE = 15.0;
 
 void main()
 {
-    float brightness = movingNoise(varUv * TURBULENCE, shownTime * 3);
+    float brightness = movingNoise(varUv * TURBULENCE, shownTime * 3.0);
     //gl_FragColor = vec4(brightness, brightness, brightness, 1);
 
     vec4 weights = texture2D(tex1, varUv);
@@ -134,7 +134,7 @@ void main()
 
     if (mouseEnabled > 0.0) {
         //Use mouse position to set influence
-        influence = (1 - distance(mousePos, varUv) * 5.0) * 2.0;
+        influence = (1.0 - distance(mousePos, varUv) * 5.0) * 2.0;
     }
 
     if (influence > 0.0) {
@@ -156,7 +156,7 @@ varying vec2 varUv;
 uniform sampler2D tex0;
 uniform float shownTime;
 
-const float intensity = 1;
+const float intensity = 1.0;
 
 float rand(vec2 co){
     return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
@@ -164,12 +164,12 @@ float rand(vec2 co){
 
 void main()
 {
-    float f = rand(vec2(0, varUv.y)) * rand(vec2(0, gl_FragCoord.y + shownTime));
+    float f = rand(vec2(0.0, varUv.y)) * rand(vec2(0.0, gl_FragCoord.y + shownTime));
     float fade = shownTime / 2.0;
 
-    vec4 color = vec4(-f*0.5f, f*0.5f, f, 0);
+    vec4 color = vec4(-f * 0.5, f * 0.5, f, 0.0);
     vec4 diffuse = texture2D(tex0, varUv);
-    gl_FragColor = vec4((diffuse * gl_Color + color * intensity).rgb, max(diffuse.a - fade, 0));
+    gl_FragColor = vec4((diffuse * gl_Color + color * intensity).rgb, max(diffuse.a - fade, 0.0));
 }
 """
 
@@ -245,9 +245,9 @@ uniform sampler2D tex0;
 
 void main()
 {
-    float r = (varNormal.x + 1) / 2.0;
-    float g = (varNormal.y + 1) / 2.0;
-    float b = (varNormal.z + 1) / 2.0;
+    float r = (varNormal.x + 1.0) / 2.0;
+    float g = (varNormal.y + 1.0) / 2.0;
+    float b = (varNormal.z + 1.0) / 2.0;
     gl_FragColor = vec4(r, g, b, 1.0);
 }
 """

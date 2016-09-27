@@ -33,9 +33,9 @@ init python:
         void main()
         {
             vec4 color = texture2D(tex0, varUv);
-            float red = color.r * ((sin(shownTime) + 1) / 2);
-            float green = color.g * ((sin(shownTime + 2) + 1) / 2);
-            float blue = color.b * ((sin(shownTime + 4) + 1) / 2);
+            float red = color.r * ((sin(shownTime) + 1.0) / 2.0);
+            float green = color.g * ((sin(shownTime + 2.0) + 1.0) / 2.0);
+            float blue = color.b * ((sin(shownTime + 4.0) + 1.0) / 2.0);
             gl_FragColor = vec4(red, green, blue, color.a);
         }
     """
