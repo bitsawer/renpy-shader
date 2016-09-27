@@ -4,6 +4,7 @@
 *.mtl
 *.bat
 *.blend*
+.DS_Store
 
 saves/
 OpenGL/
