@@ -387,20 +387,28 @@ class SkinnedRenderer(BaseRenderer):
 
         skinning.pop()
 
-        gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
+        for i in range(2):
+            gl.glActiveTexture(gl.GL_TEXTURE0 + i)
+            gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
+
+        gl.glActiveTexture(gl.GL_TEXTURE0)
 
         #self.textureMap.unbindTextures()
 
         self.shader.unbind()
 
-
     def renderBone(self, bone, skinning, context):
         screenSize = self.getSize()
         tex = self.skinTextures.textures[bone["name"] + ".image"]
+        texWeights = self.skinTextures.textures[bone["name"] + ".imageWeights"]
 
         self.shader.uniformi(shader.TEX0, 0)
         gl.glActiveTexture(gl.GL_TEXTURE0 + 0)
         gl.glBindTexture(gl.GL_TEXTURE_2D, tex.glTexture)
+
+        self.shader.uniformi("weightTex1", 1)
+        gl.glActiveTexture(gl.GL_TEXTURE0 + 1)
+        gl.glBindTexture(gl.GL_TEXTURE_2D, texWeights.glTexture)
 
         flipY = -1
         projection = utils.createPerspectiveOrtho(-1.0, 1.0, 1.0 * flipY, -1.0 * flipY, -1.0, 1.0)
@@ -430,7 +438,7 @@ class SkinnedRenderer(BaseRenderer):
 
         transform.translate((crop[0] - xParent) * xPixel, (crop[1] - yParent) * yPixel, 0)
 
-        if bone["name"] in ("lShldr", "lForeArm", "lHand"):
+        if bone["name"] in ("lShldr", "lForeArm", "lHand", "neck"):
             head = bone["head"]
             xMove += head[0] - crop[0]
             yMove += head[1] - crop[1]

@@ -299,9 +299,13 @@ PS_SKINNED = """
 varying vec2 varUv; //Texture coordinates
 
 uniform sampler2D tex0; //Texture bound to slot 0
+uniform sampler2D weightTex1;
 
 void main()
 {
-    gl_FragColor = texture2D(tex0, varUv);
+    vec4 color = texture2D(tex0, varUv);
+    color.a = color.a * texture2D(weightTex1, varUv).r;
+
+    gl_FragColor = color;
 }
 """
