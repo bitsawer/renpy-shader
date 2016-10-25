@@ -108,6 +108,12 @@ screen shaderScreen(name, pixelShader, textures={}, uniforms={}, update=None, xa
         xalign xalign
         yalign yalign
 
+screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, xalign=0.5, yalign=1.0):
+    modal False
+    add ShaderDisplayable(shader.MODE_SKINNED, name, shader.VS_SKINNED, pixelShader, textures, uniforms, None, update):
+        xalign xalign
+        yalign yalign
+
 label start:
 
     $ cameraDrive = False
@@ -120,15 +126,18 @@ label start:
     $ mouthTarget = (0, 0)
 
     scene room
-    show amy:
-        default
-        yalign 0.1
+    #show amy:
+    #    default
+    #    yalign 0.1
+
+    show screen skinnedScreen("amy", shader.PS_SKINNED, {"tex1": "amy influence"}, _tag="amy", _layer="amy")
 
     #For testing
-    jump skipStart
-    label skipStart:
 
     a "Hello, everyone! Welcome to the shader demo!"
+
+    jump skipStart
+
     a "If this application crashes at some point or you don't see anything... Well, this is still experimental."
     a "Also, remember to check out the {a=https://github.com/bitsawer/renpy-shader}project homepage!{/a}"
     a "First, let's check if your system is supported and ready to go..."
@@ -144,7 +153,7 @@ label start:
 
     a "Either way, feedback would be useful. What kind of computer, OS and graphics card you have etc."
 
-
+    label skipStart:
 
     a "First, I'm going to show you how to make my hair and skirt wavy. Like in a wind."
     a "To do that, we are going to use a simple influence image. Let's check it out."
@@ -161,11 +170,11 @@ label start:
     a "And finally, the blue color tells where the mouth and it's corners are."
     a "The brighter the color, the more strongly the effects will be applied."
     a "Naturally, a black color means that no effect should be applied to that location in the image."
-    a "Also note that the influence image is smaller than my actual color image."
-    a "That is because only the relative proportions must be the same."
-    a "This means you can save A LOT of memory by using smaller images. And by this I mean runtime memory."
-    a "The relatively small image files must be uncompressed when loaded and that can take a lot of memory."
-    a "The quality might decrease a bit when using small images, but in this use scenario it is not critical."
+    #a "Also note that the influence image is smaller than my actual color image."
+    #a "That is because only the relative proportions must be the same."
+    #a "This means you can save A LOT of memory by using smaller images. And by this I mean runtime memory."
+    #a "The relatively small image files must be uncompressed when loaded and that can take a lot of memory."
+    #a "The quality might decrease a bit when using small images, but in this use scenario it is not critical."
     a "Not too complex, right? I doodled that image in about 5 minutes (and it probably shows)."
 
     hide influence
@@ -202,7 +211,7 @@ label start:
     #if you think those help.
 
     window hide
-    pause
+    pause 5
 
     a "Wee! Windy! Even indoors! My hair and skirt should now move around a bit."
     a "If you can't see anything different, something went wrong. Oops!"
@@ -223,9 +232,9 @@ label start:
     $ mouthTarget = (0, -1)
 
     "..."
-    a "And left..."
+    a "And neutral..."
 
-    $ eyeTarget = (1.0, 0)
+    $ eyeTarget = (0, 0)
     $ mouthTarget = (0, 0)
 
     "..."
@@ -262,7 +271,7 @@ label start:
     $ show("eileen", xalign=0.8, yalign=1.0).dissolve()
 
     window hide
-    pause
+    pause 5
 
     e "Thanks! Nice to be here! Pretty windy, though!"
     a "Bad windows, I think. Now that we are both here... I have an idea!"
@@ -275,7 +284,7 @@ label start:
     with dissolve
 
     window hide
-    pause
+    pause 5
 
     a "Heh! Look at your eyes!"
     e "And your mouth! Ha!"
@@ -286,7 +295,7 @@ label start:
     $ scene().show("forest").fade()
 
     window hide
-    pause
+    pause 5
 
     "..."
 
@@ -316,7 +325,7 @@ label start:
     $ scene("cg").fade()
 
     window hide
-    pause
+    pause 10
 
     a "I'm so pretty in this picture, right!?"
     a "I hope you noticed how the background trees and the grass is moving, too."
@@ -326,7 +335,7 @@ label start:
     $ show("cg", uniforms={"mouseEnabled": 1}).fade()
 
     window hide
-    pause
+    pause 5
 
     a "Pretty cool, eh? Onwards!"
 

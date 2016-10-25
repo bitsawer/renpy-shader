@@ -251,3 +251,57 @@ void main()
     gl_FragColor = vec4(r, g, b, 1.0);
 }
 """
+
+VS_SKINNED = """
+
+uniform mat4 projection;
+uniform mat4 transform;
+uniform vec2 screenSize;
+uniform vec4 crop;
+uniform float shownTime;
+
+attribute vec4 inVertex;
+
+varying vec2 varUv;
+
+vec2 toScreen(vec2 point)
+{
+    return vec2(point.x / (screenSize.x / 2.0) - 1.0, point.y / (screenSize.y / 2.0) - 1.0);
+}
+
+vec2 rotatePoint(vec2 p, vec2 origin, float degrees)
+{
+    vec2 result;
+    result.x = origin.x + (cos(degrees) * (p.x - origin.x) - sin(degrees) * (p.y - origin.y));
+    result.y = origin.y + (sin(degrees) * (p.x - origin.x) + cos(degrees) * (p.y - origin.y));
+    return result;
+}
+
+void main()
+{
+    varUv = inVertex.zw;
+
+    vec2 pos = toScreen(inVertex.xy);
+
+    //vec2 adj = toScreen(crop.xy);
+    //pos -= adj;
+    vec2 transformed = transform * vec4(pos, 0.0, 1.0);
+    //transformed += adj;
+
+    //vec2 center = toScreen((crop.xy + crop.zw) / 2.0);
+    //transformed = rotatePoint(transformed, center, sin(shownTime));
+
+    gl_Position = projection * vec4(transformed.xy, 0.0, 1.0);
+}
+"""
+
+PS_SKINNED = """
+varying vec2 varUv; //Texture coordinates
+
+uniform sampler2D tex0; //Texture bound to slot 0
+
+void main()
+{
+    gl_FragColor = texture2D(tex0, varUv);
+}
+"""

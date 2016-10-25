@@ -126,6 +126,10 @@ init python:
                 w, h = renpy.display.im.load_surface(self.image).get_size()
                 renderer = shader.Renderer3D()
                 renderer.init(self.vertexShader, self.pixelShader, w, h)
+            elif self.mode == shader.MODE_SKINNED:
+                renderer = shader.SkinnedRenderer()
+                renderer.init(self.image, self.vertexShader, self.pixelShader)
+                renderer.loadTest()
             else:
                 raise RuntimeError("Unknown mode: %s" % self.mode)
 
@@ -173,6 +177,9 @@ init python:
                     renderWidth, renderHeight = controller.getSize()
                     result = renpy.Render(renderWidth, renderHeight)
                     canvas = result.canvas() #TODO Slow, allocates one surface every time...
+
+                    #canvas.rect("#f00", (0, 0, renderWidth, renderHeight))
+
                     surface = canvas.get_surface()
 
                     uniforms = {

@@ -3,7 +3,7 @@ import renpy
 
 import utils
 from controller import RenderController, RenderContext
-from rendering import Renderer2D, Renderer3D
+from rendering import Renderer2D, Renderer3D, SkinnedRenderer
 from shadercode import *
 
 PROJECTION = "projection"
@@ -16,6 +16,7 @@ TEX0 = "tex0"
 
 MODE_2D = "2d"
 MODE_3D = "3d"
+MODE_SKINNED = "skinned"
 
 class config:
     enabled = True
