@@ -271,6 +271,21 @@ class Renderer3D(BaseRenderer):
 
         self.shader.unbind()
 
+
+class SkinningContext:
+    def __init__(self):
+        self.boneStack = []
+        self.matrixStack = []
+
+    def push(self, bone, m):
+        self.boneStack.append(bone)
+        self.matrixStack.append(m)
+
+    def pop(self):
+        self.boneStack.pop()
+        self.matrixStack.pop()
+
+
 class SkinnedRenderer(BaseRenderer):
     def __init__(self):
         super(SkinnedRenderer, self).__init__()
@@ -359,49 +374,18 @@ class SkinnedRenderer(BaseRenderer):
         gl.glClearColor(*self.clearColor)
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
 
-        screen = self.getSize()
-        self.shader.uniformf("screenSize", *screen)
+        screenSize = self.getSize()
+        self.shader.uniformf("screenSize", *screenSize)
 
-        for i, bone in enumerate(self.metadata["bones"]):
-            tex = self.skinTextures.textures[bone["name"] + ".image"]
+        base = euclid.Matrix4()
+        #base.rotatey(math.sin(context.time))
 
-            self.shader.uniformi(shader.TEX0, 0)
-            gl.glActiveTexture(gl.GL_TEXTURE0 + 0)
-            gl.glBindTexture(gl.GL_TEXTURE_2D, tex.glTexture)
+        skinning = SkinningContext()
+        skinning.push(None, base)
 
-            flipY = -1
-            projection = utils.createPerspectiveOrtho(-1.0, 1.0, 1.0 * flipY, -1.0 * flipY, -1.0, 1.0)
-            transform = euclid.Matrix4()
+        self.renderBone(self.root, skinning, context)
 
-            matrix = euclid.Matrix4()
-            for i, attr in enumerate("abcdefghijklmnop"):
-                setattr(matrix, attr, projection[i])
-
-            xPixel = (1.0 / screen[0]) * 2
-            yPixel = (1.0 / screen[1]) * 2
-            head = bone["head"]
-
-            crop = bone["crop"]
-            self.shader.uniformf("crop", *crop)
-
-            w = float(crop[2] - crop[0])
-            h = float(crop[3] - crop[1])
-            xMove = -(screen[0] / 2.0) + w / 2
-            yMove = -(screen[1] / 2.0) + h / 2
-
-            transform.translate(crop[0] * xPixel, crop[1] * yPixel, 0)
-            transform.translate(xMove * xPixel, yMove * yPixel, 0)
-            transform.rotatez(math.sin(context.time) * 2)
-            transform.translate(-xMove * xPixel, -yMove * yPixel, 0)
-
-            self.shader.uniformMatrix4f("transform", transform)
-            self.shader.uniformMatrix4f(shader.PROJECTION, matrix)
-
-            verts = self.createVertexQuad(bone)
-
-            self.bindAttributeArray(self.shader, "inVertex", verts, 4)
-            gl.glDrawArrays(gl.GL_TRIANGLE_STRIP, 0, len(verts) // 4);
-            self.unbindAttributeArray(self.shader, "inVertex")
+        skinning.pop()
 
         gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
 
@@ -410,6 +394,67 @@ class SkinnedRenderer(BaseRenderer):
         self.shader.unbind()
 
 
+    def renderBone(self, bone, skinning, context):
+        screenSize = self.getSize()
+        tex = self.skinTextures.textures[bone["name"] + ".image"]
+
+        self.shader.uniformi(shader.TEX0, 0)
+        gl.glActiveTexture(gl.GL_TEXTURE0 + 0)
+        gl.glBindTexture(gl.GL_TEXTURE_2D, tex.glTexture)
+
+        flipY = -1
+        projection = utils.createPerspectiveOrtho(-1.0, 1.0, 1.0 * flipY, -1.0 * flipY, -1.0, 1.0)
+        transform = euclid.Matrix4() * skinning.matrixStack[-1]
+
+        matrix = euclid.Matrix4()
+        for i, attr in enumerate("abcdefghijklmnop"):
+            setattr(matrix, attr, projection[i])
+
+        xPixel = (1.0 / screenSize[0]) * 2
+        yPixel = (1.0 / screenSize[1]) * 2
+
+        crop = bone["crop"]
+        self.shader.uniformf("crop", *crop)
+
+        w = float(crop[2] - crop[0])
+        h = float(crop[3] - crop[1])
+        xMove = -(screenSize[0] / 2.0)# + w / 2
+        yMove = -(screenSize[1] / 2.0)# + h / 2
+
+        xParent = 0
+        yParent = 0
+        parent = skinning.boneStack[-1]
+        if parent:
+            parentCrop = parent["crop"]
+            xParent, yParent = parentCrop[0], parentCrop[1]
+
+        transform.translate((crop[0] - xParent) * xPixel, (crop[1] - yParent) * yPixel, 0)
+
+        if bone["name"] in ("lShldr", "lForeArm", "lHand"):
+            head = bone["head"]
+            xMove += head[0] - crop[0]
+            yMove += head[1] - crop[1]
+
+            transform.translate(xMove * xPixel, yMove * yPixel, 0)
+            transform.rotatez(math.sin(context.time))
+            transform.translate(-xMove * xPixel, -yMove * yPixel, 0)
+
+        self.shader.uniformMatrix4f("transform", transform)
+        self.shader.uniformMatrix4f(shader.PROJECTION, matrix)
+
+        verts = self.createVertexQuad(bone)
+
+        self.bindAttributeArray(self.shader, "inVertex", verts, 4)
+        gl.glDrawArrays(gl.GL_TRIANGLE_STRIP, 0, len(verts) // 4);
+        self.unbindAttributeArray(self.shader, "inVertex")
+
+        skinning.push(bone, transform)
+
+        for childName in bone["children"]:
+            self.renderBone(self.bones[childName], skinning, context)
+
+        skinning.pop()
+
     def loadTest(self):
         surface = pygame.image.load("E:/vn/skeleton/combined/combined.png")
         self.setTexture(shader.TEX0, surface)
@@ -417,17 +462,24 @@ class SkinnedRenderer(BaseRenderer):
         with open("E:/vn/skeleton/combined/combined.json") as meta:
             self.metadata = json.load(meta)
 
-        self.loadMetadataImages()
+        self.root = self.findRoot(self.metadata)
+        self.bones = {}
+
+        for bone in self.metadata["bones"]:
+            self.loadSkinImage(bone)
+            self.bones[bone["name"]] = bone
 
     def loadSkinImage(self, bone):
         for imageType in ["image", "imageWeights"]:
             surface = pygame.image.load("E:/vn/skeleton/combined/" + bone[imageType])
             self.skinTextures.setTexture(bone["name"] + "." + imageType, surface)
 
-    def loadMetadataImages(self):
-        for bone in self.metadata["bones"]:
-            self.loadSkinImage(bone)
-            #surface = pygame.image.load("E:/vn/skeleton/combined/" + bone["image"])
-            #self.skinTextures.setTexture(bone["name"] + ".image", surface)
+    def findRoot(self, metadata):
+        children = set()
+        for bone in metadata["bones"]:
+            children.update(bone["children"])
 
-            #shader.log("Loading bone: %s" % bone["name"])
+        for bone in metadata["bones"]:
+            if bone["name"] not in children:
+                return bone
+        return None
