@@ -256,9 +256,13 @@ VS_SKINNED = """
 
 uniform mat4 projection;
 uniform mat4 transform;
+uniform mat4 transformBase;
+
 uniform vec2 screenSize;
 uniform vec4 crop;
 uniform float shownTime;
+
+uniform sampler2D weightTex1;
 
 attribute vec4 inVertex;
 
@@ -269,29 +273,19 @@ vec2 toScreen(vec2 point)
     return vec2(point.x / (screenSize.x / 2.0) - 1.0, point.y / (screenSize.y / 2.0) - 1.0);
 }
 
-vec2 rotatePoint(vec2 p, vec2 origin, float degrees)
-{
-    vec2 result;
-    result.x = origin.x + (cos(degrees) * (p.x - origin.x) - sin(degrees) * (p.y - origin.y));
-    result.y = origin.y + (sin(degrees) * (p.x - origin.x) + cos(degrees) * (p.y - origin.y));
-    return result;
-}
-
 void main()
 {
     varUv = inVertex.zw;
 
     vec2 pos = toScreen(inVertex.xy);
 
-    //vec2 adj = toScreen(crop.xy);
-    //pos -= adj;
+    vec2 transformedParent = transformBase * vec4(pos, 0.0, 1.0);
     vec2 transformed = transform * vec4(pos, 0.0, 1.0);
-    //transformed += adj;
 
-    //vec2 center = toScreen((crop.xy + crop.zw) / 2.0);
-    //transformed = rotatePoint(transformed, center, sin(shownTime));
+    vec4 weight = texture2D(weightTex1, varUv);
+    vec2 mixed = mix(transformedParent, transformed, min(weight.r + 0.3, 1.0));
 
-    gl_Position = projection * vec4(transformed.xy, 0.0, 1.0);
+    gl_Position = projection * vec4(mixed.xy, 0.0, 1.0);
 }
 """
 
@@ -305,6 +299,7 @@ uniform float wireFrame;
 void main()
 {
     vec4 color = texture2D(tex0, varUv);
+    color.rgb *= 1.0 - wireFrame;
     color.a = (color.a * texture2D(weightTex1, varUv).r) + wireFrame;
 
     gl_FragColor = color;

@@ -288,23 +288,27 @@ class SkinningContext:
 
 
 class SkinnedBone:
-    def __init__(self, data):
+    def __init__(self, data, surface):
         self.data = data
-        self.vertices, self.indices = self.computeQuad()
+        self.vertices, self.indices = self.computeQuad(surface)
 
-    def computeQuad(self):
+    def computeQuad(self, surface):
         rect = self.data["crop"]
         w = float(rect[2] - rect[0])
         h = float(rect[3] - rect[1])
 
-        vertices, uvs, indices = geometry.createGrid((0, 0, w, h), None, 5, 5)
+        gridSize = 10
+        vertices, uvs, indices = geometry.createGrid((0, 0, w, h), None, gridSize, gridSize)
 
         verts = []
         for i in range(len(vertices)):
             verts.append(vertices[i][0])
             verts.append(vertices[i][1])
-            verts.append(uvs[i][0])
-            verts.append(uvs[i][1])
+
+            xUv = uvs[i][0]
+            yUv = uvs[i][1]
+            verts.append(xUv)
+            verts.append(yUv)
 
         return (gl.GLfloat * len(verts))(*verts), (gl.GLuint * len(indices))(*indices)
 
@@ -360,15 +364,7 @@ class SkinnedRenderer(BaseRenderer):
         skinning = SkinningContext()
         skinning.push(None, base)
 
-        wireFrame = 0
-        self.shader.uniformf("wireFrame", wireFrame)
-        if wireFrame:
-            gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINE)
-
         self.renderBone(self.root, skinning, context)
-
-        if wireFrame:
-            gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL)
 
         skinning.pop()
 
@@ -399,7 +395,8 @@ class SkinnedRenderer(BaseRenderer):
 
         flipY = -1
         projection = utils.createPerspectiveOrtho(-1.0, 1.0, 1.0 * flipY, -1.0 * flipY, -1.0, 1.0)
-        transform = euclid.Matrix4() * skinning.matrixStack[-1]
+        transformParent = skinning.matrixStack[-1]
+        transform = euclid.Matrix4() * transformParent
 
         matrix = euclid.Matrix4()
         for i, attr in enumerate("abcdefghijklmnop"):
@@ -425,6 +422,8 @@ class SkinnedRenderer(BaseRenderer):
 
         transform.translate((crop[0] - xParent) * xPixel, (crop[1] - yParent) * yPixel, 0)
 
+        self.shader.uniformMatrix4f("transformBase", transform)
+
         if data["name"] in ("lShldr", "lForeArm", "lHand", "neck"):
             head = data["head"]
             xMove += head[0] - crop[0]
@@ -436,9 +435,17 @@ class SkinnedRenderer(BaseRenderer):
 
         self.shader.uniformMatrix4f("transform", transform)
         self.shader.uniformMatrix4f(shader.PROJECTION, matrix)
+        self.shader.uniformf("wireFrame", 0)
 
         self.bindAttributeArray(self.shader, "inVertex", bone.vertices, 4)
         gl.glDrawElements(gl.GL_TRIANGLES, len(bone.indices), gl.GL_UNSIGNED_INT, bone.indices)
+
+        if 0:
+            self.shader.uniformf("wireFrame", 1)
+            gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINE)
+            gl.glDrawElements(gl.GL_TRIANGLES, len(bone.indices), gl.GL_UNSIGNED_INT, bone.indices)
+            gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL)
+
         self.unbindAttributeArray(self.shader, "inVertex")
 
         skinning.push(data, transform)
@@ -457,15 +464,18 @@ class SkinnedRenderer(BaseRenderer):
 
         self.bones = {}
         for bone in self.metadata["bones"]:
-            self.loadSkinImage(bone)
-            self.bones[bone["name"]] = SkinnedBone(bone)
+            surfaces = self.loadSkinImages(bone)
+            self.bones[bone["name"]] = SkinnedBone(bone, surfaces[0])
 
         self.root = self.bones[self.findRootName(self.metadata)]
 
-    def loadSkinImage(self, bone):
+    def loadSkinImages(self, bone):
+        surfaces = []
         for imageType in ["image", "imageWeights"]:
             surface = pygame.image.load("E:/vn/skeleton/combined/" + bone[imageType])
             self.skinTextures.setTexture(bone["name"] + "." + imageType, surface)
+            surfaces.append(surface)
+        return surfaces
 
     def findRootName(self, metadata):
         children = set()
