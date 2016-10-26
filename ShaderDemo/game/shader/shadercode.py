@@ -300,11 +300,12 @@ varying vec2 varUv; //Texture coordinates
 
 uniform sampler2D tex0; //Texture bound to slot 0
 uniform sampler2D weightTex1;
+uniform float wireFrame;
 
 void main()
 {
     vec4 color = texture2D(tex0, varUv);
-    color.a = color.a * texture2D(weightTex1, varUv).r;
+    color.a = (color.a * texture2D(weightTex1, varUv).r) + wireFrame;
 
     gl_FragColor = color;
 }

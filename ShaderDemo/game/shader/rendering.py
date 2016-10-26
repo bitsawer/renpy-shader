@@ -323,17 +323,7 @@ class SkinnedRenderer(BaseRenderer):
         tx2 = 1.0 #Adjust if rounding textures to power of two
         ty2 = 1.0
 
-        meta = self.metadata
         rect = bone["crop"]
-
-        # x1 = (float(rect[0]) / meta["width"]) * 2
-        # x2 = (float(rect[2]) / meta["width"]) * 2
-
-        # y1 = (float(rect[1]) / meta["height"]) * 2
-        # y2 = (float(rect[3]) / meta["height"]) * 2
-
-        #w = (float(rect[2] - rect[0]) / meta["width"])
-        #h = (float(rect[3] - rect[1]) / meta["width"])
 
         w = float(rect[2] - rect[0])
         h = float(rect[3] - rect[1])
@@ -344,23 +334,14 @@ class SkinnedRenderer(BaseRenderer):
             w, 0, tx2, 0.0, #Bottom right
             0, h, 0.0, ty2, #Top left
             w, h, tx2, ty2, #Top right
-
-            #0 - w, 0 - h, 0.0, 0.0, #Bottom left
-            #0 + w, 0 - h, tx2, 0.0, #Bottom right
-            #0 - w, 0 + h, 0.0, ty2, #Top left
-            #0 + w, 0 + h, tx2, ty2, #Top right
-
-            #-1 + x1, -1 + y1, 0.0, 0.0, #Bottom left
-            #-1 + x2, -1 + y1, tx2, 0.0, #Bottom right
-            #-1 + x1, -1 + y2, 0.0, ty2, #Top left
-            #-1 + x2, -1 + y2, tx2, ty2, #Top right
-
-            # -1, -1, 0.0, 0.0, #Bottom left
-            # 1, -1, tx2, 0.0, #Bottom right
-            # -1, 1, 0.0, ty2, #Top left
-            # 1, 1, tx2, ty2, #Top right
         ]
-        return (gl.GLfloat * len(vertices))(*vertices)
+
+        indices = [
+            0, 1, 2,
+            1, 2, 3
+        ]
+
+        return (gl.GLfloat * len(vertices))(*vertices), (gl.GLuint * len(indices))(*indices)
 
     def render(self, context):
         self.shader.bind()
@@ -383,7 +364,15 @@ class SkinnedRenderer(BaseRenderer):
         skinning = SkinningContext()
         skinning.push(None, base)
 
+        wireFrame = 0
+        self.shader.uniformf("wireFrame", wireFrame)
+        if wireFrame:
+            gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINE)
+
         self.renderBone(self.root, skinning, context)
+
+        if wireFrame:
+            gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL)
 
         skinning.pop()
 
@@ -450,10 +439,10 @@ class SkinnedRenderer(BaseRenderer):
         self.shader.uniformMatrix4f("transform", transform)
         self.shader.uniformMatrix4f(shader.PROJECTION, matrix)
 
-        verts = self.createVertexQuad(bone)
+        verts, indices = self.createVertexQuad(bone)
 
         self.bindAttributeArray(self.shader, "inVertex", verts, 4)
-        gl.glDrawArrays(gl.GL_TRIANGLE_STRIP, 0, len(verts) // 4);
+        gl.glDrawElements(gl.GL_TRIANGLES, len(indices), gl.GL_UNSIGNED_INT, indices)
         self.unbindAttributeArray(self.shader, "inVertex")
 
         skinning.push(bone, transform)
