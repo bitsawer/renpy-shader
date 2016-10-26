@@ -13,6 +13,7 @@ import shader
 import shadercode
 import mesh
 import utils
+import geometry
 
 class TextureEntry:
     def __init__(self, image, sampler):
@@ -286,6 +287,27 @@ class SkinningContext:
         self.matrixStack.pop()
 
 
+class SkinnedBone:
+    def __init__(self, data):
+        self.data = data
+        self.vertices, self.indices = self.computeQuad()
+
+    def computeQuad(self):
+        rect = self.data["crop"]
+        w = float(rect[2] - rect[0])
+        h = float(rect[3] - rect[1])
+
+        vertices, uvs, indices = geometry.createGrid((0, 0, w, h), None, 5, 5)
+
+        verts = []
+        for i in range(len(vertices)):
+            verts.append(vertices[i][0])
+            verts.append(vertices[i][1])
+            verts.append(uvs[i][0])
+            verts.append(uvs[i][1])
+
+        return (gl.GLfloat * len(verts))(*verts), (gl.GLuint * len(indices))(*indices)
+
 class SkinnedRenderer(BaseRenderer):
     def __init__(self):
         super(SkinnedRenderer, self).__init__()
@@ -315,33 +337,7 @@ class SkinnedRenderer(BaseRenderer):
             self.shader = None
 
     def getSize(self):
-        #tex = self.textureMap.textures[shader.TEX0]
-        #return tex.width, tex.height
         return self.metadata["width"], self.metadata["height"]
-
-    def createVertexQuad(self, bone):
-        tx2 = 1.0 #Adjust if rounding textures to power of two
-        ty2 = 1.0
-
-        rect = bone["crop"]
-
-        w = float(rect[2] - rect[0])
-        h = float(rect[3] - rect[1])
-
-        vertices = [
-            #Note y-axis is upside down
-            0, 0, 0.0, 0.0, #Bottom left
-            w, 0, tx2, 0.0, #Bottom right
-            0, h, 0.0, ty2, #Top left
-            w, h, tx2, ty2, #Top right
-        ]
-
-        indices = [
-            0, 1, 2,
-            1, 2, 3
-        ]
-
-        return (gl.GLfloat * len(vertices))(*vertices), (gl.GLuint * len(indices))(*indices)
 
     def render(self, context):
         self.shader.bind()
@@ -387,9 +383,11 @@ class SkinnedRenderer(BaseRenderer):
         self.shader.unbind()
 
     def renderBone(self, bone, skinning, context):
+        data = bone.data
+
         screenSize = self.getSize()
-        tex = self.skinTextures.textures[bone["name"] + ".image"]
-        texWeights = self.skinTextures.textures[bone["name"] + ".imageWeights"]
+        tex = self.skinTextures.textures[data["name"] + ".image"]
+        texWeights = self.skinTextures.textures[data["name"] + ".imageWeights"]
 
         self.shader.uniformi(shader.TEX0, 0)
         gl.glActiveTexture(gl.GL_TEXTURE0 + 0)
@@ -410,7 +408,7 @@ class SkinnedRenderer(BaseRenderer):
         xPixel = (1.0 / screenSize[0]) * 2
         yPixel = (1.0 / screenSize[1]) * 2
 
-        crop = bone["crop"]
+        crop = data["crop"]
         self.shader.uniformf("crop", *crop)
 
         w = float(crop[2] - crop[0])
@@ -427,8 +425,8 @@ class SkinnedRenderer(BaseRenderer):
 
         transform.translate((crop[0] - xParent) * xPixel, (crop[1] - yParent) * yPixel, 0)
 
-        if bone["name"] in ("lShldr", "lForeArm", "lHand", "neck"):
-            head = bone["head"]
+        if data["name"] in ("lShldr", "lForeArm", "lHand", "neck"):
+            head = data["head"]
             xMove += head[0] - crop[0]
             yMove += head[1] - crop[1]
 
@@ -439,15 +437,13 @@ class SkinnedRenderer(BaseRenderer):
         self.shader.uniformMatrix4f("transform", transform)
         self.shader.uniformMatrix4f(shader.PROJECTION, matrix)
 
-        verts, indices = self.createVertexQuad(bone)
-
-        self.bindAttributeArray(self.shader, "inVertex", verts, 4)
-        gl.glDrawElements(gl.GL_TRIANGLES, len(indices), gl.GL_UNSIGNED_INT, indices)
+        self.bindAttributeArray(self.shader, "inVertex", bone.vertices, 4)
+        gl.glDrawElements(gl.GL_TRIANGLES, len(bone.indices), gl.GL_UNSIGNED_INT, bone.indices)
         self.unbindAttributeArray(self.shader, "inVertex")
 
-        skinning.push(bone, transform)
+        skinning.push(data, transform)
 
-        for childName in bone["children"]:
+        for childName in data["children"]:
             self.renderBone(self.bones[childName], skinning, context)
 
         skinning.pop()
@@ -459,24 +455,24 @@ class SkinnedRenderer(BaseRenderer):
         with open("E:/vn/skeleton/combined/combined.json") as meta:
             self.metadata = json.load(meta)
 
-        self.root = self.findRoot(self.metadata)
         self.bones = {}
-
         for bone in self.metadata["bones"]:
             self.loadSkinImage(bone)
-            self.bones[bone["name"]] = bone
+            self.bones[bone["name"]] = SkinnedBone(bone)
+
+        self.root = self.bones[self.findRootName(self.metadata)]
 
     def loadSkinImage(self, bone):
         for imageType in ["image", "imageWeights"]:
             surface = pygame.image.load("E:/vn/skeleton/combined/" + bone[imageType])
             self.skinTextures.setTexture(bone["name"] + "." + imageType, surface)
 
-    def findRoot(self, metadata):
+    def findRootName(self, metadata):
         children = set()
         for bone in metadata["bones"]:
             children.update(bone["children"])
 
         for bone in metadata["bones"]:
             if bone["name"] not in children:
-                return bone
+                return bone["name"]
         return None
