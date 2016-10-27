@@ -69,6 +69,7 @@ class TextureMap:
 class BaseRenderer(object):
     def __init__(self):
         self.useDepth = False
+        self.useOverlayCanvas = False
         self.clearColor = (0, 0, 0, 0)
 
     def setUniforms(self, shader, uniforms):
@@ -315,6 +316,7 @@ class SkinnedBone:
 class SkinnedRenderer(BaseRenderer):
     def __init__(self):
         super(SkinnedRenderer, self).__init__()
+        self.useOverlayCanvas = True
         self.shader = None
         self.textureMap = TextureMap()
         self.skinTextures = TextureMap()
@@ -402,17 +404,11 @@ class SkinnedRenderer(BaseRenderer):
         for i, attr in enumerate("abcdefghijklmnop"):
             setattr(matrix, attr, projection[i])
 
-        xPixel = (1.0 / screenSize[0]) * 2
-        yPixel = (1.0 / screenSize[1]) * 2
-
         crop = data["crop"]
         self.shader.uniformf("crop", *crop)
 
-        w = float(crop[2] - crop[0])
-        h = float(crop[3] - crop[1])
-        xMove = -(screenSize[0] / 2.0)# + w / 2
-        yMove = -(screenSize[1] / 2.0)# + h / 2
-
+        xMove = 0
+        yMove = 0
         xParent = 0
         yParent = 0
         parent = skinning.boneStack[-1]
@@ -420,8 +416,7 @@ class SkinnedRenderer(BaseRenderer):
             parentCrop = parent["crop"]
             xParent, yParent = parentCrop[0], parentCrop[1]
 
-        transform.translate((crop[0] - xParent) * xPixel, (crop[1] - yParent) * yPixel, 0)
-
+        transform.translate((crop[0] - xParent), (crop[1] - yParent), 0)
         self.shader.uniformMatrix4f("transformBase", transform)
 
         if data["name"] in ("lShldr", "lForeArm", "lHand", "neck"):
@@ -429,9 +424,9 @@ class SkinnedRenderer(BaseRenderer):
             xMove += head[0] - crop[0]
             yMove += head[1] - crop[1]
 
-            transform.translate(xMove * xPixel, yMove * yPixel, 0)
+            transform.translate(xMove, yMove, 0)
             transform.rotatez(math.sin(context.time))
-            transform.translate(-xMove * xPixel, -yMove * yPixel, 0)
+            transform.translate(-xMove, -yMove, 0)
 
         self.shader.uniformMatrix4f("transform", transform)
         self.shader.uniformMatrix4f(shader.PROJECTION, matrix)
@@ -448,12 +443,19 @@ class SkinnedRenderer(BaseRenderer):
 
         self.unbindAttributeArray(self.shader, "inVertex")
 
+        if context.overlayCanvas:
+            head = data["head"]
+            moved = transform.transform(euclid.Vector3(head[0] - crop[0],  head[1] - crop[1]))
+            context.overlayCanvas.circle("#f00", (head[0], head[1]), 8)
+            context.overlayCanvas.circle("#ff0", (moved.x, moved.y), 5)
+
         skinning.push(data, transform)
 
         for childName in data["children"]:
             self.renderBone(self.bones[childName], skinning, context)
 
         skinning.pop()
+
 
     def loadTest(self):
         surface = pygame.image.load("E:/vn/skeleton/combined/combined.png")

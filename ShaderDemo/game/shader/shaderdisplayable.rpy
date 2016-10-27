@@ -177,9 +177,6 @@ init python:
                     renderWidth, renderHeight = controller.getSize()
                     result = renpy.Render(renderWidth, renderHeight)
                     canvas = result.canvas() #TODO Slow, allocates one surface every time...
-
-                    #canvas.rect("#f00", (0, 0, renderWidth, renderHeight))
-
                     surface = canvas.get_surface()
 
                     uniforms = {
@@ -191,9 +188,16 @@ init python:
                     if self.uniforms:
                         uniforms.update(self.uniforms)
 
+                    overlayCanvas = None
+                    if controller.renderer.useOverlayCanvas:
+                        overlayRender = renpy.Render(renderWidth, renderHeight)
+                        overlayCanvas = overlayRender.canvas()
+                        overlayCanvas.rect("#f00", (0, 0, renderWidth - 1, renderHeight - 1), 1)
+                        result.blit(overlayRender, (0, 0))
+
                     renderContext = shader.RenderContext(controller.renderer,
                         renderWidth, renderHeight, time.clock(), st, at, uniforms,
-                        self.mousePos, self.events, context.contextStore)
+                        self.mousePos, self.events, context.contextStore, overlayCanvas)
 
                     self.events = []
 

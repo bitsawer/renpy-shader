@@ -11,7 +11,7 @@ import shadercode
 import utils
 
 class RenderContext(object):
-    def __init__(self, renderer, w, h, time, shownTime, animationTime, uniforms, mousePos, events, store):
+    def __init__(self, renderer, w, h, time, shownTime, animationTime, uniforms, mousePos, events, store, overlayCanvas):
         self.renderer = renderer
         self.width = w
         self.height = h
@@ -23,6 +23,7 @@ class RenderContext(object):
         self.events = events
         self.store = store
         self.continueRendering = True
+        self.overlayCanvas = overlayCanvas
 
 
 class RenderController(object):

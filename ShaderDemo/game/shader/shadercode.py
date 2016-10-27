@@ -277,15 +277,14 @@ void main()
 {
     varUv = inVertex.zw;
 
-    vec2 pos = toScreen(inVertex.xy);
-
+    vec2 pos = inVertex.xy;
     vec2 transformedParent = transformBase * vec4(pos, 0.0, 1.0);
     vec2 transformed = transform * vec4(pos, 0.0, 1.0);
 
     vec4 weight = texture2D(weightTex1, varUv);
     vec2 mixed = mix(transformedParent, transformed, min(weight.r + 0.3, 1.0));
 
-    gl_Position = projection * vec4(mixed.xy, 0.0, 1.0);
+    gl_Position = projection * vec4(toScreen(mixed.xy), 0.0, 1.0);
 }
 """
 
