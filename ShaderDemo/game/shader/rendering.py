@@ -291,7 +291,11 @@ class SkinningStack:
 class SkinnedBone:
     def __init__(self, data, surface):
         self.data = data
-        self.vertices, self.indices = self.computeQuad(surface)
+        self.vertices = None
+        self.indices = None
+
+        if surface:
+            self.vertices, self.indices = self.computeQuad(surface)
 
     def computeQuad(self, surface):
         rect = self.data["crop"]
@@ -320,14 +324,46 @@ class SkinnedRenderer(BaseRenderer):
         self.shader = None
         self.textureMap = TextureMap()
         self.skinTextures = TextureMap()
+        self.size = None
+        self.bones = {}
+        self.root = SkinnedBone({
+            "name": "root",
+            "image": None,
+            "children": [],
+            "head": (0, 0),
+            "crop": [0, 0, 800, 1000]
+            }, None)
 
     def init(self, image, vertexShader, pixeShader):
         self.shader = utils.Shader(vertexShader, pixeShader)
 
-        self.textureMap.setTexture(shader.TEX0, image)
+        #Assume LiveComposite. Not that great, relies on specific RenPy implementation...
+        container = image.visit()[0]
+        self.size = container.style.xmaximum,  container.style.ymaximum
+
+        for child in container.children:
+            placement = child.get_placement()
+            base = child.children[0]
+            surface = renpy.display.im.load_surface(base)
+            boneName = base.filename
+
+            bone = SkinnedBone({
+                "name": boneName, #Or identity
+                "image": boneName,
+                "children": [],
+                "head": (0, 0),
+                "crop": [0, 0, 800, 1000]
+                }, surface)
+
+            self.root.data["children"].append(boneName)
+
+            self.skinTextures.setTexture(boneName, surface)
+
+            self.bones[boneName] = bone
 
     def setTexture(self, sampler, image):
-        self.textureMap.setTexture(sampler, image)
+        pass
+        #self.textureMap.setTexture(sampler, image)
 
     def free(self):
         if self.textureMap:
@@ -343,7 +379,7 @@ class SkinnedRenderer(BaseRenderer):
             self.shader = None
 
     def getSize(self):
-        return self.metadata["width"], self.metadata["height"]
+        return self.size
 
     def render(self, context):
         self.shader.bind()
@@ -376,10 +412,16 @@ class SkinnedRenderer(BaseRenderer):
 
     def renderBone(self, bone, transformBase, transform, context):
         data = bone.data
+        if not data["image"]:
+            return
 
         screenSize = self.getSize()
+
         tex = self.skinTextures.textures[data["name"] + ".image"]
         texWeights = self.skinTextures.textures[data["name"] + ".imageWeights"]
+
+        #tex = self.skinTextures.textures[data["image"]]
+        #texWeights = self.skinTextures.textures[data["image"]]
 
         self.shader.uniformi(shader.TEX0, 0)
         gl.glActiveTexture(gl.GL_TEXTURE0 + 0)
