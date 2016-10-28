@@ -299,7 +299,7 @@ void main()
 {
     vec4 color = texture2D(tex0, varUv);
     color.rgb *= 1.0 - wireFrame;
-    color.a = (color.a * texture2D(weightTex1, varUv).r) + wireFrame;
+    color.a = color.a + wireFrame;
 
     gl_FragColor = color;
 }

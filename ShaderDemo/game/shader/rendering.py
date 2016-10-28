@@ -325,7 +325,6 @@ class SkinnedRenderer(BaseRenderer):
         self.textureMap = TextureMap()
         self.skinTextures = TextureMap()
         self.size = None
-        self.bones = {}
         self.root = SkinnedBone({
             "name": "root",
             "image": None,
@@ -333,13 +332,14 @@ class SkinnedRenderer(BaseRenderer):
             "head": (0, 0),
             "crop": [0, 0, 800, 1000]
             }, None)
+        self.bones = {self.root.data["name"]: self.root}
 
     def init(self, image, vertexShader, pixeShader):
         self.shader = utils.Shader(vertexShader, pixeShader)
 
         #Assume LiveComposite. Not that great, relies on specific RenPy implementation...
         container = image.visit()[0]
-        self.size = container.style.xmaximum,  container.style.ymaximum
+        self.size = container.style.xmaximum, container.style.ymaximum
 
         for child in container.children:
             placement = child.get_placement()
@@ -347,12 +347,16 @@ class SkinnedRenderer(BaseRenderer):
             surface = renpy.display.im.load_surface(base)
             boneName = base.filename
 
+            surface, crop = self.cropSurface(surface, placement[0], placement[1], self.size[0], self.size[1])
+            x = placement[0] + crop[0]
+            y = placement[1] + crop[1]
+
             bone = SkinnedBone({
                 "name": boneName, #Or identity
                 "image": boneName,
                 "children": [],
-                "head": (0, 0),
-                "crop": [0, 0, 800, 1000]
+                "head": (x + crop[2] / 2.0, y + crop[3] / 2.0),
+                "crop": [x, y, x + crop[2], y + crop[3]]
                 }, surface)
 
             self.root.data["children"].append(boneName)
@@ -360,6 +364,10 @@ class SkinnedRenderer(BaseRenderer):
             self.skinTextures.setTexture(boneName, surface)
 
             self.bones[boneName] = bone
+
+    def cropSurface(self, surface, x, y, width, height):
+        crop = surface.get_bounding_rect()
+        return surface.subsurface(crop), crop #TODO Wastes memory...
 
     def setTexture(self, sampler, image):
         pass
@@ -489,7 +497,7 @@ class SkinnedRenderer(BaseRenderer):
         transform.translate((crop[0] - xParent), (crop[1] - yParent), 0)
         transformBase = transform.copy()
 
-        if data["name"] in ("lShldr", "lForeArm", "lHand", "neck"):
+        if data["name"] in ("lShldr", "lForeArm", "lHand", "neck", "doll hair.png"):
             head = data["head"]
             xMove += head[0] - crop[0]
             yMove += head[1] - crop[1]
