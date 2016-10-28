@@ -274,7 +274,7 @@ class Renderer3D(BaseRenderer):
         self.shader.unbind()
 
 
-class SkinningContext:
+class SkinningStack:
     def __init__(self):
         self.boneStack = []
         self.matrixStack = []
@@ -360,15 +360,8 @@ class SkinnedRenderer(BaseRenderer):
         screenSize = self.getSize()
         self.shader.uniformf("screenSize", *screenSize)
 
-        base = euclid.Matrix4()
-        #base.rotatey(math.sin(context.time))
-
-        skinning = SkinningContext()
-        skinning.push(None, base)
-
-        self.renderBone(self.root, skinning, context)
-
-        skinning.pop()
+        for bone, transformBase, transform in self.computeBoneTransforms(context):
+            self.renderBone(bone, transformBase, transform, context)
 
         for i in range(2):
             gl.glActiveTexture(gl.GL_TEXTURE0 + i)
@@ -380,7 +373,8 @@ class SkinnedRenderer(BaseRenderer):
 
         self.shader.unbind()
 
-    def renderBone(self, bone, skinning, context):
+
+    def renderBone(self, bone, transformBase, transform, context):
         data = bone.data
 
         screenSize = self.getSize()
@@ -397,8 +391,6 @@ class SkinnedRenderer(BaseRenderer):
 
         flipY = -1
         projection = utils.createPerspectiveOrtho(-1.0, 1.0, 1.0 * flipY, -1.0 * flipY, -1.0, 1.0)
-        transformParent = skinning.matrixStack[-1]
-        transform = euclid.Matrix4() * transformParent
 
         matrix = euclid.Matrix4()
         for i, attr in enumerate("abcdefghijklmnop"):
@@ -406,28 +398,7 @@ class SkinnedRenderer(BaseRenderer):
 
         crop = data["crop"]
         self.shader.uniformf("crop", *crop)
-
-        xMove = 0
-        yMove = 0
-        xParent = 0
-        yParent = 0
-        parent = skinning.boneStack[-1]
-        if parent:
-            parentCrop = parent["crop"]
-            xParent, yParent = parentCrop[0], parentCrop[1]
-
-        transform.translate((crop[0] - xParent), (crop[1] - yParent), 0)
-        self.shader.uniformMatrix4f("transformBase", transform)
-
-        if data["name"] in ("lShldr", "lForeArm", "lHand", "neck"):
-            head = data["head"]
-            xMove += head[0] - crop[0]
-            yMove += head[1] - crop[1]
-
-            transform.translate(xMove, yMove, 0)
-            transform.rotatez(math.sin(context.time))
-            transform.translate(-xMove, -yMove, 0)
-
+        self.shader.uniformMatrix4f("transformBase", transformBase)
         self.shader.uniformMatrix4f("transform", transform)
         self.shader.uniformMatrix4f(shader.PROJECTION, matrix)
         self.shader.uniformf("wireFrame", 0)
@@ -435,7 +406,7 @@ class SkinnedRenderer(BaseRenderer):
         self.bindAttributeArray(self.shader, "inVertex", bone.vertices, 4)
         gl.glDrawElements(gl.GL_TRIANGLES, len(bone.indices), gl.GL_UNSIGNED_INT, bone.indices)
 
-        if 0:
+        if 1:
             self.shader.uniformf("wireFrame", 1)
             gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINE)
             gl.glDrawElements(gl.GL_TRIANGLES, len(bone.indices), gl.GL_UNSIGNED_INT, bone.indices)
@@ -449,10 +420,48 @@ class SkinnedRenderer(BaseRenderer):
             context.overlayCanvas.circle("#f00", (head[0], head[1]), 8)
             context.overlayCanvas.circle("#ff0", (moved.x, moved.y), 5)
 
+    def computeBoneTransforms(self, context):
+        transforms = []
+        skinning = SkinningStack()
+        skinning.push(None, euclid.Matrix4())
+        self.computeBoneTransformRecursive(self.root, transforms, skinning, context)
+        skinning.pop()
+        return transforms
+
+    def computeBoneTransformRecursive(self, bone, transforms, skinning, context):
+        data = bone.data
+
+        xMove = 0
+        yMove = 0
+        xParent = 0
+        yParent = 0
+        parent = skinning.boneStack[-1]
+        if parent:
+            parentCrop = parent["crop"]
+            xParent, yParent = parentCrop[0], parentCrop[1]
+
+        transformParent = skinning.matrixStack[-1]
+        transform = euclid.Matrix4() * transformParent
+
+        crop = data["crop"]
+        transform.translate((crop[0] - xParent), (crop[1] - yParent), 0)
+        transformBase = transform.copy()
+
+        if data["name"] in ("lShldr", "lForeArm", "lHand", "neck"):
+            head = data["head"]
+            xMove += head[0] - crop[0]
+            yMove += head[1] - crop[1]
+
+            transform.translate(xMove, yMove, 0)
+            transform.rotatez(math.sin(context.time))
+            transform.translate(-xMove, -yMove, 0)
+
+        transforms.append((bone, transformBase, transform))
+
         skinning.push(data, transform)
 
         for childName in data["children"]:
-            self.renderBone(self.bones[childName], skinning, context)
+            self.computeBoneTransformRecursive(self.bones[childName], transforms, skinning, context)
 
         skinning.pop()
 

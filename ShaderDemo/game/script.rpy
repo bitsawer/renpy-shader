@@ -130,7 +130,7 @@ label start:
     #    default
     #    yalign 0.1
 
-    show screen skinnedScreen("amy", shader.PS_SKINNED, {"tex1": "amy influence"}, _tag="amy", _layer="amy")
+    call screen skinnedScreen("amy", shader.PS_SKINNED, {"tex1": "amy influence"}, _tag="amy", _layer="amy")
 
     #For testing
 
