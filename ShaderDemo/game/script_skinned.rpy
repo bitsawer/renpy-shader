@@ -35,6 +35,12 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, x
             textbutton "Pivot points" action ToggleDict(editorSettings, "pivots")
             textbutton "Debug animate" action ToggleDict(editorSettings, "debugAnimate")
 
+            text "Actions":
+                size 15
+
+            textbutton "Autoconnect" action NullAction() #TODO Set a flag and check in update
+            textbutton "Reload" action RestartStatement()
+
 init python:
     import pygame
     import math
@@ -52,7 +58,9 @@ init python:
     pygame.font.init()
     FONT = pygame.font.Font(None, 20)
 
-    activeBone = None
+    activeBone = None #TODO should be a list to allow multiple
+
+    #TODO Move this to a class SkinnedEditor
 
     def editUpdate(context):
         renderer = context.renderer
@@ -76,6 +84,7 @@ init python:
             context.store["mouse"] = mouse
 
     def debugAnimate(context, animate):
+        #TODO Rotate all bones that have a parent other than root
         BASE = "doll base"
         connectBone(context, "doll lforearm", BASE)
         connectBone(context, "doll larm", "doll lforearm")
@@ -97,6 +106,7 @@ init python:
             activeBone = bone
             context.store["dragged"] = (bone, pos, bone.pivot)
         else:
+            activeBone = None
             stopDrag(context)
 
     def handleMouseMotion(context, transforms, pos):
@@ -111,8 +121,6 @@ init python:
         stopDrag(context)
 
     def stopDrag(context):
-        global activeBone
-        activeBone = None
         if "dragged" in context.store:
             del context.store["dragged"]
 
@@ -170,7 +178,7 @@ init python:
 
         for trans in transforms:
             bone = trans.bone
-            bone.wireFrame = editorSettings["wireframe"]
+            bone.wireFrame = ((activeBone and bone.name == activeBone.name) or not activeBone) and editorSettings["wireframe"]
 
             crop = bone.crop
             pos = getBonePos(bone)
