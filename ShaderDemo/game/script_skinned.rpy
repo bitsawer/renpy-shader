@@ -52,15 +52,18 @@ init python:
             elif event.type == pygame.MOUSEBUTTONUP:
                 handleMouseUp(context, transforms, pos)
 
-        drawBoneHeads(context, transforms, mouse)
+        visualizeBones(context, transforms, mouse)
 
         if mouse:
             context.store["mouse"] = mouse
 
     def debugTest(context):
-        connectBone(context, "doll lforearm", "doll base")
+        BASE = "doll base"
+        connectBone(context, "doll lforearm", BASE)
         connectBone(context, "doll larm", "doll lforearm")
         connectBone(context, "doll lhand", "doll larm")
+        connectBone(context, "doll hair", BASE)
+        connectBone(context, "doll skirt", BASE)
 
         for name in ("doll hair", "doll lforearm", "doll larm", "doll lhand"):
             context.renderer.bones[name].rotation.z = math.sin(context.time * 0.5)
@@ -123,15 +126,31 @@ init python:
             newParent.children.append(boneName)
             poseBone.parent = newParent.name
 
-    def drawBoneHeads(context, transforms, mouse):
+    def getTransformsDict(transforms):
+        mapping = {}
+        for trans in transforms:
+            mapping[trans.bone.name] = trans
+        return mapping
+
+    def visualizeBones(context, transforms, mouse):
+        mapping = getTransformsDict(transforms)
+
         for trans in transforms:
             bone = trans.bone
             bone.wireFrame = WIREFRAME
 
             p = trans.matrix.transform(getBonePos(bone))
+
+            if bone.parent:
+                parentTrans = mapping[bone.parent]
+                parentBone = parentTrans.bone
+                parentPos = parentTrans.matrix.transform(getBonePos(parentBone))
+                context.overlayCanvas.line("#00f", (p.x, p.y), (parentPos.x, parentPos.y))
+
             context.overlayCanvas.circle((255, 0, 0), (p.x, p.y), 8)
             if mouse and (p - euclid.Vector3(mouse[0], mouse[1])).magnitude() < PICK_DISTANCE:
                 context.overlayCanvas.circle((255, 255, 0), (p.x, p.y), 4)
+
             drawText(context, bone.name, (p.x + 15, p.y - 10))
 
 
