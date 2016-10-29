@@ -129,7 +129,7 @@ init python:
             elif self.mode == shader.MODE_SKINNED:
                 renderer = shader.SkinnedRenderer()
                 renderer.init(self.image, self.vertexShader, self.pixelShader)
-                renderer.loadTest()
+                #renderer.loadTest()
             else:
                 raise RuntimeError("Unknown mode: %s" % self.mode)
 
@@ -236,7 +236,7 @@ init python:
             return (-1.0, -1.0)
 
         def event(self, ev, x, y, st):
-            self.events.append(ev)
+            self.events.append((ev, (x, y)))
             while len(self.events) > 100:
                 #Too many, remove oldest
                 self.events.pop(0)

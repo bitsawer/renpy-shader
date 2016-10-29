@@ -367,7 +367,7 @@ class SkinnedRenderer(BaseRenderer):
 
     def cropSurface(self, surface, x, y, width, height):
         crop = surface.get_bounding_rect()
-        return surface.subsurface(crop), crop #TODO Wastes memory...
+        return surface.subsurface(crop), crop #TODO Wastes memory... use second surface ctor
 
     def setTexture(self, sampler, image):
         pass
@@ -425,11 +425,11 @@ class SkinnedRenderer(BaseRenderer):
 
         screenSize = self.getSize()
 
-        tex = self.skinTextures.textures[data["name"] + ".image"]
-        texWeights = self.skinTextures.textures[data["name"] + ".imageWeights"]
+        #tex = self.skinTextures.textures[data["name"] + ".image"]
+        #texWeights = self.skinTextures.textures[data["name"] + ".imageWeights"]
 
-        #tex = self.skinTextures.textures[data["image"]]
-        #texWeights = self.skinTextures.textures[data["image"]]
+        tex = self.skinTextures.textures[data["image"]]
+        texWeights = self.skinTextures.textures[data["image"]]
 
         self.shader.uniformi(shader.TEX0, 0)
         gl.glActiveTexture(gl.GL_TEXTURE0 + 0)
@@ -467,8 +467,8 @@ class SkinnedRenderer(BaseRenderer):
         if context.overlayCanvas:
             head = data["head"]
             moved = transform.transform(euclid.Vector3(head[0] - crop[0],  head[1] - crop[1]))
-            context.overlayCanvas.circle("#f00", (head[0], head[1]), 8)
-            context.overlayCanvas.circle("#ff0", (moved.x, moved.y), 5)
+            #context.overlayCanvas.circle("#f00", (head[0], head[1]), 8)
+            #context.overlayCanvas.circle("#ff0", (moved.x, moved.y), 5)
 
     def computeBoneTransforms(self, context):
         transforms = []
