@@ -2,8 +2,11 @@
 image doll = LiveComposite(
     (800, 1000),
     (0, 0), "doll base.png",
+    (249, 318), "doll skirt.png",
+    (0, 0), "doll lforearm.png",
+    (0, 0), "doll larm.png",
+    (0, 0), "doll lhand.png",
     (0, 0), "doll hair.png",
-    (249, 318), "doll skirt.png"
 )
 
 screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, xalign=0.5, yalign=1.0):
@@ -24,9 +27,11 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, x
 
 init python:
     import pygame
+    import math
     from shader import euclid
 
     PICK_DISTANCE = 20
+    WIREFRAME = 1
 
     pygame.font.init()
     FONT = pygame.font.Font(None, 20)
@@ -35,6 +40,8 @@ init python:
         renderer = context.renderer
         transforms = renderer.computeBoneTransforms(context)
         mouse = context.store.get("mouse")
+
+        debugTest(context)
 
         for event, pos in context.events:
             mouse = pos
@@ -50,20 +57,29 @@ init python:
         if mouse:
             context.store["mouse"] = mouse
 
+    def debugTest(context):
+        connectBone(context, "doll lforearm", "doll base")
+        connectBone(context, "doll larm", "doll lforearm")
+        connectBone(context, "doll lhand", "doll larm")
+
+        for name in ("doll hair", "doll lforearm", "doll larm", "doll lhand"):
+            context.renderer.bones[name].data["rotation"].z = math.sin(context.time * 0.5)
+
     def handleMouseDown(context, transforms, pos):
         bone = pickBone(context, transforms, pos)
         if bone:
-            context.store["dragged"] = (bone, pos, bone.data["head"])
+            key = "head"
+            context.store["dragged"] = (key, bone, pos, bone.data[key])
         else:
             stopDrag(context)
 
     def handleMouseMotion(context, transforms, pos):
         dragged = context.store.get("dragged")
         if dragged:
-            bone, oldPos, oldHead = dragged
+            key, bone, oldPos, oldValue = dragged
             delta = (oldPos[0] - pos[0], oldPos[1] - pos[1])
-            head = bone.data["head"]
-            bone.data["head"] = (oldHead[0] - delta[0], oldHead[1] - delta[1])
+            head = bone.data[key]
+            bone.data[key] = (oldValue[0] - delta[0], oldValue[1] - delta[1])
 
     def handleMouseUp(context, transforms, pos):
         stopDrag(context)
@@ -96,8 +112,21 @@ init python:
                     closestDistance = distance
         return closest
 
+    def connectBone(context, boneName, parentName):
+        bones = context.renderer.bones
+        poseBone = bones[boneName]
+        newParent = bones[parentName]
+        oldParent = bones[poseBone.data["parent"]]
+
+        if boneName not in newParent.data["children"]:
+            oldParent.data["children"].remove(boneName)
+            newParent.data["children"].append(boneName)
+            poseBone.data["parent"] = newParent.data["name"]
+
     def drawBoneHeads(context, transforms, mouse):
         for bone, transBase, trans in transforms:
+            bone.wireFrame = WIREFRAME
+
             p = trans.transform(getBonePos(bone))
             context.overlayCanvas.circle((255, 0, 0), (p.x, p.y), 8)
             if mouse and (p - euclid.Vector3(mouse[0], mouse[1])).magnitude() < PICK_DISTANCE:

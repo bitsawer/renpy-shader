@@ -293,6 +293,7 @@ class SkinnedBone:
         self.data = data
         self.vertices = None
         self.indices = None
+        self.wireFrame = False
 
         if surface:
             self.vertices, self.indices = self.computeQuad(surface)
@@ -329,8 +330,11 @@ class SkinnedRenderer(BaseRenderer):
             "name": "root",
             "image": None,
             "children": [],
+            "parent": None,
             "head": (0, 0),
-            "crop": [0, 0, 800, 1000]
+            "crop": [0, 0, 800, 1000],
+            "rotation": euclid.Vector3(0, 0, 0),
+            "zOrder": -1
             }, None)
         self.bones = {self.root.data["name"]: self.root}
 
@@ -341,11 +345,11 @@ class SkinnedRenderer(BaseRenderer):
         container = image.visit()[0]
         self.size = container.style.xmaximum, container.style.ymaximum
 
-        for child in container.children:
+        for i, child in enumerate(container.children):
             placement = child.get_placement()
             base = child.children[0]
             surface = renpy.display.im.load_surface(base)
-            boneName = base.filename
+            boneName = base.filename.rsplit(".")[0]
 
             surface, crop = self.cropSurface(surface, placement[0], placement[1], self.size[0], self.size[1])
             x = placement[0] + crop[0]
@@ -355,8 +359,11 @@ class SkinnedRenderer(BaseRenderer):
                 "name": boneName, #Or identity
                 "image": boneName,
                 "children": [],
+                "parent": self.root.data["name"],
                 "head": (x + crop[2] / 2.0, y + crop[3] / 2.0),
-                "crop": [x, y, x + crop[2], y + crop[3]]
+                "crop": [x, y, x + crop[2], y + crop[3]],
+                "rotation": euclid.Vector3(0, 0, 0),
+                "zOrder": i
                 }, surface)
 
             self.root.data["children"].append(boneName)
@@ -456,7 +463,7 @@ class SkinnedRenderer(BaseRenderer):
         self.bindAttributeArray(self.shader, "inVertex", bone.vertices, 4)
         gl.glDrawElements(gl.GL_TRIANGLES, len(bone.indices), gl.GL_UNSIGNED_INT, bone.indices)
 
-        if 1:
+        if bone.wireFrame:
             self.shader.uniformf("wireFrame", 1)
             gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINE)
             gl.glDrawElements(gl.GL_TRIANGLES, len(bone.indices), gl.GL_UNSIGNED_INT, bone.indices)
@@ -464,11 +471,6 @@ class SkinnedRenderer(BaseRenderer):
 
         self.unbindAttributeArray(self.shader, "inVertex")
 
-        if context.overlayCanvas:
-            head = data["head"]
-            moved = transform.transform(euclid.Vector3(head[0] - crop[0],  head[1] - crop[1]))
-            #context.overlayCanvas.circle("#f00", (head[0], head[1]), 8)
-            #context.overlayCanvas.circle("#ff0", (moved.x, moved.y), 5)
 
     def computeBoneTransforms(self, context):
         transforms = []
@@ -476,6 +478,7 @@ class SkinnedRenderer(BaseRenderer):
         skinning.push(None, euclid.Matrix4())
         self.computeBoneTransformRecursive(self.root, transforms, skinning, context)
         skinning.pop()
+        transforms.sort(key=lambda t: t[0].data["zOrder"])
         return transforms
 
     def computeBoneTransformRecursive(self, bone, transforms, skinning, context):
@@ -497,14 +500,15 @@ class SkinnedRenderer(BaseRenderer):
         transform.translate((crop[0] - xParent), (crop[1] - yParent), 0)
         transformBase = transform.copy()
 
-        if data["name"] in ("lShldr", "lForeArm", "lHand", "neck", "doll hair.png"):
-            head = data["head"]
-            xMove += head[0] - crop[0]
-            yMove += head[1] - crop[1]
+        head = data["head"]
+        xMove += head[0] - crop[0]
+        yMove += head[1] - crop[1]
 
-            transform.translate(xMove, yMove, 0)
-            transform.rotatez(math.sin(context.time))
-            transform.translate(-xMove, -yMove, 0)
+        transform.translate(xMove, yMove, 0)
+        rotation = data["rotation"]
+        if rotation.z != 0.0:
+            transform.rotatez(rotation.z)
+        transform.translate(-xMove, -yMove, 0)
 
         transforms.append((bone, transformBase, transform))
 
