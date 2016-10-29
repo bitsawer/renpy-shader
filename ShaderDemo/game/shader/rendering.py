@@ -294,7 +294,7 @@ class SkinnedBone:
         self.children = []
         self.parent = None
         self.image = None
-        self.head = (0, 0)
+        self.pivot = (0, 0)
         self.crop = (0, 0, 0, 0)
         self.rotation = euclid.Vector3(0, 0, 0)
         self.zOrder = -1
@@ -363,8 +363,8 @@ class SkinnedRenderer(BaseRenderer):
             bone = SkinnedBone(boneName)
             bone.parent = self.root.name
             bone.image = boneName
-            bone.head = (x + crop[2] / 2.0, y + crop[3] / 2.0)
             bone.crop = [x, y, x + crop[2], y + crop[3]]
+            bone.pivot = (crop[2] / 2.0, crop[3] / 2.0)
             bone.zOrder = i
             bone.updateQuad(surface)
 
@@ -486,8 +486,6 @@ class SkinnedRenderer(BaseRenderer):
         return transforms
 
     def computeBoneTransformRecursive(self, bone, transforms, skinning, context):
-        xMove = 0
-        yMove = 0
         xParent = 0
         yParent = 0
         parent = skinning.boneStack[-1]
@@ -502,9 +500,9 @@ class SkinnedRenderer(BaseRenderer):
         transform.translate((crop[0] - xParent), (crop[1] - yParent), 0)
         transformBase = transform.copy()
 
-        head = bone.head
-        xMove += head[0] - crop[0]
-        yMove += head[1] - crop[1]
+        pivot = bone.pivot
+        xMove = pivot[0]
+        yMove = pivot[1]
 
         transform.translate(xMove, yMove, 0)
         rotation = bone.rotation

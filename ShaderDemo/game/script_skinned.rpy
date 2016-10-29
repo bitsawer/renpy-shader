@@ -20,28 +20,46 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, x
         xpadding 10
         ypadding 10
 
+
         vbox:
+            spacing 10
             #xmaximum 150
             #xminimum 150
-            text "Skinning image: '" + name + "'"
+            text name
+
+            text "Toggles":
+                size 15
+
+            textbutton "Wireframes" action ToggleDict(editorSettings, "wireframe")
+            textbutton "Image areas" action ToggleDict(editorSettings, "imageAreas")
+            textbutton "Pivot points" action ToggleDict(editorSettings, "pivots")
+            textbutton "Debug animate" action ToggleDict(editorSettings, "debugAnimate")
 
 init python:
     import pygame
     import math
     from shader import euclid
 
+    editorSettings = {
+        "wireframe": True,
+        "imageAreas": True,
+        "pivots": True,
+        "debugAnimate": True,
+    }
+
     PICK_DISTANCE = 20
-    WIREFRAME = 1
 
     pygame.font.init()
     FONT = pygame.font.Font(None, 20)
+
+    activeBone = None
 
     def editUpdate(context):
         renderer = context.renderer
         transforms = renderer.computeBoneTransforms(context)
         mouse = context.store.get("mouse")
 
-        debugTest(context)
+        debugAnimate(context, editorSettings.get("debugAnimate"))
 
         for event, pos in context.events:
             mouse = pos
@@ -57,7 +75,7 @@ init python:
         if mouse:
             context.store["mouse"] = mouse
 
-    def debugTest(context):
+    def debugAnimate(context, animate):
         BASE = "doll base"
         connectBone(context, "doll lforearm", BASE)
         connectBone(context, "doll larm", "doll lforearm")
@@ -66,12 +84,16 @@ init python:
         connectBone(context, "doll skirt", BASE)
 
         for name in ("doll hair", "doll lforearm", "doll larm", "doll lhand"):
-            context.renderer.bones[name].rotation.z = math.sin(context.time * 0.5)
+            bone = context.renderer.bones[name]
+            if animate:
+                bone.rotation.z = math.sin(context.time * 0.5)
+            else:
+                bone.rotation.z = 0.0
 
     def handleMouseDown(context, transforms, pos):
         bone = pickBone(context, transforms, pos)
         if bone:
-            context.store["dragged"] = (bone, pos, bone.head)
+            context.store["dragged"] = (bone, pos, bone.pivot)
         else:
             stopDrag(context)
 
@@ -80,8 +102,8 @@ init python:
         if dragged:
             bone, oldPos, oldHead = dragged
             delta = (oldPos[0] - pos[0], oldPos[1] - pos[1])
-            head = bone.head
-            bone.head = (oldHead[0] - delta[0], oldHead[1] - delta[1])
+            pivot = bone.pivot
+            bone.pivot = (oldHead[0] - delta[0], oldHead[1] - delta[1])
 
     def handleMouseUp(context, transforms, pos):
         stopDrag(context)
@@ -94,18 +116,22 @@ init python:
         surface = FONT.render(text, True, "#fff")
         context.overlayCanvas.get_surface().blit(surface, pos)
 
+    def getBonePivot(bone):
+        pivot = bone.pivot
+        return euclid.Vector3(pivot[0],  pivot[1], 0)
+
     def getBonePos(bone):
-        head = bone.head
         crop = bone.crop
-        return euclid.Vector3(head[0] - crop[0],  head[1] - crop[1], 0)
+        return euclid.Vector3(crop[0],  crop[1], 0)
 
     def pickBone(context, transforms, pos):
         closest = None
         closestDistance = None
+        closestType = None
         for trans in transforms:
             bone = trans.bone
-            p = trans.matrix.transform(getBonePos(bone))
-            distance = (p - euclid.Vector3(pos[0], pos[1])).magnitude()
+            pivot = trans.matrix.transform(getBonePivot(bone))
+            distance = (pivot - euclid.Vector3(pos[0], pos[1])).magnitude()
             if distance < PICK_DISTANCE:
                 if not closest:
                     closest = bone
@@ -137,21 +163,29 @@ init python:
 
         for trans in transforms:
             bone = trans.bone
-            bone.wireFrame = WIREFRAME
+            bone.wireFrame = editorSettings["wireframe"]
 
-            p = trans.matrix.transform(getBonePos(bone))
+            crop = bone.crop
+            pos = getBonePos(bone)
+            pivot = trans.matrix.transform(getBonePivot(bone))
 
-            if bone.parent:
-                parentTrans = mapping[bone.parent]
-                parentBone = parentTrans.bone
-                parentPos = parentTrans.matrix.transform(getBonePos(parentBone))
-                context.overlayCanvas.line("#00f", (p.x, p.y), (parentPos.x, parentPos.y))
+            if editorSettings.get("imageAreas"):
+                context.overlayCanvas.circle((255, 0, 255), (pos.x, pos.y), 8)
+                if mouse and (pos - euclid.Vector3(mouse[0], mouse[1])).magnitude() < PICK_DISTANCE:
+                    context.overlayCanvas.circle((255, 255, 0), (pos.x, pos.y), 4)
 
-            context.overlayCanvas.circle((255, 0, 0), (p.x, p.y), 8)
-            if mouse and (p - euclid.Vector3(mouse[0], mouse[1])).magnitude() < PICK_DISTANCE:
-                context.overlayCanvas.circle((255, 255, 0), (p.x, p.y), 4)
+            if editorSettings.get("pivots"):
+                if bone.parent:
+                    parentTrans = mapping[bone.parent]
+                    parentBone = parentTrans.bone
+                    parentPos = parentTrans.matrix.transform(getBonePivot(parentBone))
+                    context.overlayCanvas.line("#00f", (pivot.x, pivot.y), (parentPos.x, parentPos.y))
 
-            drawText(context, bone.name, (p.x + 15, p.y - 10))
+                context.overlayCanvas.circle((255, 0, 0), (pivot.x, pivot.y), 8)
+                if mouse and (pivot - euclid.Vector3(mouse[0], mouse[1])).magnitude() < PICK_DISTANCE:
+                    context.overlayCanvas.circle((255, 255, 0), (pivot.x, pivot.y), 4)
+
+                drawText(context, bone.name, (pivot.x + 15, pivot.y - 10))
 
 
 label start_skinned:
