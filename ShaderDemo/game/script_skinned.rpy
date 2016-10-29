@@ -41,7 +41,7 @@ init python:
     from shader import euclid
 
     editorSettings = {
-        "wireframe": True,
+        "wireframe": False,
         "imageAreas": True,
         "pivots": True,
         "debugAnimate": True,
@@ -91,8 +91,10 @@ init python:
                 bone.rotation.z = 0.0
 
     def handleMouseDown(context, transforms, pos):
+        global activeBone
         bone = pickBone(context, transforms, pos)
         if bone:
+            activeBone = bone
             context.store["dragged"] = (bone, pos, bone.pivot)
         else:
             stopDrag(context)
@@ -109,11 +111,13 @@ init python:
         stopDrag(context)
 
     def stopDrag(context):
+        global activeBone
+        activeBone = None
         if "dragged" in context.store:
             del context.store["dragged"]
 
-    def drawText(context, text, pos):
-        surface = FONT.render(text, True, "#fff")
+    def drawText(context, text, color, pos):
+        surface = FONT.render(text, True, color)
         context.overlayCanvas.get_surface().blit(surface, pos)
 
     def getBonePivot(bone):
@@ -125,6 +129,9 @@ init python:
         return euclid.Vector3(crop[0],  crop[1], 0)
 
     def pickBone(context, transforms, pos):
+        #if not editorSettings.get("pivots"):
+        #    return
+
         closest = None
         closestDistance = None
         closestType = None
@@ -168,11 +175,21 @@ init python:
             crop = bone.crop
             pos = getBonePos(bone)
             pivot = trans.matrix.transform(getBonePivot(bone))
+            activeColor = (0, 255, 0)
 
             if editorSettings.get("imageAreas"):
-                context.overlayCanvas.circle((255, 0, 255), (pos.x, pos.y), 8)
+                areaColor = (255, 255, 0)
+                lines = [
+                    (crop[0], crop[1]),
+                    (crop[0] + (crop[2] - crop[0]), crop[1]),
+                    (crop[0] + (crop[2] - crop[0]), crop[1] + (crop[3] - crop[1])),
+                    (crop[0], crop[1] + (crop[3] - crop[1]))
+                ]
+                context.overlayCanvas.lines(areaColor, True, lines)
+
+                context.overlayCanvas.circle(areaColor, (pos.x, pos.y), 8)
                 if mouse and (pos - euclid.Vector3(mouse[0], mouse[1])).magnitude() < PICK_DISTANCE:
-                    context.overlayCanvas.circle((255, 255, 0), (pos.x, pos.y), 4)
+                    context.overlayCanvas.circle(activeColor, (pos.x, pos.y), 4)
 
             if editorSettings.get("pivots"):
                 if bone.parent:
@@ -183,9 +200,13 @@ init python:
 
                 context.overlayCanvas.circle((255, 0, 0), (pivot.x, pivot.y), 8)
                 if mouse and (pivot - euclid.Vector3(mouse[0], mouse[1])).magnitude() < PICK_DISTANCE:
-                    context.overlayCanvas.circle((255, 255, 0), (pivot.x, pivot.y), 4)
+                    context.overlayCanvas.circle(activeColor, (pivot.x, pivot.y), 4)
 
-                drawText(context, bone.name, (pivot.x + 15, pivot.y - 10))
+                textColor = "#fff"
+                if activeBone and bone.name == activeBone.name:
+                    textColor = "#f00"
+
+                drawText(context, bone.name, textColor, (pivot.x + 15, pivot.y - 10))
 
 
 label start_skinned:
