@@ -63,23 +63,22 @@ init python:
         connectBone(context, "doll lhand", "doll larm")
 
         for name in ("doll hair", "doll lforearm", "doll larm", "doll lhand"):
-            context.renderer.bones[name].data["rotation"].z = math.sin(context.time * 0.5)
+            context.renderer.bones[name].rotation.z = math.sin(context.time * 0.5)
 
     def handleMouseDown(context, transforms, pos):
         bone = pickBone(context, transforms, pos)
         if bone:
-            key = "head"
-            context.store["dragged"] = (key, bone, pos, bone.data[key])
+            context.store["dragged"] = (bone, pos, bone.head)
         else:
             stopDrag(context)
 
     def handleMouseMotion(context, transforms, pos):
         dragged = context.store.get("dragged")
         if dragged:
-            key, bone, oldPos, oldValue = dragged
+            bone, oldPos, oldHead = dragged
             delta = (oldPos[0] - pos[0], oldPos[1] - pos[1])
-            head = bone.data[key]
-            bone.data[key] = (oldValue[0] - delta[0], oldValue[1] - delta[1])
+            head = bone.head
+            bone.head = (oldHead[0] - delta[0], oldHead[1] - delta[1])
 
     def handleMouseUp(context, transforms, pos):
         stopDrag(context)
@@ -93,15 +92,16 @@ init python:
         context.overlayCanvas.get_surface().blit(surface, pos)
 
     def getBonePos(bone):
-        head = bone.data["head"]
-        crop = bone.data["crop"]
+        head = bone.head
+        crop = bone.crop
         return euclid.Vector3(head[0] - crop[0],  head[1] - crop[1], 0)
 
     def pickBone(context, transforms, pos):
         closest = None
         closestDistance = None
-        for bone, transBase, trans in transforms:
-            p = trans.transform(getBonePos(bone))
+        for trans in transforms:
+            bone = trans.bone
+            p = trans.matrix.transform(getBonePos(bone))
             distance = (p - euclid.Vector3(pos[0], pos[1])).magnitude()
             if distance < PICK_DISTANCE:
                 if not closest:
@@ -116,22 +116,23 @@ init python:
         bones = context.renderer.bones
         poseBone = bones[boneName]
         newParent = bones[parentName]
-        oldParent = bones[poseBone.data["parent"]]
+        oldParent = bones[poseBone.parent]
 
-        if boneName not in newParent.data["children"]:
-            oldParent.data["children"].remove(boneName)
-            newParent.data["children"].append(boneName)
-            poseBone.data["parent"] = newParent.data["name"]
+        if boneName not in newParent.children:
+            oldParent.children.remove(boneName)
+            newParent.children.append(boneName)
+            poseBone.parent = newParent.name
 
     def drawBoneHeads(context, transforms, mouse):
-        for bone, transBase, trans in transforms:
+        for trans in transforms:
+            bone = trans.bone
             bone.wireFrame = WIREFRAME
 
-            p = trans.transform(getBonePos(bone))
+            p = trans.matrix.transform(getBonePos(bone))
             context.overlayCanvas.circle((255, 0, 0), (p.x, p.y), 8)
             if mouse and (p - euclid.Vector3(mouse[0], mouse[1])).magnitude() < PICK_DISTANCE:
                 context.overlayCanvas.circle((255, 255, 0), (p.x, p.y), 4)
-            drawText(context, bone.data["name"], (p.x + 15, p.y - 10))
+            drawText(context, bone.name, (p.x + 15, p.y - 10))
 
 
 label start_skinned:

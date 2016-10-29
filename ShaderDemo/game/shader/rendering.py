@@ -289,17 +289,22 @@ class SkinningStack:
 
 
 class SkinnedBone:
-    def __init__(self, data, surface):
-        self.data = data
+    def __init__(self, name):
+        self.name = name
+        self.children = []
+        self.parent = None
+        self.image = None
+        self.head = (0, 0)
+        self.crop = (0, 0, 0, 0)
+        self.rotation = euclid.Vector3(0, 0, 0)
+        self.zOrder = -1
+
         self.vertices = None
         self.indices = None
         self.wireFrame = False
 
-        if surface:
-            self.vertices, self.indices = self.computeQuad(surface)
-
-    def computeQuad(self, surface):
-        rect = self.data["crop"]
+    def updateQuad(self, surface):
+        rect = self.crop
         w = float(rect[2] - rect[0])
         h = float(rect[3] - rect[1])
 
@@ -316,7 +321,16 @@ class SkinnedBone:
             verts.append(xUv)
             verts.append(yUv)
 
-        return (gl.GLfloat * len(verts))(*verts), (gl.GLuint * len(indices))(*indices)
+        self.vertices = (gl.GLfloat * len(verts))(*verts)
+        self.indices = (gl.GLuint * len(indices))(*indices)
+
+
+class BoneTransform:
+    def __init__(self, bone, baseMatrix, matrix):
+        self.bone = bone
+        self.baseMatrix = baseMatrix
+        self.matrix = matrix
+
 
 class SkinnedRenderer(BaseRenderer):
     def __init__(self):
@@ -326,17 +340,8 @@ class SkinnedRenderer(BaseRenderer):
         self.textureMap = TextureMap()
         self.skinTextures = TextureMap()
         self.size = None
-        self.root = SkinnedBone({
-            "name": "root",
-            "image": None,
-            "children": [],
-            "parent": None,
-            "head": (0, 0),
-            "crop": [0, 0, 800, 1000],
-            "rotation": euclid.Vector3(0, 0, 0),
-            "zOrder": -1
-            }, None)
-        self.bones = {self.root.data["name"]: self.root}
+        self.root = SkinnedBone("root")
+        self.bones = {self.root.name: self.root}
 
     def init(self, image, vertexShader, pixeShader):
         self.shader = utils.Shader(vertexShader, pixeShader)
@@ -355,18 +360,15 @@ class SkinnedRenderer(BaseRenderer):
             x = placement[0] + crop[0]
             y = placement[1] + crop[1]
 
-            bone = SkinnedBone({
-                "name": boneName, #Or identity
-                "image": boneName,
-                "children": [],
-                "parent": self.root.data["name"],
-                "head": (x + crop[2] / 2.0, y + crop[3] / 2.0),
-                "crop": [x, y, x + crop[2], y + crop[3]],
-                "rotation": euclid.Vector3(0, 0, 0),
-                "zOrder": i
-                }, surface)
+            bone = SkinnedBone(boneName)
+            bone.parent = self.root.name
+            bone.image = boneName
+            bone.head = (x + crop[2] / 2.0, y + crop[3] / 2.0)
+            bone.crop = [x, y, x + crop[2], y + crop[3]]
+            bone.zOrder = i
+            bone.updateQuad(surface)
 
-            self.root.data["children"].append(boneName)
+            self.root.children.append(boneName)
 
             self.skinTextures.setTexture(boneName, surface)
 
@@ -396,6 +398,15 @@ class SkinnedRenderer(BaseRenderer):
     def getSize(self):
         return self.size
 
+    def getProjection(self):
+        flipY = -1
+        projection = utils.createPerspectiveOrtho(-1.0, 1.0, 1.0 * flipY, -1.0 * flipY, -1.0, 1.0)
+
+        result = euclid.Matrix4()
+        for i, attr in enumerate("abcdefghijklmnop"):
+            setattr(result, attr, projection[i])
+        return result
+
     def render(self, context):
         self.shader.bind()
 
@@ -411,8 +422,8 @@ class SkinnedRenderer(BaseRenderer):
         screenSize = self.getSize()
         self.shader.uniformf("screenSize", *screenSize)
 
-        for bone, transformBase, transform in self.computeBoneTransforms(context):
-            self.renderBone(bone, transformBase, transform, context)
+        for transform in self.computeBoneTransforms(context):
+            self.renderBoneTransform(transform, context)
 
         for i in range(2):
             gl.glActiveTexture(gl.GL_TEXTURE0 + i)
@@ -425,9 +436,9 @@ class SkinnedRenderer(BaseRenderer):
         self.shader.unbind()
 
 
-    def renderBone(self, bone, transformBase, transform, context):
-        data = bone.data
-        if not data["image"]:
+    def renderBoneTransform(self, transform, context):
+        bone = transform.bone
+        if not bone.image:
             return
 
         screenSize = self.getSize()
@@ -435,8 +446,8 @@ class SkinnedRenderer(BaseRenderer):
         #tex = self.skinTextures.textures[data["name"] + ".image"]
         #texWeights = self.skinTextures.textures[data["name"] + ".imageWeights"]
 
-        tex = self.skinTextures.textures[data["image"]]
-        texWeights = self.skinTextures.textures[data["image"]]
+        tex = self.skinTextures.textures[bone.image]
+        texWeights = self.skinTextures.textures[bone.image]
 
         self.shader.uniformi(shader.TEX0, 0)
         gl.glActiveTexture(gl.GL_TEXTURE0 + 0)
@@ -446,18 +457,11 @@ class SkinnedRenderer(BaseRenderer):
         gl.glActiveTexture(gl.GL_TEXTURE0 + 1)
         gl.glBindTexture(gl.GL_TEXTURE_2D, texWeights.glTexture)
 
-        flipY = -1
-        projection = utils.createPerspectiveOrtho(-1.0, 1.0, 1.0 * flipY, -1.0 * flipY, -1.0, 1.0)
-
-        matrix = euclid.Matrix4()
-        for i, attr in enumerate("abcdefghijklmnop"):
-            setattr(matrix, attr, projection[i])
-
-        crop = data["crop"]
+        crop = bone.crop
         self.shader.uniformf("crop", *crop)
-        self.shader.uniformMatrix4f("transformBase", transformBase)
-        self.shader.uniformMatrix4f("transform", transform)
-        self.shader.uniformMatrix4f(shader.PROJECTION, matrix)
+        self.shader.uniformMatrix4f("transformBase", transform.baseMatrix)
+        self.shader.uniformMatrix4f("transform", transform.matrix)
+        self.shader.uniformMatrix4f(shader.PROJECTION, self.getProjection())
         self.shader.uniformf("wireFrame", 0)
 
         self.bindAttributeArray(self.shader, "inVertex", bone.vertices, 4)
@@ -478,43 +482,41 @@ class SkinnedRenderer(BaseRenderer):
         skinning.push(None, euclid.Matrix4())
         self.computeBoneTransformRecursive(self.root, transforms, skinning, context)
         skinning.pop()
-        transforms.sort(key=lambda t: t[0].data["zOrder"])
+        transforms.sort(key=lambda t: t.bone.zOrder)
         return transforms
 
     def computeBoneTransformRecursive(self, bone, transforms, skinning, context):
-        data = bone.data
-
         xMove = 0
         yMove = 0
         xParent = 0
         yParent = 0
         parent = skinning.boneStack[-1]
         if parent:
-            parentCrop = parent["crop"]
+            parentCrop = parent.crop
             xParent, yParent = parentCrop[0], parentCrop[1]
 
         transformParent = skinning.matrixStack[-1]
         transform = euclid.Matrix4() * transformParent
 
-        crop = data["crop"]
+        crop = bone.crop
         transform.translate((crop[0] - xParent), (crop[1] - yParent), 0)
         transformBase = transform.copy()
 
-        head = data["head"]
+        head = bone.head
         xMove += head[0] - crop[0]
         yMove += head[1] - crop[1]
 
         transform.translate(xMove, yMove, 0)
-        rotation = data["rotation"]
+        rotation = bone.rotation
         if rotation.z != 0.0:
             transform.rotatez(rotation.z)
         transform.translate(-xMove, -yMove, 0)
 
-        transforms.append((bone, transformBase, transform))
+        transforms.append(BoneTransform(bone, transformBase, transform))
 
-        skinning.push(data, transform)
+        skinning.push(bone, transform)
 
-        for childName in data["children"]:
+        for childName in bone.children:
             self.computeBoneTransformRecursive(self.bones[childName], transforms, skinning, context)
 
         skinning.pop()
