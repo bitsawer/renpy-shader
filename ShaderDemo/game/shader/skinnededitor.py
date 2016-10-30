@@ -6,8 +6,34 @@ import euclid
 pygame.font.init()
 FONT = pygame.font.Font(None, 20)
 
-PICK_DISTANCE = 20
+PICK_DISTANCE_PIVOT = 20
+PICK_DISTANCE_CROP = 5
 activeBone = None
+
+DRAGGED = "dragged"
+MOUSE = "mouse"
+
+def lineToPoint(a, b, point):
+    x1, y1 = a
+    x2, y2 = b
+    x3, y3 = point
+
+    px = x2 - x1
+    py = y2 - y1
+    value = px*px + py*py
+
+    u =  ((x3 - x1) * px + (y3 - y1) * py) / float(value)
+    if u > 1:
+        u = 1
+    elif u < 0:
+        u = 0
+
+    x = x1 + u * px
+    y = y1 + u * py
+    dx = x - x3
+    dy = y - y3
+    return math.sqrt(dx*dx + dy*dy)
+
 
 class SkinnedEditor:
     def __init__(self, context, settings):
@@ -20,6 +46,12 @@ class SkinnedEditor:
         self.debugAnimate(self.settings["debugAnimate"])
         self.handleEvents()
         self.visualizeBones()
+
+    def get(self, key):
+        return self.context.store.get(key)
+
+    def set(self, key, value):
+        self.context.store[key] = value
 
     def debugAnimate(self, animate):
         context = self.context
@@ -54,10 +86,9 @@ class SkinnedEditor:
             poseBone.parent = newParent.name
 
     def handleEvents(self):
-        context = self.context
-        self.mouse = context.store.get("mouse")
+        self.mouse = self.get(MOUSE)
 
-        for event, pos in context.events:
+        for event, pos in self.context.events:
             self.mouse = pos
             #keyboard: h toggle hide, r rotate etc.
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -68,20 +99,20 @@ class SkinnedEditor:
                 self.handleMouseUp(pos)
 
         if self.mouse:
-            context.store["mouse"] = self.mouse
+            self.set(MOUSE, self.mouse)
 
     def handleMouseDown(self, pos):
         global activeBone
         bone = self.pickBone(pos)
         if bone:
             activeBone = bone
-            self.context.store["dragged"] = (bone, pos, bone.pivot)
+            self.set(DRAGGED, (bone, pos, bone.pivot))
         else:
             activeBone = None
             self.stopDrag()
 
     def handleMouseMotion(self, pos):
-        dragged = self.context.store.get("dragged")
+        dragged = self.get(DRAGGED)
         if dragged:
             bone, oldPos, oldHead = dragged
             delta = (oldPos[0] - pos[0], oldPos[1] - pos[1])
@@ -92,8 +123,7 @@ class SkinnedEditor:
         self.stopDrag()
 
     def stopDrag(self):
-        if "dragged" in self.context.store:
-            del self.context.store["dragged"]
+        self.set(DRAGGED, None)
 
     def pickBone(self, pos):
         #if not editorSettings.get("pivots"):
@@ -106,14 +136,35 @@ class SkinnedEditor:
             bone = trans.bone
             pivot = trans.matrix.transform(self.getBonePivot(bone))
             distance = (pivot - euclid.Vector3(pos[0], pos[1])).magnitude()
-            if distance < PICK_DISTANCE:
-                if not closest:
-                    closest = bone
-                    closestDistance = distance
-                elif distance < closestDistance:
+            if distance < PICK_DISTANCE_PIVOT:
+                if not closest or distance < closestDistance:
                     closest = bone
                     closestDistance = distance
         return closest
+
+    def pickCrop(self, pos):
+        closest = None
+        closestDistance = None
+        for trans in self.transforms:
+            lines = self.getCropLines(trans.bone)
+            for i in range(len(lines) - 1):
+                distance = lineToPoint(lines[i], lines[i + 1], pos)
+                if distance < PICK_DISTANCE_CROP:
+                    if not closest or distance < closestDistance:
+                        closest = trans.bone
+                        closestDistance = distance
+        return closest
+
+    def getCropLines(self, bone):
+        crop = bone.crop
+        lines = [
+            (crop[0], crop[1]),
+            (crop[0] + (crop[2] - crop[0]), crop[1]),
+            (crop[0] + (crop[2] - crop[0]), crop[1] + (crop[3] - crop[1])),
+            (crop[0], crop[1] + (crop[3] - crop[1])),
+            (crop[0], crop[1])
+        ]
+        return lines
 
     def getBonePivot(self, bone):
         pivot = bone.pivot
@@ -134,6 +185,12 @@ class SkinnedEditor:
         context = self.context
         mouse = self.mouse
 
+        hoverPivotBone = None
+        hoverCropBone = None
+        if mouse:
+            hoverPivotBone = self.pickBone(mouse)
+            hoverCropBone = self.pickCrop(mouse)
+
         for trans in self.transforms:
             bone = trans.bone
             bone.wireFrame = ((activeBone and bone.name == activeBone.name) or not activeBone) and self.settings["wireframe"]
@@ -143,21 +200,15 @@ class SkinnedEditor:
             pivot = trans.matrix.transform(self.getBonePivot(bone))
             activeColor = (0, 255, 0)
 
-            if self.settings.get("imageAreas"):
+            if self.settings["imageAreas"]:
                 areaColor = (255, 255, 0)
-                lines = [
-                    (crop[0], crop[1]),
-                    (crop[0] + (crop[2] - crop[0]), crop[1]),
-                    (crop[0] + (crop[2] - crop[0]), crop[1] + (crop[3] - crop[1])),
-                    (crop[0], crop[1] + (crop[3] - crop[1]))
-                ]
-                context.overlayCanvas.lines(areaColor, True, lines)
+                lines = self.getCropLines(bone)
+                if hoverCropBone and bone.name == hoverCropBone.name:
+                    self.drawText(hoverCropBone.name, "#fff", (mouse[0] + 20, mouse[1]))
+                    areaColor = activeColor
+                context.overlayCanvas.lines(areaColor, False, lines)
 
-                context.overlayCanvas.circle(areaColor, (pos.x, pos.y), 8)
-                if mouse and (pos - euclid.Vector3(mouse[0], mouse[1])).magnitude() < PICK_DISTANCE:
-                    context.overlayCanvas.circle(activeColor, (pos.x, pos.y), 4)
-
-            if self.settings.get("pivots"):
+            if self.settings["pivots"]:
                 if bone.parent:
                     parentTrans = mapping[bone.parent]
                     parentBone = parentTrans.bone
@@ -165,7 +216,7 @@ class SkinnedEditor:
                     context.overlayCanvas.line("#00f", (pivot.x, pivot.y), (parentPos.x, parentPos.y))
 
                 context.overlayCanvas.circle((255, 0, 0), (pivot.x, pivot.y), 8)
-                if mouse and (pivot - euclid.Vector3(mouse[0], mouse[1])).magnitude() < PICK_DISTANCE:
+                if hoverPivotBone and bone.name == hoverPivotBone.name:
                     context.overlayCanvas.circle(activeColor, (pivot.x, pivot.y), 4)
 
                 textColor = "#fff"

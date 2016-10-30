@@ -350,6 +350,7 @@ class SkinnedRenderer(BaseRenderer):
         #Assume LiveComposite. Not that great, relies on specific RenPy implementation...
         container = image.visit()[0]
         self.size = container.style.xmaximum, container.style.ymaximum
+        self.root.crop = (0, 0, self.size[0], self.size[1])
 
         for i, child in enumerate(container.children):
             placement = child.get_placement()
