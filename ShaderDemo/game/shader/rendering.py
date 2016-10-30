@@ -303,6 +303,7 @@ class SkinnedBone:
         self.pivot = (0, 0)
         self.crop = (0, 0, 0, 0)
         self.rotation = euclid.Vector3(0, 0, 0)
+        self.scale = euclid.Vector3(1, 1, 1)
         self.zOrder = -1
         self.visible = True
 
@@ -372,7 +373,7 @@ class SkinnedRenderer(BaseRenderer):
             bone.parent = self.root.name
             bone.image = SkinnedImage(boneName, surface.get_width(), surface.get_height())
             bone.pos = (x, y)
-            bone.pivot = (crop[2] / 2.0, crop[3] / 2.0)
+            bone.pivot = (bone.image.width / 2.0, bone.image.height / 2.0)
             bone.crop = (x, y, x + crop[2], y + crop[3])
             bone.zOrder = i
             bone.updateQuad(surface)
@@ -515,9 +516,17 @@ class SkinnedRenderer(BaseRenderer):
         yMove = pivot[1]
 
         transform.translate(xMove, yMove, 0)
+
+        transform.scale(bone.scale.x, bone.scale.y, bone.scale.z)
+
         rotation = bone.rotation
+        if rotation.y != 0.0:
+            transform.rotatey(rotation.y)
+        if rotation.x != 0.0:
+            transform.rotatex(rotation.x)
         if rotation.z != 0.0:
             transform.rotatez(rotation.z)
+
         transform.translate(-xMove, -yMove, 0)
 
         transforms.append(BoneTransform(bone, transformBase, transform))
