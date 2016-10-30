@@ -287,6 +287,11 @@ class SkinningStack:
         self.boneStack.pop()
         self.matrixStack.pop()
 
+class SkinnedImage:
+    def __init__(self, name, width, height):
+        self.name = name
+        self.width = width
+        self.height = height
 
 class SkinnedBone:
     def __init__(self, name):
@@ -294,6 +299,7 @@ class SkinnedBone:
         self.children = []
         self.parent = None
         self.image = None
+        self.pos = (0, 0)
         self.pivot = (0, 0)
         self.crop = (0, 0, 0, 0)
         self.rotation = euclid.Vector3(0, 0, 0)
@@ -364,9 +370,10 @@ class SkinnedRenderer(BaseRenderer):
 
             bone = SkinnedBone(boneName)
             bone.parent = self.root.name
-            bone.image = boneName
-            bone.crop = [x, y, x + crop[2], y + crop[3]]
+            bone.image = SkinnedImage(boneName, surface.get_width(), surface.get_height())
+            bone.pos = (x, y)
             bone.pivot = (crop[2] / 2.0, crop[3] / 2.0)
+            bone.crop = (x, y, x + crop[2], y + crop[3])
             bone.zOrder = i
             bone.updateQuad(surface)
 
@@ -451,8 +458,8 @@ class SkinnedRenderer(BaseRenderer):
         #tex = self.skinTextures.textures[data["name"] + ".image"]
         #texWeights = self.skinTextures.textures[data["name"] + ".imageWeights"]
 
-        tex = self.skinTextures.textures[bone.image]
-        texWeights = self.skinTextures.textures[bone.image]
+        tex = self.skinTextures.textures[bone.image.name]
+        texWeights = self.skinTextures.textures[bone.image.name]
 
         self.shader.uniformi(shader.TEX0, 0)
         gl.glActiveTexture(gl.GL_TEXTURE0 + 0)
@@ -462,8 +469,6 @@ class SkinnedRenderer(BaseRenderer):
         gl.glActiveTexture(gl.GL_TEXTURE0 + 1)
         gl.glBindTexture(gl.GL_TEXTURE_2D, texWeights.glTexture)
 
-        crop = bone.crop
-        self.shader.uniformf("crop", *crop)
         self.shader.uniformMatrix4f("transformBase", transform.baseMatrix)
         self.shader.uniformMatrix4f("transform", transform.matrix)
         self.shader.uniformMatrix4f(shader.PROJECTION, self.getProjection())
@@ -495,14 +500,14 @@ class SkinnedRenderer(BaseRenderer):
         yParent = 0
         parent = skinning.boneStack[-1]
         if parent:
-            parentCrop = parent.crop
-            xParent, yParent = parentCrop[0], parentCrop[1]
+            parentPos = parent.pos
+            xParent, yParent = parentPos[0], parentPos[1]
 
         transformParent = skinning.matrixStack[-1]
         transform = euclid.Matrix4() * transformParent
 
-        crop = bone.crop
-        transform.translate((crop[0] - xParent), (crop[1] - yParent), 0)
+        pos = bone.pos
+        transform.translate((pos[0] - xParent), (pos[1] - yParent), 0)
         transformBase = transform.copy()
 
         pivot = bone.pivot

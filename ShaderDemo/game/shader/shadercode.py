@@ -259,7 +259,6 @@ uniform mat4 transform;
 uniform mat4 transformBase;
 
 uniform vec2 screenSize;
-uniform vec4 crop;
 uniform float shownTime;
 
 uniform sampler2D weightTex1;

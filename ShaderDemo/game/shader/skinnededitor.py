@@ -11,7 +11,7 @@ PICK_DISTANCE_CROP = 5
 activeBone = None
 
 DRAG_PIVOT = "dragPivot"
-DRAG_CROP = "dragCrop"
+DRAG_POS = "dragPos"
 MOUSE = "mouse"
 
 def lineToPoint(a, b, point):
@@ -107,41 +107,44 @@ class SkinnedEditor:
 
         self.stopDrag()
 
-        bone = self.pickPivot(pos)
-        if bone:
-            activeBone = bone
-            self.set(DRAG_PIVOT, (bone, pos, bone.pivot))
-        else:
-            activeBone = None
-            self.set(DRAG_PIVOT, None)
+        bone = None
+        if self.settings["pivots"]:
+            bone = self.pickPivot(pos)
+            if bone:
+                activeBone = bone
+                self.set(DRAG_PIVOT, (bone, pos, bone.pivot))
+            else:
+                activeBone = None
+                self.set(DRAG_PIVOT, None)
 
+        if self.settings["imageAreas"] and not bone:
             bone = self.pickCrop(pos)
             if bone:
-                self.set(DRAG_CROP, (bone, pos, bone.crop))
+                self.set(DRAG_POS, (bone, pos, bone.pos))
             else:
-                self.set(DRAG_CROP, None)
+                self.set(DRAG_POS, None)
 
     def handleMouseMotion(self, pos):
         dragPivot = self.get(DRAG_PIVOT)
         if dragPivot:
-            bone, oldPos, oldHead = dragPivot
-            delta = (oldPos[0] - pos[0], oldPos[1] - pos[1])
+            bone, oldMouse, oldHead = dragPivot
+            delta = (oldMouse[0] - pos[0], oldMouse[1] - pos[1])
             pivot = bone.pivot
             bone.pivot = (oldHead[0] - delta[0], oldHead[1] - delta[1])
 
-        dragCrop = self.get(DRAG_CROP)
-        if dragCrop:
-            bone, oldPos, oldCrop = dragCrop
-            delta = (oldPos[0] - pos[0], oldPos[1] - pos[1])
-            crop = bone.crop
-            bone.crop = (oldCrop[0] - delta[0], oldCrop[1] - delta[1], oldCrop[2] - delta[0], oldCrop[3] - delta[1])
+        dragPos = self.get(DRAG_POS)
+        if dragPos:
+            bone, oldMouse, oldPos = dragPos
+            delta = (oldMouse[0] - pos[0], oldMouse[1] - pos[1])
+            pos = bone.pos
+            bone.pos = (oldPos[0] - delta[0], oldPos[1] - delta[1])
 
     def handleMouseUp(self, pos):
         self.stopDrag()
 
     def stopDrag(self):
         self.set(DRAG_PIVOT, None)
-        self.set(DRAG_CROP, None)
+        self.set(DRAG_POS, None)
 
     def pickPivot(self, pos):
         closest = None
@@ -160,23 +163,25 @@ class SkinnedEditor:
         closest = None
         closestDistance = None
         for trans in self.transforms:
-            lines = self.getCropLines(trans.bone)
-            for i in range(len(lines) - 1):
-                distance = lineToPoint(lines[i], lines[i + 1], pos)
-                if distance < PICK_DISTANCE_CROP:
-                    if not closest or distance < closestDistance:
-                        closest = trans.bone
-                        closestDistance = distance
+            if trans.bone.image:
+                lines = self.getImageLines(trans.bone)
+                for i in range(len(lines) - 1):
+                    distance = lineToPoint(lines[i], lines[i + 1], pos)
+                    if distance < PICK_DISTANCE_CROP:
+                        if not closest or distance < closestDistance:
+                            closest = trans.bone
+                            closestDistance = distance
         return closest
 
-    def getCropLines(self, bone):
-        crop = bone.crop
+    def getImageLines(self, bone):
+        pos = bone.pos
+        image = bone.image
         lines = [
-            (crop[0], crop[1]),
-            (crop[0] + (crop[2] - crop[0]), crop[1]),
-            (crop[0] + (crop[2] - crop[0]), crop[1] + (crop[3] - crop[1])),
-            (crop[0], crop[1] + (crop[3] - crop[1])),
-            (crop[0], crop[1])
+            pos,
+            (pos[0] + image.width, pos[1]),
+            (pos[0] + image.width, pos[1] + image.height),
+            (pos[0], pos[1] + image.height),
+            pos
         ]
         return lines
 
@@ -214,9 +219,9 @@ class SkinnedEditor:
             pivot = trans.matrix.transform(self.getBonePivot(bone))
             activeColor = (0, 255, 0)
 
-            if self.settings["imageAreas"]:
+            if self.settings["imageAreas"] and bone.image:
                 areaColor = (255, 255, 0)
-                lines = self.getCropLines(bone)
+                lines = self.getImageLines(bone)
                 if not hoverPivotBone and hoverCropBone and bone.name == hoverCropBone.name:
                     self.drawText(hoverCropBone.name, "#fff", (mouse[0] + 20, mouse[1]))
                     areaColor = activeColor
