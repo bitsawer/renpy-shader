@@ -73,6 +73,13 @@ init python:
 
             shader.log("Controller count: %s" % len(self.store))
 
+        def _clear(self):
+            #Usually there is no need to call this in normal use
+            for tag, context in self.store.copy().items():
+                context.freeController()
+                self.removeContext(tag)
+            self.store.clear()
+
 
     #TODO Check saving behavior...
     _controllerContextStore = ControllerContextStore()

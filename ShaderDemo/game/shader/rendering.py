@@ -298,6 +298,7 @@ class SkinnedBone:
         self.crop = (0, 0, 0, 0)
         self.rotation = euclid.Vector3(0, 0, 0)
         self.zOrder = -1
+        self.visible = True
 
         self.vertices = None
         self.indices = None
@@ -356,7 +357,7 @@ class SkinnedRenderer(BaseRenderer):
             surface = renpy.display.im.load_surface(base)
             boneName = base.filename.rsplit(".")[0]
 
-            surface, crop = self.cropSurface(surface, placement[0], placement[1], self.size[0], self.size[1])
+            surface, crop = self.cropSurface(surface)
             x = placement[0] + crop[0]
             y = placement[1] + crop[1]
 
@@ -368,15 +369,18 @@ class SkinnedRenderer(BaseRenderer):
             bone.zOrder = i
             bone.updateQuad(surface)
 
-            self.root.children.append(boneName)
+            self.root.children.append(boneName) #TODO Just store real objects...?
 
             self.skinTextures.setTexture(boneName, surface)
 
             self.bones[boneName] = bone
 
-    def cropSurface(self, surface, x, y, width, height):
+    def cropSurface(self, surface, pad=5):
         crop = surface.get_bounding_rect()
-        return surface.subsurface(crop), crop #TODO Wastes memory... use second surface ctor
+        padded = pygame.Surface((crop.width + pad * 2, crop.height + pad * 2), 0, surface)
+        padded.blit(surface, (pad, pad), crop)
+        crop.inflate_ip(pad * 2, pad * 2)
+        return padded, crop
 
     def setTexture(self, sampler, image):
         pass
@@ -438,7 +442,7 @@ class SkinnedRenderer(BaseRenderer):
 
     def renderBoneTransform(self, transform, context):
         bone = transform.bone
-        if not bone.image:
+        if not bone.image or not bone.visible:
             return
 
         screenSize = self.getSize()

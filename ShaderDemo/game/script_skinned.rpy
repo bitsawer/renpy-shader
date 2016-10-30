@@ -39,7 +39,8 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, x
                 size 15
 
             textbutton "Autoconnect" action NullAction() #TODO Set a flag and check in update
-            textbutton "Reload" action RestartStatement()
+            textbutton "Reload" action Confirm("Are you sure you want to reload?", Jump("start_skinned"))
+
 
 init python:
     import pygame
@@ -71,6 +72,7 @@ init python:
 
         for event, pos in context.events:
             mouse = pos
+            #keyboard: h toggle hide, r rotate etc.
             if event.type == pygame.MOUSEBUTTONDOWN:
                 handleMouseDown(context, transforms, pos)
             if event.type == pygame.MOUSEMOTION:
@@ -212,7 +214,7 @@ init python:
 
                 textColor = "#fff"
                 if activeBone and bone.name == activeBone.name:
-                    textColor = "#f00"
+                    textColor = activeColor
 
                 drawText(context, bone.name, textColor, (pivot.x + 15, pivot.y - 10))
 
@@ -220,6 +222,8 @@ init python:
 label start_skinned:
     #scene room
     #show doll
+
+    $ _controllerContextStore._clear()
 
     call screen skinnedScreen("doll", shader.PS_SKINNED, {"tex1": "amy influence"}, update=editUpdate, _tag="amy", _layer="amy") #nopredict
 
