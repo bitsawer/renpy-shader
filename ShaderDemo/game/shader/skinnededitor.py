@@ -8,11 +8,12 @@ FONT = pygame.font.Font(None, 20)
 
 PICK_DISTANCE_PIVOT = 20
 PICK_DISTANCE_CROP = 5
-activeBone = None
+activeBone = None #TODO use activeBoneName and store in context.store...
 
 DRAG_PIVOT = "dragPivot"
 DRAG_POS = "dragPos"
 MOUSE = "mouse"
+MODE = "mode"
 
 def lineToPoint(a, b, point):
     x1, y1 = a
@@ -35,6 +36,84 @@ def lineToPoint(a, b, point):
     dy = y - y3
     return math.sqrt(dx*dx + dy*dy)
 
+class AttributeEdit:
+    def __init__(self, mode, bone, attribute, mouse):
+        self.bone = bone
+        self.attribute = attribute
+        self.mouse = mouse
+        self.original = self.getValue()
+        self.pivot = mode.editor.getBonePivotTransformed(bone)
+        self.value = self.original + math.atan2(mouse[0] - self.pivot[0], mouse[1] - self.pivot[1])
+
+    def getValue(self):
+        v = self.bone
+        for attr in self.attribute.split("."):
+            v = getattr(v, attr)
+        return v
+
+    def setValue(self, value):
+        v = self.bone
+        attrs = self.attribute.split(".")
+        for attr in attrs[:-1]:
+            v = getattr(v, attr)
+        setattr(v, attrs[-1], value)
+
+    def update(self, mouse):
+        angle = math.atan2(mouse[0] - self.pivot[0], mouse[1] - self.pivot[1])
+        self.setValue(self.value - angle)
+
+    def cancel(self):
+        self.setValue(self.original)
+
+class PoseMode:
+    def __init__(self):
+        self.editor = None
+        self.active = None
+
+    def update(self, editor):
+        self.editor = editor
+
+    def handleEvent(self, event):
+        event, pos = event
+        if event.type == pygame.KEYDOWN:
+            if event.unicode == "h" and activeBone:
+                activeBone.visible = not activeBone.visible
+                return True
+
+            if event.unicode == "r" and activeBone:
+                self.newEdit(AttributeEdit(self, activeBone, "rotation.z", pos))
+                return True
+            if event.unicode == "s" and activeBone:
+                self.newEdit(AttributeEdit(self, activeBone, "scale.y", pos))
+                return True
+
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if self.active:
+                if event.button == 3:
+                    self.active.cancel()
+                self.active = None
+                return True
+
+        return False
+
+    def newEdit(self, edit):
+        if self.active:
+            self.active.cancel()
+        self.active = edit
+
+    def draw(self):
+        if self.active:
+            mouse = self.editor.mouse
+            self.active.update(mouse)
+
+            name = self.active.attribute[0].upper()
+            value = self.active.getValue()
+            if "rotation" in self.active.attribute:
+                value = math.degrees(value)
+
+            self.editor.context.overlayCanvas.line("#f00", (self.active.pivot.x, self.active.pivot.y), mouse)
+            self.editor.drawText("%s: %.1f" % (name, value), "#fff", (mouse[0] + 20, mouse[1]))
+
 
 class SkinnedEditor:
     def __init__(self, context, settings):
@@ -42,6 +121,13 @@ class SkinnedEditor:
         self.settings = settings
         self.mouse = (0, 0)
         self.transforms = context.renderer.computeBoneTransforms(context)
+        self.transformsMap = self.getTransformsDict()
+
+        self.mode = self.get(MODE)
+        if not self.mode:
+            self.mode = PoseMode()
+            self.set(MODE, self.mode)
+        self.mode.update(self)
 
     def update(self):
         self.debugAnimate(self.settings["debugAnimate"])
@@ -54,6 +140,9 @@ class SkinnedEditor:
     def set(self, key, value):
         self.context.store[key] = value
 
+    def getBone(self, name):
+        return self.context.renderer.bones[name]
+
     def debugAnimate(self, animate):
         context = self.context
         #TODO Rotate all bones that have a parent other than root
@@ -65,11 +154,11 @@ class SkinnedEditor:
         self.connectBone("doll skirt", BASE)
 
         for name in ("doll hair", "doll lforearm", "doll larm", "doll lhand"):
-            bone = context.renderer.bones[name]
+            bone = self.getBone(name)
             if animate:
                 bone.rotation.z = math.sin(context.time * 0.5)
-            else:
-                bone.rotation.z = 0.0
+            #else:
+            #    bone.rotation.z = 0.0
 
     def drawText(self, text, color, pos):
         surface = FONT.render(text, True, color)
@@ -91,13 +180,15 @@ class SkinnedEditor:
 
         for event, pos in self.context.events:
             self.mouse = pos
-            #keyboard: h toggle hide, r rotate etc.
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                self.handleMouseDown(pos)
-            elif event.type == pygame.MOUSEMOTION:
-                self.handleMouseMotion(pos)
-            elif event.type == pygame.MOUSEBUTTONUP:
-                self.handleMouseUp(pos)
+
+            handled = self.mode.handleEvent((event, pos))
+            if not handled:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    self.handleMouseDown(pos)
+                elif event.type == pygame.MOUSEMOTION:
+                    self.handleMouseMotion(pos)
+                elif event.type == pygame.MOUSEBUTTONUP:
+                    self.handleMouseUp(pos)
 
         if self.mouse:
             self.set(MOUSE, self.mouse)
@@ -185,6 +276,9 @@ class SkinnedEditor:
         ]
         return lines
 
+    def getBonePivotTransformed(self, bone):
+        return self.transformsMap[bone.name].matrix.transform(self.getBonePivot(bone))
+
     def getBonePivot(self, bone):
         pivot = bone.pivot
         return euclid.Vector3(pivot[0],  pivot[1], 0)
@@ -200,7 +294,6 @@ class SkinnedEditor:
         return mapping
 
     def visualizeBones(self):
-        mapping = self.getTransformsDict()
         context = self.context
         mouse = self.mouse
 
@@ -216,7 +309,7 @@ class SkinnedEditor:
 
             crop = bone.crop
             pos = self.getBonePos(bone)
-            pivot = trans.matrix.transform(self.getBonePivot(bone))
+            pivot = self.getBonePivotTransformed(bone)
             activeColor = (0, 255, 0)
 
             if self.settings["imageAreas"] and bone.image:
@@ -229,9 +322,9 @@ class SkinnedEditor:
 
             if self.settings["pivots"]:
                 if bone.parent:
-                    parentTrans = mapping[bone.parent]
+                    parentTrans = self.transformsMap[bone.parent]
                     parentBone = parentTrans.bone
-                    parentPos = parentTrans.matrix.transform(self.getBonePivot(parentBone))
+                    parentPos = self.getBonePivotTransformed(parentBone)
                     context.overlayCanvas.line("#00f", (pivot.x, pivot.y), (parentPos.x, parentPos.y))
 
                 context.overlayCanvas.circle((255, 0, 0), (pivot.x, pivot.y), 8)
@@ -243,3 +336,5 @@ class SkinnedEditor:
                     textColor = activeColor
 
                 self.drawText(bone.name, textColor, (pivot.x + 15, pivot.y - 10))
+
+        self.mode.draw()

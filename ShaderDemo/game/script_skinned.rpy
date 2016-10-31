@@ -45,11 +45,16 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, x
 init python:
     from shader import skinnededitor
 
+    #config.keymap["input_delete"] = []
+    config.keymap["game_menu"].remove("mouseup_3")
+    config.keymap["hide_windows"].remove("h")
+    config.keymap["screenshot"].remove("s")
+
     editorSettings = {
         "wireframe": False,
         "imageAreas": True,
         "pivots": True,
-        "debugAnimate": True,
+        "debugAnimate": False,
     }
 
     def editUpdate(context):
