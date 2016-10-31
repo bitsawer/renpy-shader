@@ -62,12 +62,44 @@ class AttributeEdit:
             v = getattr(v, attr)
         setattr(v, attrs[-1], value)
 
+    def cancel(self):
+        self.setValue(self.original)
+
+    def apply(self):
+        pass
+
     def update(self, mouse):
         angle = math.atan2(mouse[0] - self.pivot[0], mouse[1] - self.pivot[1])
         self.setValue(self.value - angle)
 
+    def draw(self, mode, mouse):
+        name = self.attribute[0].upper()
+        value = self.getValue()
+        if "rotation" in self.attribute:
+            value = math.degrees(value)
+
+        mode.editor.context.overlayCanvas.line("#f00", (self.pivot.x, self.pivot.y), mouse)
+        mode.editor.drawText("%s: %.1f" % (name, value), "#fff", (mouse[0] + 20, mouse[1]))
+
+
+class ExtrudeBone:
+    def __init__(self, mode, bone, mouse):
+        self.bone = bone
+        self.mouse = mouse
+        self.pivot = mode.editor.getBonePivotTransformed(bone)
+
     def cancel(self):
-        self.setValue(self.original)
+        pass
+
+    def apply(self):
+        pass
+
+    def update(self, mouse):
+        pass
+
+    def draw(self, mode, mouse):
+        mode.editor.context.overlayCanvas.line("#f00", (self.pivot.x, self.pivot.y), mouse)
+        mode.editor.context.overlayCanvas.circle(self.bone.color, mouse, 8)
 
 class PoseMode:
     def __init__(self):
@@ -90,9 +122,13 @@ class PoseMode:
             if event.unicode == "s" and activeBone:
                 self.newEdit(AttributeEdit(self, activeBone, "scale.y", pos))
                 return True
+            if event.unicode == "e" and activeBone:
+                self.newEdit(ExtrudeBone(self, activeBone, pos))
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if self.active:
+                if event.button == 1:
+                    self.active.apply()
                 if event.button == 3:
                     self.active.cancel()
                 self.active = None
@@ -109,14 +145,7 @@ class PoseMode:
         if self.active:
             mouse = self.editor.mouse
             self.active.update(mouse)
-
-            name = self.active.attribute[0].upper()
-            value = self.active.getValue()
-            if "rotation" in self.active.attribute:
-                value = math.degrees(value)
-
-            self.editor.context.overlayCanvas.line("#f00", (self.active.pivot.x, self.active.pivot.y), mouse)
-            self.editor.drawText("%s: %.1f" % (name, value), "#fff", (mouse[0] + 20, mouse[1]))
+            self.active.draw(self, mouse)
 
 
 class SkinnedEditor:
