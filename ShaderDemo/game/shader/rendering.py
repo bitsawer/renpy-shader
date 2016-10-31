@@ -308,8 +308,25 @@ class SkinnedRenderer(BaseRenderer):
     def init(self, image, vertexShader, pixeShader):
         self.shader = utils.Shader(vertexShader, pixeShader)
 
+        #self.loadJson(image, "bones.json")
+
         #Assume LiveComposite. Not that great, relies on specific RenPy implementation...
         self.loadLiveComposite(image)
+
+    def loadJson(self, image, path):
+        container = image.visit()[0]
+        self.size = container.style.xmaximum, container.style.ymaximum
+
+        self.bones = skinned.loadFromFile(path)
+        for name, bone in self.bones.items():
+            if not bone.parent:
+                self.root = bone
+
+            if bone.image:
+                original = renpy.display.im.load_surface(bone.image.name)
+                crop = (bone.image.x, bone.image.y, bone.image.width, bone.image.height)
+                surface = self.cropSurface(original, crop)
+                self.skinTextures.setTexture(bone.image.name, surface)
 
     def loadLiveComposite(self, image):
         self.root = skinned.Bone("root")
@@ -321,20 +338,21 @@ class SkinnedRenderer(BaseRenderer):
         for i, child in enumerate(container.children):
             placement = child.get_placement()
             base = child.children[0]
-            surface = renpy.display.im.load_surface(base)
             boneName = base.filename.rsplit(".")[0]
 
-            surface, crop = self.cropSurface(surface)
+            original = renpy.display.im.load_surface(base)
+            crop = original.get_bounding_rect()
+            surface = self.cropSurface(original, crop)
             x = placement[0] + crop[0]
             y = placement[1] + crop[1]
 
             bone = skinned.Bone(boneName)
             bone.parent = self.root.name
-            bone.image = skinned.Image(base.filename, x, y, surface.get_width(), surface.get_height())
+            bone.image = skinned.Image(base.filename, crop[0], crop[1], surface.get_width(), surface.get_height())
             bone.pos = (x, y)
             bone.pivot = (bone.image.width / 2.0, bone.image.height / 2.0)
             bone.zOrder = i
-            bone.updateQuad(surface)
+            bone.updateVertices()
 
             self.root.children.append(boneName) #TODO Just store real objects...?
 
@@ -342,12 +360,10 @@ class SkinnedRenderer(BaseRenderer):
 
             self.bones[boneName] = bone
 
-    def cropSurface(self, surface, pad=5):
-        crop = surface.get_bounding_rect()
-        padded = pygame.Surface((crop.width + pad * 2, crop.height + pad * 2), 0, surface)
-        padded.blit(surface, (pad, pad), crop)
-        crop.inflate_ip(pad * 2, pad * 2)
-        return padded, crop
+    def cropSurface(self, surface, rect):
+        cropped = pygame.Surface((rect[2], rect[3]), 0, surface)
+        cropped.blit(surface, (0, 0), rect)
+        return cropped
 
     def setTexture(self, sampler, image):
         pass
