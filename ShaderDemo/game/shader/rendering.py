@@ -8,6 +8,7 @@ from OpenGL import GL as gl
 import euclid
 import math
 import json
+import random
 
 import shader
 import shadercode
@@ -313,6 +314,13 @@ class SkinnedRenderer(BaseRenderer):
         #Assume LiveComposite. Not that great, relies on specific RenPy implementation...
         self.loadLiveComposite(image)
 
+        self.updateBones()
+
+    def updateBones(self):
+        for name, bone in self.bones.items():
+            bone.color = (random.randint(32, 255), random.randint(64, 255), random.randint(32, 255))
+            bone.updateWeights()
+
     def loadJson(self, image, path):
         container = image.visit()[0]
         self.size = container.style.xmaximum, container.style.ymaximum
@@ -450,6 +458,7 @@ class SkinnedRenderer(BaseRenderer):
         self.shader.uniformf("wireFrame", 0)
 
         self.bindAttributeArray(self.shader, "inVertex", bone.vertices, 4)
+        self.bindAttributeArray(self.shader, "inWeights", bone.weights[bone.name], 1)
         gl.glDrawElements(gl.GL_TRIANGLES, len(bone.indices), gl.GL_UNSIGNED_INT, bone.indices)
 
         if bone.wireFrame:
@@ -459,6 +468,7 @@ class SkinnedRenderer(BaseRenderer):
             gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL)
 
         self.unbindAttributeArray(self.shader, "inVertex")
+        self.unbindAttributeArray(self.shader, "inWeights")
 
 
     def computeBoneTransforms(self, context):

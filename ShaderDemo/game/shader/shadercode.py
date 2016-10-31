@@ -264,6 +264,7 @@ uniform float shownTime;
 uniform sampler2D weightTex1;
 
 attribute vec4 inVertex;
+attribute float inWeights;
 
 varying vec2 varUv;
 
@@ -280,8 +281,8 @@ void main()
     vec2 transformedParent = transformBase * vec4(pos, 0.0, 1.0);
     vec2 transformed = transform * vec4(pos, 0.0, 1.0);
 
-    vec4 weight = texture2D(weightTex1, varUv);
-    vec2 mixed = mix(transformedParent, transformed, min(weight.a + 0.3, 1.0));
+    //vec4 weight = texture2D(weightTex1, varUv);
+    vec2 mixed = mix(transformedParent, transformed, min(inWeights + 0.3, 1.0));
 
     gl_Position = projection * vec4(toScreen(mixed.xy), 0.0, 1.0);
 }

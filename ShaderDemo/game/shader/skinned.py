@@ -30,9 +30,11 @@ class Bone:
         self.zOrder = -1
         self.visible = True
         self.wireFrame = False
+        self.color = (0, 0, 0) #Not serialized
 
         self.vertices = None
         self.indices = None
+        self.weights = None
 
     def updateVertices(self):
         w = self.image.width
@@ -53,6 +55,11 @@ class Bone:
 
         self.vertices = (gl.GLfloat * len(verts))(*verts)
         self.indices = (gl.GLuint * len(indices))(*indices)
+
+    def updateWeights(self):
+        if self.indices:
+            weights = [1.0] * (len(self.indices) / 2)
+            self.weights = {self.name: (gl.GLfloat * len(weights))(*weights)}
 
 class JsonEncoder(json.JSONEncoder):
     def default(self, obj):

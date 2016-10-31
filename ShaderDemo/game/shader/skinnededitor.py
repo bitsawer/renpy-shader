@@ -333,7 +333,7 @@ class SkinnedEditor:
                     parentPos = self.getBonePivotTransformed(parentBone)
                     context.overlayCanvas.line("#00f", (pivot.x, pivot.y), (parentPos.x, parentPos.y))
 
-                context.overlayCanvas.circle((255, 0, 0), (pivot.x, pivot.y), 8)
+                context.overlayCanvas.circle(bone.color, (pivot.x, pivot.y), 8)
                 if hoverPivotBone and bone.name == hoverPivotBone.name:
                     context.overlayCanvas.circle(activeColor, (pivot.x, pivot.y), 4)
 
