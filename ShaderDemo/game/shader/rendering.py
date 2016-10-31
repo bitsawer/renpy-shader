@@ -13,7 +13,7 @@ import shader
 import shadercode
 import mesh
 import utils
-import geometry
+import skinned
 
 class TextureEntry:
     def __init__(self, image, sampler):
@@ -287,51 +287,6 @@ class SkinningStack:
         self.boneStack.pop()
         self.matrixStack.pop()
 
-class SkinnedImage:
-    def __init__(self, name, x, y, width, height):
-        self.name = name
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-
-class SkinnedBone:
-    def __init__(self, name):
-        self.name = name
-        self.children = []
-        self.parent = None
-        self.image = None
-        self.pos = (0, 0)
-        self.pivot = (0, 0)
-        self.rotation = euclid.Vector3(0, 0, 0)
-        self.scale = euclid.Vector3(1, 1, 1)
-        self.zOrder = -1
-        self.visible = True
-
-        self.vertices = None
-        self.indices = None
-        self.wireFrame = False
-
-    def updateQuad(self, surface):
-        w = self.image.width
-        h = self.image.height
-
-        gridSize = 10
-        vertices, uvs, indices = geometry.createGrid((0, 0, w, h), None, gridSize, gridSize)
-
-        verts = []
-        for i in range(len(vertices)):
-            verts.append(vertices[i][0])
-            verts.append(vertices[i][1])
-
-            xUv = uvs[i][0]
-            yUv = uvs[i][1]
-            verts.append(xUv)
-            verts.append(yUv)
-
-        self.vertices = (gl.GLfloat * len(verts))(*verts)
-        self.indices = (gl.GLuint * len(indices))(*indices)
-
 class BoneTransform:
     def __init__(self, bone, baseMatrix, matrix):
         self.bone = bone
@@ -347,8 +302,8 @@ class SkinnedRenderer(BaseRenderer):
         self.textureMap = TextureMap()
         self.skinTextures = TextureMap()
         self.size = None
-        self.root = SkinnedBone("root")
-        self.bones = {self.root.name: self.root}
+        self.root = None
+        self.bones = {}
 
     def init(self, image, vertexShader, pixeShader):
         self.shader = utils.Shader(vertexShader, pixeShader)
@@ -357,6 +312,9 @@ class SkinnedRenderer(BaseRenderer):
         self.loadLiveComposite(image)
 
     def loadLiveComposite(self, image):
+        self.root = skinned.Bone("root")
+        self.bones = {self.root.name: self.root}
+
         container = image.visit()[0]
         self.size = container.style.xmaximum, container.style.ymaximum
 
@@ -370,9 +328,9 @@ class SkinnedRenderer(BaseRenderer):
             x = placement[0] + crop[0]
             y = placement[1] + crop[1]
 
-            bone = SkinnedBone(boneName)
+            bone = skinned.Bone(boneName)
             bone.parent = self.root.name
-            bone.image = SkinnedImage(base.filename, x, y, surface.get_width(), surface.get_height())
+            bone.image = skinned.Image(base.filename, x, y, surface.get_width(), surface.get_height())
             bone.pos = (x, y)
             bone.pivot = (bone.image.width / 2.0, bone.image.height / 2.0)
             bone.zOrder = i

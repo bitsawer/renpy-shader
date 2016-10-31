@@ -5,7 +5,7 @@ import ctypes
 
 import pygame
 import euclid
-import rendering
+import skinned
 
 pygame.font.init()
 FONT = pygame.font.Font(None, 20)
@@ -119,16 +119,6 @@ class PoseMode:
             self.editor.drawText("%s: %.1f" % (name, value), "#fff", (mouse[0] + 20, mouse[1]))
 
 
-class CustomJsonEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, (rendering.SkinnedBone, rendering.SkinnedImage)):
-            return obj.__dict__
-        elif isinstance(obj, euclid.Vector3):
-            return (obj.x, obj.y, obj.z)
-        elif isinstance(obj, ctypes.Array):
-            return list(obj)
-        return json.JSONEncoder.default(self, obj)
-
 class SkinnedEditor:
     def __init__(self, context, settings):
         self.context = context
@@ -149,8 +139,7 @@ class SkinnedEditor:
         self.visualizeBones()
 
     def saveToFile(self):
-        with open("bones.json", "w") as f:
-            json.dump(self.context.renderer.bones, f, indent=2, cls=CustomJsonEncoder)
+        skinned.saveBonesToFile(self.context.renderer.bones, "bones.json")
 
     def get(self, key):
         return self.context.store.get(key)
