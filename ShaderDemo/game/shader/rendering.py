@@ -288,8 +288,10 @@ class SkinningStack:
         self.matrixStack.pop()
 
 class SkinnedImage:
-    def __init__(self, name, width, height):
+    def __init__(self, name, x, y, width, height):
         self.name = name
+        self.x = x
+        self.y = y
         self.width = width
         self.height = height
 
@@ -301,7 +303,6 @@ class SkinnedBone:
         self.image = None
         self.pos = (0, 0)
         self.pivot = (0, 0)
-        self.crop = (0, 0, 0, 0)
         self.rotation = euclid.Vector3(0, 0, 0)
         self.scale = euclid.Vector3(1, 1, 1)
         self.zOrder = -1
@@ -312,9 +313,8 @@ class SkinnedBone:
         self.wireFrame = False
 
     def updateQuad(self, surface):
-        rect = self.crop
-        w = float(rect[2] - rect[0])
-        h = float(rect[3] - rect[1])
+        w = self.image.width
+        h = self.image.height
 
         gridSize = 10
         vertices, uvs, indices = geometry.createGrid((0, 0, w, h), None, gridSize, gridSize)
@@ -331,7 +331,6 @@ class SkinnedBone:
 
         self.vertices = (gl.GLfloat * len(verts))(*verts)
         self.indices = (gl.GLuint * len(indices))(*indices)
-
 
 class BoneTransform:
     def __init__(self, bone, baseMatrix, matrix):
@@ -355,9 +354,11 @@ class SkinnedRenderer(BaseRenderer):
         self.shader = utils.Shader(vertexShader, pixeShader)
 
         #Assume LiveComposite. Not that great, relies on specific RenPy implementation...
+        self.loadLiveComposite(image)
+
+    def loadLiveComposite(self, image):
         container = image.visit()[0]
         self.size = container.style.xmaximum, container.style.ymaximum
-        self.root.crop = (0, 0, self.size[0], self.size[1])
 
         for i, child in enumerate(container.children):
             placement = child.get_placement()
@@ -371,16 +372,15 @@ class SkinnedRenderer(BaseRenderer):
 
             bone = SkinnedBone(boneName)
             bone.parent = self.root.name
-            bone.image = SkinnedImage(boneName, surface.get_width(), surface.get_height())
+            bone.image = SkinnedImage(base.filename, x, y, surface.get_width(), surface.get_height())
             bone.pos = (x, y)
             bone.pivot = (bone.image.width / 2.0, bone.image.height / 2.0)
-            bone.crop = (x, y, x + crop[2], y + crop[3])
             bone.zOrder = i
             bone.updateQuad(surface)
 
             self.root.children.append(boneName) #TODO Just store real objects...?
 
-            self.skinTextures.setTexture(boneName, surface)
+            self.skinTextures.setTexture(bone.image.name, surface)
 
             self.bones[boneName] = bone
 

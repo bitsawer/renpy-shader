@@ -40,6 +40,8 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, x
 
             textbutton "Autoconnect" action NullAction() #TODO Set a flag and check in update
             textbutton "Reload" action Confirm("Are you sure you want to reload?", Jump("start_skinned"))
+            #textbutton "Save" action Confirm("Are you sure you want to save?", Function(editSave))
+            textbutton "Save" action SetVariable("saveEdits", True)
 
 
 init python:
@@ -57,14 +59,20 @@ init python:
         "debugAnimate": False,
     }
 
+    saveEdits = False
+
     def editUpdate(context):
+        global saveEdits
+
         editor = skinnededitor.SkinnedEditor(context, editorSettings)
         editor.update()
 
-label start_skinned:
-    #scene room
-    #show doll
+        if saveEdits:
+            saveEdits = False
+            editor.saveToFile()
 
+
+label start_skinned:
     $ _controllerContextStore._clear()
 
     call screen skinnedScreen("doll", shader.PS_SKINNED, {"tex1": "amy influence"}, update=editUpdate, _tag="amy", _layer="amy") #nopredict

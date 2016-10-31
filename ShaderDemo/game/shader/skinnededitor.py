@@ -1,7 +1,11 @@
 
 import math
+import json
+import ctypes
+
 import pygame
 import euclid
+import rendering
 
 pygame.font.init()
 FONT = pygame.font.Font(None, 20)
@@ -115,6 +119,16 @@ class PoseMode:
             self.editor.drawText("%s: %.1f" % (name, value), "#fff", (mouse[0] + 20, mouse[1]))
 
 
+class CustomJsonEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, (rendering.SkinnedBone, rendering.SkinnedImage)):
+            return obj.__dict__
+        elif isinstance(obj, euclid.Vector3):
+            return (obj.x, obj.y, obj.z)
+        elif isinstance(obj, ctypes.Array):
+            return list(obj)
+        return json.JSONEncoder.default(self, obj)
+
 class SkinnedEditor:
     def __init__(self, context, settings):
         self.context = context
@@ -133,6 +147,10 @@ class SkinnedEditor:
         self.debugAnimate(self.settings["debugAnimate"])
         self.handleEvents()
         self.visualizeBones()
+
+    def saveToFile(self):
+        with open("bones.json", "w") as f:
+            json.dump(self.context.renderer.bones, f, indent=2, cls=CustomJsonEncoder)
 
     def get(self, key):
         return self.context.store.get(key)
@@ -284,8 +302,8 @@ class SkinnedEditor:
         return euclid.Vector3(pivot[0],  pivot[1], 0)
 
     def getBonePos(self, bone):
-        crop = bone.crop
-        return euclid.Vector3(crop[0],  crop[1], 0)
+        pos = bone.pos
+        return euclid.Vector3(pos[0],  pos[1], 0)
 
     def getTransformsDict(self):
         mapping = {}
@@ -307,7 +325,6 @@ class SkinnedEditor:
             bone = trans.bone
             bone.wireFrame = ((activeBone and bone.name == activeBone.name) or not activeBone) and self.settings["wireframe"]
 
-            crop = bone.crop
             pos = self.getBonePos(bone)
             pivot = self.getBonePivotTransformed(bone)
             activeColor = (0, 255, 0)
