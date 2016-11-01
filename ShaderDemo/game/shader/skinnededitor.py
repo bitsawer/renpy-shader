@@ -408,6 +408,7 @@ class SkinnedEditor:
                 if activeBone and bone.name == activeBone.name:
                     textColor = activeColor
 
-                self.drawText(bone.name, textColor, (pivot.x + 15, pivot.y - 10))
+                if self.settings["names"]:
+                    self.drawText(bone.name, textColor, (pivot.x + 15, pivot.y - 10))
 
         self.mode.draw()

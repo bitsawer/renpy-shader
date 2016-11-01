@@ -32,7 +32,8 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, x
 
             textbutton "Wireframes" action ToggleDict(editorSettings, "wireframe")
             textbutton "Image areas" action ToggleDict(editorSettings, "imageAreas")
-            textbutton "Pivot points" action ToggleDict(editorSettings, "pivots")
+            textbutton "Bone points" action ToggleDict(editorSettings, "pivots")
+            textbutton "Bone names" action ToggleDict(editorSettings, "names")
             textbutton "Debug animate" action ToggleDict(editorSettings, "debugAnimate")
 
             text "Actions":
@@ -56,6 +57,7 @@ init python:
         "wireframe": False,
         "imageAreas": True,
         "pivots": True,
+        "names": True,
         "debugAnimate": False,
     }
 
