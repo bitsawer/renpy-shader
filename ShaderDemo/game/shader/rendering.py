@@ -350,6 +350,7 @@ class SkinnedRenderer(BaseRenderer):
 
             original = renpy.display.im.load_surface(base)
             crop = original.get_bounding_rect()
+            crop.inflate_ip(10, 10) #TODO For testing
             surface = self.cropSurface(original, crop)
             x = placement[0] + crop[0]
             y = placement[1] + crop[1]
@@ -361,6 +362,7 @@ class SkinnedRenderer(BaseRenderer):
             bone.pivot = (bone.image.width / 2.0, bone.image.height / 2.0)
             bone.zOrder = i
             bone.updateVertices()
+            bone.updatePoints(surface)
 
             self.root.children.append(boneName) #TODO Just store real objects...?
 

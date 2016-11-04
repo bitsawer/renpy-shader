@@ -2,11 +2,11 @@
 image doll = LiveComposite(
     (800, 1000),
     (0, 0), "doll base.png",
-    (249, 318), "doll skirt.png",
-    (0, 0), "doll lforearm.png",
-    (0, 0), "doll larm.png",
-    (0, 0), "doll lhand.png",
-    (0, 0), "doll hair.png",
+    #(249, 318), "doll skirt.png",
+    #(0, 0), "doll lforearm.png",
+    #(0, 0), "doll larm.png",
+    #(0, 0), "doll lhand.png",
+    #(0, 0), "doll hair.png",
 )
 
 screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, xalign=0.5, yalign=1.0):
@@ -75,6 +75,7 @@ init python:
 
 
 label start_skinned:
+label main_menu: #TODO For fast testing
     $ _controllerContextStore._clear()
 
     call screen skinnedScreen("doll", shader.PS_SKINNED, {"tex1": "amy influence"}, update=editUpdate, _tag="amy", _layer="amy") #nopredict

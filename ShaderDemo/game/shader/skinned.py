@@ -35,6 +35,7 @@ class Bone:
         self.vertices = None
         self.indices = None
         self.weights = None
+        self.points = []
 
     def updateVertices(self):
         w = self.image.width
@@ -60,6 +61,13 @@ class Bone:
         if self.indices:
             weights = [1.0] * (len(self.indices) / 2)
             self.weights = {self.name: (gl.GLfloat * len(weights))(*weights)}
+
+    def updatePoints(self, surface):
+        points = geometry.findEdgePixelsOrdered(surface)
+        simplified = geometry.simplifyEdgePixels(points, 10)
+        offseted = geometry.offsetPolygon(simplified, -5)
+        self.points = geometry.simplifyEdgePixels(offseted, 20)
+
 
 class JsonEncoder(json.JSONEncoder):
     def default(self, obj):

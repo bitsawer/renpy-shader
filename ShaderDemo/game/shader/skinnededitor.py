@@ -185,7 +185,7 @@ class SkinnedEditor:
 
 
     def update(self):
-        self.debugAnimate(self.settings["debugAnimate"])
+        #self.debugAnimate(self.settings["debugAnimate"])
         self.handleEvents()
         self.visualizeBones()
 
@@ -349,6 +349,15 @@ class SkinnedEditor:
         ]
         return lines
 
+    def getPolyPoints(self, bone):
+        points = []
+        if bone.points:
+            boneMatrix = self.transformsMap[bone.name].matrix
+            for point in bone.points:
+                pos = boneMatrix.transform(euclid.Vector3(point[0], point[1]))
+                points.append((pos.x, pos.y))
+        return points
+
     def getBonePivotTransformed(self, bone):
         return self.transformsMap[bone.name].matrix.transform(self.getBonePivot(bone))
 
@@ -392,6 +401,11 @@ class SkinnedEditor:
                     self.drawText(hoverCropBone.name, "#fff", (mouse[0] + 20, mouse[1]))
                     areaColor = activeColor
                 context.overlayCanvas.lines(areaColor, False, lines)
+
+                polyPoints = self.getPolyPoints(bone)
+                context.overlayCanvas.lines("f00", 1, polyPoints)
+                for p in polyPoints:
+                    context.overlayCanvas.circle("#0f0", p, 3)
 
             if self.settings["pivots"]:
                 if bone.parent:

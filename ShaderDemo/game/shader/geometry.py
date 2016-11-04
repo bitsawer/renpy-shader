@@ -1,4 +1,30 @@
 
+import polygonoffset
+import math
+import random
+
+def simplifyEdgePixels(pixels, minDistance):
+    results = []
+    last = None
+    for p in pixels:
+        current = (float(p[0]), float(p[1]))
+        if last is not None:
+            dist = math.hypot(current[0] - last[0], current[1] - last[1])
+            if dist < minDistance:
+                continue
+
+        last = current
+        results.append(current)
+
+    return results
+
+def offsetPolygon(points, size):
+    results = []
+    for p in points:
+        current = (float(p[0]) + random.random() * 0.1, float(p[1]) + random.random() * 0.1)
+        results.append(current)
+    return polygonoffset.offsetpolygon(results, size)
+
 def findEdge(surface, xStart, yStart, xStep, yStep, xDir, yDir):
     w = surface.get_width()
     h = surface.get_height()
@@ -72,6 +98,82 @@ def findEdgePixels(surface):
 
     return edgePixels
 
+def _getNearby(surface, x, y, size):
+    w, h = surface.get_size()
+    xStart = max(x - size, 0)
+    xEnd = min(x + size + 1, w - 1)
+    yStart = max(y - size, 0)
+    yEnd = min(y + size + 1, h - 1)
+
+    pixels = []
+    for yp in range(yStart, yEnd):
+        for xp in range(xStart, xEnd):
+            if xp != x or yp != y:
+                point = (xp, yp)
+                pixels.append((point, surface.get_at(point)))
+    return pixels
+
+def _isEdgePixel(surface, x, y, size):
+    color = surface.get_at((x, y))
+    if color[3] != 0:
+        #Not transparent
+        return False
+
+    w, h = surface.get_size()
+    isAlpha = False
+    isColor = False
+
+    pixels = _getNearby(surface, x, y, size)
+    if len(pixels) < 8:
+        return True
+
+    for pixel in pixels:
+        color = pixel[1]
+        if color[3] > 0:
+            isColor = True
+        if color[3] == 0:
+            isAlpha = True
+    return isAlpha and isColor
+
+def findEdgePixelsOrdered(surface):
+    size = 1
+    start = findEdge(surface, 0, 0, 0, 1, 1, 0)
+    start = (start[0] - size, start[1]) #Must have empty alpha padding!
+    current = start
+
+    results = []
+    seen = set()
+    backtrack = []
+    undo = []
+    w, h = surface.get_size()
+
+    steps = 0
+    while current:
+        if current in seen:
+            if backtrack and current != start:
+                current = backtrack.pop()
+                index = undo.pop()
+                results = results[:index]
+            else:
+                break
+        else:
+            seen.add(current)
+            results.append(current)
+
+            edges = []
+            for pixel in _getNearby(surface, current[0], current[1], size):
+                point = pixel[0]
+                if _isEdgePixel(surface, point[0], point[1], size):
+                    edges.append(point)
+
+            if edges:
+                current = edges.pop()
+                backtrack.extend(edges)
+                undo.extend([len(results)] * len(edges))
+
+            steps += 1
+
+    return results
 
 TURN_LEFT, TURN_RIGHT, TURN_NONE = (1, -1, 0)
 
@@ -126,6 +228,24 @@ def _vSub(a, b):
 
 def _xProduct(a, b):
     return a[0]*b[1]-a[1]*b[0]
+
+def insidePolygon(x, y, poly):
+    n = len(poly)
+    inside = False
+
+    p1x, p1y = poly[0]
+    for i in range(n+1):
+        p2x, p2y = poly[i % n]
+        if y > min(p1y, p2y):
+            if y <= max(p1y, p2y):
+                if x <= max(p1x, p2x):
+                    if p1y != p2y:
+                        xinters = (y-p1y)*(p2x-p1x)/(p2y-p1y)+p1x
+                    if p1x == p2x or x <= xinters:
+                        inside = not inside
+        p1x, p1y = p2x, p2y
+
+    return inside
 
 def _interpolate(a, b, s):
     return a + s * (b - a)
