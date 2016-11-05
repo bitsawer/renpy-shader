@@ -9,6 +9,7 @@ def simplifyEdgePixels(pixels, minDistance):
     for p in pixels:
         current = (float(p[0]), float(p[1]))
         if last is not None:
+            #TODO distance alone all points...
             dist = math.hypot(current[0] - last[0], current[1] - last[1])
             if dist < minDistance:
                 continue
@@ -21,7 +22,7 @@ def simplifyEdgePixels(pixels, minDistance):
 def offsetPolygon(points, size):
     results = []
     for p in points:
-        current = (float(p[0]) + random.random() * 0.1, float(p[1]) + random.random() * 0.1)
+        current = (float(p[0]) + random.random() * 0.001, float(p[1]) + random.random() * 0.001)
         results.append(current)
     return polygonoffset.offsetpolygon(results, size)
 

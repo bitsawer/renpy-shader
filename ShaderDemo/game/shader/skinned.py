@@ -1,4 +1,5 @@
 
+import math
 import ctypes
 import json
 from OpenGL import GL as gl
@@ -6,6 +7,7 @@ from OpenGL import GL as gl
 import rendering
 import euclid
 import geometry
+import delaunay
 
 VERSION = 1
 
@@ -35,7 +37,9 @@ class Bone:
         self.vertices = None
         self.indices = None
         self.weights = None
+
         self.points = []
+        self.triangles = []
 
     def updateVertices(self):
         w = self.image.width
@@ -66,8 +70,47 @@ class Bone:
         points = geometry.findEdgePixelsOrdered(surface)
         simplified = geometry.simplifyEdgePixels(points, 10)
         offseted = geometry.offsetPolygon(simplified, -5)
-        self.points = geometry.simplifyEdgePixels(offseted, 20)
+        self.points = geometry.simplifyEdgePixels(offseted, 40)
 
+    def triangulate(self):
+        pointsSegments = delaunay.ToPointsAndSegments()
+        pointsSegments.add_polygon([self.points])
+        triangulation = delaunay.triangulate(pointsSegments.points, pointsSegments.infos, pointsSegments.segments)
+
+        expanded = geometry.offsetPolygon(self.points, -1)
+        shorten = 0.5
+
+        self.triangles = []
+        for tri in delaunay.TriangleIterator(triangulation, True):
+            a, b, c = tri.vertices
+
+            inside = 0
+            for line in [(a, b), (b, c), (c, a)]:
+                short1 = shortenLine(line[0], line[1], shorten)
+                short2 = shortenLine(line[1], line[0], shorten)
+                if geometry.insidePolygon(short1[0], short1[1], expanded) and geometry.insidePolygon(short2[0], short2[1], expanded):
+                    inside += 1
+
+            if inside >= 2:
+                self.triangles.append((a, b, c))
+
+
+def shortenLine(a, b, relative):
+    x1, y1 = a
+    x2, y2 = b
+
+    dx = x2 - x1
+    dy = y2 - y1
+    length = math.sqrt(dx * dx + dy * dy)
+    if length > 0:
+        dx /= length
+        dy /= length
+
+    dx *= length - (length * relative)
+    dy *= length - (length * relative)
+    x3 = x1 + dx
+    y3 = y1 + dy
+    return x3, y3
 
 class JsonEncoder(json.JSONEncoder):
     def default(self, obj):

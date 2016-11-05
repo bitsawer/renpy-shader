@@ -358,6 +358,16 @@ class SkinnedEditor:
                 points.append((pos.x, pos.y))
         return points
 
+    def getTriangles(self, bone):
+        triangles = []
+        if bone.triangles:
+            boneMatrix = self.transformsMap[bone.name].matrix
+            for tri in bone.triangles:
+                for v in tri:
+                    pos = boneMatrix.transform(euclid.Vector3(v[0], v[1]))
+                    triangles.append((pos.x, pos.y))
+        return triangles
+
     def getBonePivotTransformed(self, bone):
         return self.transformsMap[bone.name].matrix.transform(self.getBonePivot(bone))
 
@@ -402,8 +412,12 @@ class SkinnedEditor:
                     areaColor = activeColor
                 context.overlayCanvas.lines(areaColor, False, lines)
 
+                triangles = self.getTriangles(bone)
+                for i in range(0, len(triangles), 3):
+                    tri = (triangles[i], triangles[i + 1], triangles[i + 2])
+                    context.overlayCanvas.lines("#0f0", True, tri)
+
                 polyPoints = self.getPolyPoints(bone)
-                context.overlayCanvas.lines("f00", 1, polyPoints)
                 for p in polyPoints:
                     context.overlayCanvas.circle("#0f0", p, 3)
 

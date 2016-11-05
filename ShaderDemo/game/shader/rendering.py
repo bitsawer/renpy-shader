@@ -363,6 +363,7 @@ class SkinnedRenderer(BaseRenderer):
             bone.zOrder = i
             bone.updateVertices()
             bone.updatePoints(surface)
+            bone.triangulate()
 
             self.root.children.append(boneName) #TODO Just store real objects...?
 
