@@ -61,9 +61,30 @@ class Bone:
         self.vertices = (gl.GLfloat * len(verts))(*verts)
         self.indices = (gl.GLuint * len(indices))(*indices)
 
+    def updateVerticesFromTriangles(self):
+        w = self.image.width
+        h = self.image.height
+
+        verts = []
+        indices = []
+
+        for tri in self.triangles:
+            for v in tri:
+                xUv = v[0] / float(w)
+                yUv = v[1] / float(h)
+                verts.extend([v[0], v[1], xUv, yUv])
+                indices.append(len(verts) / 4 - 1)
+
+        vCount = len(verts) / 4 / 3
+        if vCount != len(self.triangles):
+            raise RuntimeError("Invalid vertex count: %i of %i" % (vCount, len(self.triangles)))
+
+        self.vertices = (gl.GLfloat * len(verts))(*verts)
+        self.indices = (gl.GLuint * len(indices))(*indices)
+
     def updateWeights(self):
         if self.indices:
-            weights = [1.0] * (len(self.indices) / 2)
+            weights = [1.0] * (len(self.vertices) / 4)
             self.weights = {self.name: (gl.GLfloat * len(weights))(*weights)}
 
     def updatePoints(self, surface):
@@ -92,7 +113,7 @@ class Bone:
                     inside += 1
 
             if inside >= 2:
-                self.triangles.append((a, b, c))
+                self.triangles.append(((a[0], a[1]), (b[0], b[1]), (c[0], c[1])))
 
 
 def shortenLine(a, b, relative):

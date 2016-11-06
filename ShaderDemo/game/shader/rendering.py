@@ -309,10 +309,10 @@ class SkinnedRenderer(BaseRenderer):
     def init(self, image, vertexShader, pixeShader):
         self.shader = utils.Shader(vertexShader, pixeShader)
 
-        #self.loadJson(image, "bones.json")
+        self.loadJson(image, "bones.json")
 
         #Assume LiveComposite. Not that great, relies on specific RenPy implementation...
-        self.loadLiveComposite(image)
+        #self.loadLiveComposite(image)
 
         self.updateBones()
 
@@ -361,9 +361,10 @@ class SkinnedRenderer(BaseRenderer):
             bone.pos = (x, y)
             bone.pivot = (bone.image.width / 2.0, bone.image.height / 2.0)
             bone.zOrder = i
-            bone.updateVertices()
+            #bone.updateVertices()
             bone.updatePoints(surface)
             bone.triangulate()
+            bone.updateVerticesFromTriangles()
 
             self.root.children.append(boneName) #TODO Just store real objects...?
 
@@ -504,8 +505,6 @@ class SkinnedRenderer(BaseRenderer):
 
         transform.translate(xMove, yMove, 0)
 
-        transform.scale(bone.scale.x, bone.scale.y, bone.scale.z)
-
         rotation = bone.rotation
         if rotation.y != 0.0:
             transform.rotatey(rotation.y)
@@ -513,6 +512,8 @@ class SkinnedRenderer(BaseRenderer):
             transform.rotatex(rotation.x)
         if rotation.z != 0.0:
             transform.rotatez(rotation.z)
+
+        transform.scale(bone.scale.x, bone.scale.y, bone.scale.z)
 
         transform.translate(-xMove, -yMove, 0)
 

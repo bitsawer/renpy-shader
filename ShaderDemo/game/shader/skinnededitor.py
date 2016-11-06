@@ -412,10 +412,10 @@ class SkinnedEditor:
                     areaColor = activeColor
                 context.overlayCanvas.lines(areaColor, False, lines)
 
-                triangles = self.getTriangles(bone)
-                for i in range(0, len(triangles), 3):
-                    tri = (triangles[i], triangles[i + 1], triangles[i + 2])
-                    context.overlayCanvas.lines("#0f0", True, tri)
+                #triangles = self.getTriangles(bone)
+                #for i in range(0, len(triangles), 3):
+                #    tri = (triangles[i], triangles[i + 1], triangles[i + 2])
+                #    context.overlayCanvas.lines("#0f0", True, tri)
 
                 polyPoints = self.getPolyPoints(bone)
                 for p in polyPoints:
