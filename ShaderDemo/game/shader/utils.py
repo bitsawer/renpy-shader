@@ -165,3 +165,8 @@ class Shader:
     def uniformMatrix4f(self, name, matrix):
         loc = gl.glGetUniformLocation(self.handle, name)
         gl.glUniformMatrix4fv(loc, 1, False, (ctypes.c_float * 16)(*matrix))
+
+    def uniformMatrix4fArray(self, name, values):
+        loc = gl.glGetUniformLocation(self.handle, name)
+        count = len(values) / 16
+        gl.glUniformMatrix4fv(loc, count, False, (ctypes.c_float * len(values))(*values))

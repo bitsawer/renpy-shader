@@ -11,6 +11,9 @@ import delaunay
 
 VERSION = 1
 
+def makeArray(tp, values):
+    return (tp * len(values))(*values)
+
 class Image:
     def __init__(self, name, x, y, width, height):
         self.name = name
@@ -36,7 +39,8 @@ class Bone:
 
         self.vertices = None
         self.indices = None
-        self.weights = None
+        self.boneWeights = None
+        self.boneIndices = None
 
         self.points = []
         self.triangles = []
@@ -58,8 +62,8 @@ class Bone:
             verts.append(xUv)
             verts.append(yUv)
 
-        self.vertices = (gl.GLfloat * len(verts))(*verts)
-        self.indices = (gl.GLuint * len(indices))(*indices)
+        self.vertices = makeArray(gl.GLfloat, verts)
+        self.indices = makeArray(gl.GLuint, indices)
 
     def updateVerticesFromTriangles(self):
         w = self.image.width
@@ -79,13 +83,17 @@ class Bone:
         if vCount != len(self.triangles):
             raise RuntimeError("Invalid vertex count: %i of %i" % (vCount, len(self.triangles)))
 
-        self.vertices = (gl.GLfloat * len(verts))(*verts)
-        self.indices = (gl.GLuint * len(indices))(*indices)
+        self.vertices = makeArray(gl.GLfloat, verts)
+        self.indices = makeArray(gl.GLuint, indices)
 
-    def updateWeights(self):
-        if self.indices:
-            weights = [1.0] * (len(self.vertices) / 4)
-            self.weights = {self.name: (gl.GLfloat * len(weights))(*weights)}
+    def updateWeights(self, index):
+        if self.vertices:
+            #TODO bone index must never change at the moment...
+            itemCount = len(self.vertices) / 4
+            boneWeights = [1.0, 0.0, 0.0, 0.0] * itemCount
+            boneIndices = [index, 0.0, 0.0, 0.0] * itemCount
+            self.boneWeights = makeArray(gl.GLfloat, boneWeights)
+            self.boneIndices = makeArray(gl.GLfloat, boneIndices)
 
     def updatePoints(self, surface):
         points = geometry.findEdgePixelsOrdered(surface)

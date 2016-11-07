@@ -255,16 +255,16 @@ void main()
 VS_SKINNED = """
 
 uniform mat4 projection;
-uniform mat4 transform;
 uniform mat4 transformBase;
+
+uniform mat4 boneMatrices[32];
 
 uniform vec2 screenSize;
 uniform float shownTime;
 
-uniform sampler2D weightTex1;
-
 attribute vec4 inVertex;
-attribute float inWeights;
+attribute vec4 inBoneWeights;
+attribute vec4 inBoneIndices;
 
 varying vec2 varUv;
 
@@ -279,10 +279,9 @@ void main()
 
     vec2 pos = inVertex.xy;
     vec2 transformedParent = transformBase * vec4(pos, 0.0, 1.0);
-    vec2 transformed = transform * vec4(pos, 0.0, 1.0);
+    vec2 transformed = boneMatrices[(int)inBoneIndices.x] * vec4(pos, 0.0, 1.0);
 
-    //vec4 weight = texture2D(weightTex1, varUv);
-    vec2 mixed = mix(transformedParent, transformed, min(inWeights + 0.3, 1.0));
+    vec2 mixed = mix(transformedParent, transformed, inBoneWeights.x);
 
     gl_Position = projection * vec4(toScreen(mixed.xy), 0.0, 1.0);
 }
@@ -292,7 +291,6 @@ PS_SKINNED = """
 varying vec2 varUv; //Texture coordinates
 
 uniform sampler2D tex0; //Texture bound to slot 0
-uniform sampler2D weightTex1;
 uniform float wireFrame;
 
 void main()

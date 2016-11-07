@@ -174,7 +174,7 @@ class SkinnedEditor:
         self.context = context
         self.settings = settings
         self.mouse = (0, 0)
-        self.transforms = context.renderer.computeBoneTransforms(context)
+        self.transforms = context.renderer.computeBoneTransforms()
         self.transformsMap = self.getTransformsDict()
 
         self.mode = self.get(MODE)

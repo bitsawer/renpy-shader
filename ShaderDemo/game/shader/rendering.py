@@ -317,9 +317,10 @@ class SkinnedRenderer(BaseRenderer):
         self.updateBones()
 
     def updateBones(self):
-        for name, bone in self.bones.items():
+        for i, transform in enumerate(self.computeBoneTransforms()):
+            bone = transform.bone
             bone.color = (random.randint(32, 255), random.randint(64, 255), random.randint(32, 255))
-            bone.updateWeights()
+            bone.updateWeights(i)
 
     def loadJson(self, image, path):
         container = image.visit()[0]
@@ -421,7 +422,14 @@ class SkinnedRenderer(BaseRenderer):
         screenSize = self.getSize()
         self.shader.uniformf("screenSize", *screenSize)
 
-        for transform in self.computeBoneTransforms(context):
+        transforms = self.computeBoneTransforms()
+
+        boneMatrixArray = []
+        for transform in transforms:
+            boneMatrixArray.extend(utils.matrixToList(transform.matrix))
+        self.shader.uniformMatrix4fArray("boneMatrices", boneMatrixArray)
+
+        for transform in transforms:
             self.renderBoneTransform(transform, context)
 
         for i in range(2):
@@ -441,28 +449,19 @@ class SkinnedRenderer(BaseRenderer):
             return
 
         screenSize = self.getSize()
-
-        #tex = self.skinTextures.textures[data["name"] + ".image"]
-        #texWeights = self.skinTextures.textures[data["name"] + ".imageWeights"]
-
         tex = self.skinTextures.textures[bone.image.name]
-        texWeights = self.skinTextures.textures[bone.image.name]
 
         self.shader.uniformi(shader.TEX0, 0)
         gl.glActiveTexture(gl.GL_TEXTURE0 + 0)
         gl.glBindTexture(gl.GL_TEXTURE_2D, tex.glTexture)
 
-        self.shader.uniformi("weightTex1", 1)
-        gl.glActiveTexture(gl.GL_TEXTURE0 + 1)
-        gl.glBindTexture(gl.GL_TEXTURE_2D, texWeights.glTexture)
-
         self.shader.uniformMatrix4f("transformBase", transform.baseMatrix)
-        self.shader.uniformMatrix4f("transform", transform.matrix)
         self.shader.uniformMatrix4f(shader.PROJECTION, self.getProjection())
         self.shader.uniformf("wireFrame", 0)
 
         self.bindAttributeArray(self.shader, "inVertex", bone.vertices, 4)
-        self.bindAttributeArray(self.shader, "inWeights", bone.weights[bone.name], 1)
+        self.bindAttributeArray(self.shader, "inBoneWeights", bone.boneWeights, 4)
+        self.bindAttributeArray(self.shader, "inBoneIndices", bone.boneIndices, 4)
         gl.glDrawElements(gl.GL_TRIANGLES, len(bone.indices), gl.GL_UNSIGNED_INT, bone.indices)
 
         if bone.wireFrame:
@@ -472,19 +471,20 @@ class SkinnedRenderer(BaseRenderer):
             gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL)
 
         self.unbindAttributeArray(self.shader, "inVertex")
-        self.unbindAttributeArray(self.shader, "inWeights")
+        self.unbindAttributeArray(self.shader, "inBoneWeights")
+        self.unbindAttributeArray(self.shader, "inBoneIndices")
 
 
-    def computeBoneTransforms(self, context):
+    def computeBoneTransforms(self):
         transforms = []
         skinning = SkinningStack()
         skinning.push(None, euclid.Matrix4())
-        self.computeBoneTransformRecursive(self.root, transforms, skinning, context)
+        self.computeBoneTransformRecursive(self.root, transforms, skinning)
         skinning.pop()
         transforms.sort(key=lambda t: t.bone.zOrder)
         return transforms
 
-    def computeBoneTransformRecursive(self, bone, transforms, skinning, context):
+    def computeBoneTransformRecursive(self, bone, transforms, skinning):
         xParent = 0
         yParent = 0
         parent = skinning.boneStack[-1]
@@ -522,7 +522,7 @@ class SkinnedRenderer(BaseRenderer):
         skinning.push(bone, transform)
 
         for childName in bone.children:
-            self.computeBoneTransformRecursive(self.bones[childName], transforms, skinning, context)
+            self.computeBoneTransformRecursive(self.bones[childName], transforms, skinning)
 
         skinning.pop()
 
