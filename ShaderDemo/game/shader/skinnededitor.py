@@ -21,10 +21,11 @@ MOUSE = "mouse"
 MODE = "mode"
 
 class AttributeEdit:
-    def __init__(self, editor, bone, attribute, mouse):
+    def __init__(self, editor, mouse, bone, attribute, duplicates=None):
+        self.mouse = mouse
         self.bone = bone
         self.attribute = attribute
-        self.mouse = mouse
+        self.duplicates = duplicates
         self.original = self.getValue()
         self.pivot = editor.getBonePivotTransformed(bone)
         self.value = self.original + math.atan2(mouse[0] - self.pivot[0], mouse[1] - self.pivot[1])
@@ -42,6 +43,10 @@ class AttributeEdit:
             v = getattr(v, attr)
         setattr(v, attrs[-1], value)
 
+        if self.duplicates:
+            for dup in self.duplicates:
+                setattr(v, dup, value)
+
     def cancel(self, editor):
         self.setValue(self.original)
 
@@ -54,12 +59,14 @@ class AttributeEdit:
 
     def draw(self, editor):
         name = self.attribute[0].upper()
+        axis = " (%s)" % self.attribute.split(".")[-1]
+
         value = self.getValue()
         if "rotation" in self.attribute:
             value = math.degrees(value)
 
         editor.context.overlayCanvas.line("#f00", (self.pivot.x, self.pivot.y), editor.mouse)
-        editor.drawText("%s: %.1f" % (name, value), "#fff", (editor.mouse[0] + 20, editor.mouse[1]))
+        editor.drawText("%s%s: %.1f" % (name, axis, value), "#fff", (editor.mouse[0] + 20, editor.mouse[1]))
 
 
 class ExtrudeBone:
@@ -114,18 +121,34 @@ class PoseMode:
     def handleEvent(self, event):
         event, pos = event
         if event.type == pygame.KEYDOWN:
+            key = event.unicode
             activeBone = self.editor.getActiveBone()
-            if event.unicode == "h" and activeBone:
+
+            rotAxis = "z"
+            scaleAxis = "y"
+            scaleDup = ["x", "z"]
+
+            if self.active and key in ("x", "y", "z"):
+                if "rotation" in self.active.attribute:
+                    rotAxis = key
+                    key = "r"
+                elif "scale" in self.active.attribute:
+                    scaleAxis = key
+                    key = "s"
+                    scaleDup = []
+
+            if key == "h" and activeBone:
                 activeBone.visible = not activeBone.visible
                 return True
-            if event.unicode == "r" and activeBone:
-                self.newEdit(AttributeEdit(self.editor, activeBone, "rotation.z", pos))
+            if key == "r" and activeBone:
+                self.newEdit(AttributeEdit(self.editor, pos, activeBone, "rotation." + rotAxis))
                 return True
-            if event.unicode == "s" and activeBone:
-                self.newEdit(AttributeEdit(self.editor, activeBone, "scale.y", pos))
+            if key == "s" and activeBone:
+                #TODO Cancel bug does not undo all values...
+                self.newEdit(AttributeEdit(self.editor, pos, activeBone, "scale." + scaleAxis, scaleDup))
                 return True
-            if event.unicode == "e" and activeBone:
-                self.newEdit(ExtrudeBone(self.editor, activeBone, pos))
+            if key == "e" and activeBone:
+                self.newEdit(ExtrudeBone(self.editor, pos, activeBone))
                 return True
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if self.active:
@@ -295,7 +318,7 @@ class SkinnedEditor:
         closestDistance = None
         for trans in self.transforms:
             bone = trans.bone
-            pivot = trans.matrix.transform(self.getBonePivot(bone))
+            pivot = self.getBonePivotTransformed(bone)
             distance = (pivot - euclid.Vector3(pos[0], pos[1])).magnitude()
             if distance < PICK_DISTANCE_PIVOT:
                 if not closest or distance < closestDistance:
@@ -349,7 +372,9 @@ class SkinnedEditor:
         return triangles
 
     def getBonePivotTransformed(self, bone):
-        return self.transformsMap[bone.name].matrix.transform(self.getBonePivot(bone))
+        v = self.transformsMap[bone.name].matrix.transform(self.getBonePivot(bone))
+        v.z = 0.0 #Clear any depth changes, we only care about 2D
+        return v
 
     def getBonePivot(self, bone):
         pivot = bone.pivot
