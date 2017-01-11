@@ -86,14 +86,27 @@ class Bone:
         self.vertices = makeArray(gl.GLfloat, verts)
         self.indices = makeArray(gl.GLuint, indices)
 
-    def updateWeights(self, index):
+    def updateWeights(self, transforms):
         if self.vertices:
+            mapping = {}
+            for i, trans in enumerate(transforms):
+                trans.index = i
+                mapping[trans.bone.name] = trans
+
+            weights = []
+            indices = []
+            for i in range(0, len(self.vertices), 4):
+                x = self.vertices[i]
+                y = self.vertices[i + 1]
+                nearby = findBoneInfluences((x, y), mapping)
+                nearest = nearby[0][1]
+
+                weights.extend([1.0, 0.0, 0.0, 0.0])
+                indices.extend([float(nearest.index), 0.0, 0.0, 0.0])
+
             #TODO bone index must never change at the moment...
-            itemCount = len(self.vertices) / 4
-            boneWeights = [1.0, 0.0, 0.0, 0.0] * itemCount
-            boneIndices = [index, 0.0, 0.0, 0.0] * itemCount
-            self.boneWeights = makeArray(gl.GLfloat, boneWeights)
-            self.boneIndices = makeArray(gl.GLfloat, boneIndices)
+            self.boneWeights = makeArray(gl.GLfloat, weights)
+            self.boneIndices = makeArray(gl.GLfloat, indices)
 
     def updatePoints(self, surface):
         points = geometry.findEdgePixelsOrdered(surface)
@@ -123,6 +136,24 @@ class Bone:
             if inside >= 2:
                 self.triangles.append(((a[0], a[1]), (b[0], b[1]), (c[0], c[1])))
 
+def findBoneInfluences(vertex, transforms):
+    distances = []
+    for trans in transforms.values():
+        if trans.bone.parent and not transforms[trans.bone.parent].bone.parent:
+            #Ignore root bone
+            continue
+
+        start = trans.matrix.transform(euclid.Vector3(trans.bone.pivot[0], trans.bone.pivot[1], 0))
+        end = None
+        if trans.bone.parent:
+            parent = transforms[trans.bone.parent].bone
+            end = transforms[parent.name].matrix.transform(euclid.Vector3(parent.pivot[0], parent.pivot[1], 0))
+        else:
+            end = euclid.Vector3(start.x, start.y + 0.0001, 0)
+        distances.append((geometry.pointToLineDistance(vertex, (start.x, start.y), (end.x, end.y)), trans))
+
+    distances.sort(key=lambda x: x[0])
+    return distances[:4]
 
 def shortenLine(a, b, relative):
     x1, y1 = a

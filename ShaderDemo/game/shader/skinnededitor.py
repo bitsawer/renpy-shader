@@ -6,6 +6,7 @@ import ctypes
 import pygame
 import euclid
 import skinned
+import geometry
 
 pygame.font.init()
 FONT = pygame.font.Font(None, 20)
@@ -18,27 +19,6 @@ DRAG_POS = "dragPos"
 ACTIVE_BONE_NAME = "activeBoneName"
 MOUSE = "mouse"
 MODE = "mode"
-
-def lineToPoint(a, b, point):
-    x1, y1 = a
-    x2, y2 = b
-    x3, y3 = point
-
-    px = x2 - x1
-    py = y2 - y1
-    value = px*px + py*py
-
-    u =  ((x3 - x1) * px + (y3 - y1) * py) / float(value)
-    if u > 1:
-        u = 1
-    elif u < 0:
-        u = 0
-
-    x = x1 + u * px
-    y = y1 + u * py
-    dx = x - x3
-    dy = y - y3
-    return math.sqrt(dx*dx + dy*dy)
 
 class AttributeEdit:
     def __init__(self, editor, bone, attribute, mouse):
@@ -330,7 +310,7 @@ class SkinnedEditor:
             if trans.bone.image:
                 lines = self.getImageLines(trans.bone)
                 for i in range(len(lines) - 1):
-                    distance = lineToPoint(lines[i], lines[i + 1], pos)
+                    distance = geometry.pointToLineDistance(pos, lines[i], lines[i + 1])
                     if distance < PICK_DISTANCE_CROP:
                         if not closest or distance < closestDistance:
                             closest = trans.bone
@@ -398,7 +378,8 @@ class SkinnedEditor:
 
         for trans in self.transforms:
             bone = trans.bone
-            bone.wireFrame = ((activeBone and bone.name == activeBone.name) or not activeBone) and self.settings["wireframe"]
+            #bone.wireFrame = ((activeBone and bone.name == activeBone.name) or not activeBone) and self.settings["wireframe"]
+            bone.wireFrame = self.settings["wireframe"]
 
             pos = self.getBonePos(bone)
             pivot = self.getBonePivotTransformed(bone)

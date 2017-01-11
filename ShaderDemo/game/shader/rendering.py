@@ -317,10 +317,11 @@ class SkinnedRenderer(BaseRenderer):
         self.updateBones()
 
     def updateBones(self):
-        for i, transform in enumerate(self.computeBoneTransforms()):
+        transforms = self.computeBoneTransforms()
+        for transform in transforms:
             bone = transform.bone
             bone.color = (random.randint(32, 255), random.randint(64, 255), random.randint(32, 255))
-            bone.updateWeights(i)
+            bone.updateWeights(transforms)
 
     def loadJson(self, image, path):
         container = image.visit()[0]
