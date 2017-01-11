@@ -86,7 +86,7 @@ class Bone:
         self.vertices = makeArray(gl.GLfloat, verts)
         self.indices = makeArray(gl.GLuint, indices)
 
-    def updateWeights(self, transforms):
+    def updateWeights(self, index, transforms):
         if self.vertices:
             mapping = {}
             for i, trans in enumerate(transforms):
@@ -98,7 +98,9 @@ class Bone:
             for i in range(0, len(self.vertices), 4):
                 x = self.vertices[i]
                 y = self.vertices[i + 1]
-                nearby = findBoneInfluences((x, y), mapping)
+                v = transforms[index].matrix.transform(euclid.Vector3(x, y, 0))
+
+                nearby = findBoneInfluences((v.x, v.y), mapping)
                 nearest = nearby[0][1]
 
                 weights.extend([1.0, 0.0, 0.0, 0.0])
@@ -139,18 +141,14 @@ class Bone:
 def findBoneInfluences(vertex, transforms):
     distances = []
     for trans in transforms.values():
-        if trans.bone.parent and not transforms[trans.bone.parent].bone.parent:
-            #Ignore root bone
+        if not trans.bone.parent:
             continue
 
         start = trans.matrix.transform(euclid.Vector3(trans.bone.pivot[0], trans.bone.pivot[1], 0))
-        end = None
-        if trans.bone.parent:
-            parent = transforms[trans.bone.parent].bone
-            end = transforms[parent.name].matrix.transform(euclid.Vector3(parent.pivot[0], parent.pivot[1], 0))
-        else:
-            end = euclid.Vector3(start.x, start.y + 0.0001, 0)
-        distances.append((geometry.pointToLineDistance(vertex, (start.x, start.y), (end.x, end.y)), trans))
+        for child in trans.bone.children:
+            childTrans = transforms[child]
+            end = childTrans.matrix.transform(euclid.Vector3(childTrans.bone.pivot[0], childTrans.bone.pivot[1], 0))
+            distances.append((geometry.pointToLineDistance(vertex, (start.x, start.y), (end.x, end.y)), trans))
 
     distances.sort(key=lambda x: x[0])
     return distances[:4]

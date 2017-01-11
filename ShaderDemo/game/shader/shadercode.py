@@ -256,7 +256,6 @@ VS_SKINNED = """
 
 uniform mat4 projection;
 
-uniform mat4 poseBoneMatrices[32];
 uniform mat4 boneMatrices[32];
 
 uniform vec2 screenSize;
@@ -276,14 +275,11 @@ vec2 toScreen(vec2 point)
 void main()
 {
     varUv = inVertex.zw;
+    vec2 pos = vec2(0.0, 0.0);
 
-    vec2 pos = inVertex.xy;
-    vec2 transformedParent = poseBoneMatrices[(int)inBoneIndices.x] * vec4(pos, 0.0, 1.0);
-    vec2 transformed = boneMatrices[(int)inBoneIndices.x] * vec4(pos, 0.0, 1.0);
-
-    vec2 mixed = mix(transformedParent, transformed, inBoneWeights.x);
-
-    gl_Position = projection * vec4(toScreen(mixed.xy), 0.0, 1.0);
+    mat4 boneMatrix = boneMatrices[(int)inBoneIndices.x];
+    pos += (boneMatrix * vec4(inVertex.xy, 0.0, 1.0) * inBoneWeights.x).xy;
+    gl_Position = projection * vec4(toScreen(pos.xy), 0.0, 1.0);
 }
 """
 

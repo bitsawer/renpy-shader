@@ -289,8 +289,9 @@ class SkinningStack:
         self.matrixStack.pop()
 
 class BoneTransform:
-    def __init__(self, bone, baseMatrix, matrix):
+    def __init__(self, bone, imageBone, baseMatrix, matrix):
         self.bone = bone
+        self.imageBone = imageBone
         self.baseMatrix = baseMatrix
         self.matrix = matrix
 
@@ -318,10 +319,10 @@ class SkinnedRenderer(BaseRenderer):
 
     def updateBones(self):
         transforms = self.computeBoneTransforms()
-        for transform in transforms:
+        for i, transform in enumerate(transforms):
             bone = transform.bone
             bone.color = (random.randint(32, 255), random.randint(64, 255), random.randint(32, 255))
-            bone.updateWeights(transforms)
+            bone.updateWeights(i, transforms)
 
     def loadJson(self, image, path):
         container = image.visit()[0]
@@ -425,12 +426,12 @@ class SkinnedRenderer(BaseRenderer):
 
         transforms = self.computeBoneTransforms()
 
-        poseBoneMatrixArray = []
         boneMatrixArray = []
         for transform in transforms:
-            poseBoneMatrixArray.extend(utils.matrixToList(transform.matrix.inverse()))
-            boneMatrixArray.extend(utils.matrixToList(transform.matrix))
-        self.shader.uniformMatrix4fArray("poseBoneMatrices", poseBoneMatrixArray)
+            boneMatrix = transform.matrix.copy()
+            if transform.imageBone:
+                boneMatrix.translate(transform.imageBone.image.x, transform.imageBone.image.y, 0)
+            boneMatrixArray.extend(utils.matrixToList(boneMatrix))
         self.shader.uniformMatrix4fArray("boneMatrices", boneMatrixArray)
 
         for transform in transforms:
@@ -483,12 +484,12 @@ class SkinnedRenderer(BaseRenderer):
         transforms = []
         skinning = SkinningStack()
         skinning.push(None, euclid.Matrix4())
-        self.computeBoneTransformRecursive(self.root, transforms, skinning)
+        self.computeBoneTransformRecursive(self.root, None, transforms, skinning)
         skinning.pop()
         transforms.sort(key=lambda t: t.bone.zOrder)
         return transforms
 
-    def computeBoneTransformRecursive(self, bone, transforms, skinning):
+    def computeBoneTransformRecursive(self, bone, imageBone, transforms, skinning):
         xParent = 0
         yParent = 0
         parent = skinning.boneStack[-1]
@@ -521,12 +522,15 @@ class SkinnedRenderer(BaseRenderer):
 
         transform.translate(-xMove, -yMove, 0)
 
-        transforms.append(BoneTransform(bone, transformBase, transform))
+        transforms.append(BoneTransform(bone, imageBone, transformBase, transform))
 
         skinning.push(bone, transform)
 
         for childName in bone.children:
-            self.computeBoneTransformRecursive(self.bones[childName], transforms, skinning)
+            if bone.image:
+                imageBone = bone
+
+            self.computeBoneTransformRecursive(self.bones[childName], imageBone, transforms, skinning)
 
         skinning.pop()
 
