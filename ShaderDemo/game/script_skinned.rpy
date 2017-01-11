@@ -30,11 +30,11 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, x
             text "Toggles":
                 size 15
 
-            textbutton "Wireframes" action ToggleDict(editorSettings, "wireframe")
-            textbutton "Image areas" action ToggleDict(editorSettings, "imageAreas")
-            textbutton "Bone points" action ToggleDict(editorSettings, "pivots")
-            textbutton "Bone names" action ToggleDict(editorSettings, "names")
-            textbutton "Debug animate" action ToggleDict(editorSettings, "debugAnimate")
+            textbutton "Wireframes" action [ToggleDict(editorSettings, "wireframe"), RestartStatement()]
+            textbutton "Image areas" action [ToggleDict(editorSettings, "imageAreas"), RestartStatement()]
+            textbutton "Bone points" action [ToggleDict(editorSettings, "pivots"), RestartStatement()]
+            textbutton "Bone names" action [ToggleDict(editorSettings, "names"), RestartStatement()]
+            textbutton "Debug animate" action [ToggleDict(editorSettings, "debugAnimate"), RestartStatement()]
 
             text "Actions":
                 size 15

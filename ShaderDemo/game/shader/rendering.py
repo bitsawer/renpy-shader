@@ -424,9 +424,12 @@ class SkinnedRenderer(BaseRenderer):
 
         transforms = self.computeBoneTransforms()
 
+        poseBoneMatrixArray = []
         boneMatrixArray = []
         for transform in transforms:
+            poseBoneMatrixArray.extend(utils.matrixToList(transform.matrix.inverse()))
             boneMatrixArray.extend(utils.matrixToList(transform.matrix))
+        self.shader.uniformMatrix4fArray("poseBoneMatrices", poseBoneMatrixArray)
         self.shader.uniformMatrix4fArray("boneMatrices", boneMatrixArray)
 
         for transform in transforms:
@@ -455,13 +458,13 @@ class SkinnedRenderer(BaseRenderer):
         gl.glActiveTexture(gl.GL_TEXTURE0 + 0)
         gl.glBindTexture(gl.GL_TEXTURE_2D, tex.glTexture)
 
-        self.shader.uniformMatrix4f("transformBase", transform.baseMatrix)
         self.shader.uniformMatrix4f(shader.PROJECTION, self.getProjection())
-        self.shader.uniformf("wireFrame", 0)
 
         self.bindAttributeArray(self.shader, "inVertex", bone.vertices, 4)
         self.bindAttributeArray(self.shader, "inBoneWeights", bone.boneWeights, 4)
         self.bindAttributeArray(self.shader, "inBoneIndices", bone.boneIndices, 4)
+
+        self.shader.uniformf("wireFrame", 0)
         gl.glDrawElements(gl.GL_TRIANGLES, len(bone.indices), gl.GL_UNSIGNED_INT, bone.indices)
 
         if bone.wireFrame:

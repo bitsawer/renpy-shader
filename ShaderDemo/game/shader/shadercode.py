@@ -255,8 +255,8 @@ void main()
 VS_SKINNED = """
 
 uniform mat4 projection;
-uniform mat4 transformBase;
 
+uniform mat4 poseBoneMatrices[32];
 uniform mat4 boneMatrices[32];
 
 uniform vec2 screenSize;
@@ -278,7 +278,7 @@ void main()
     varUv = inVertex.zw;
 
     vec2 pos = inVertex.xy;
-    vec2 transformedParent = transformBase * vec4(pos, 0.0, 1.0);
+    vec2 transformedParent = poseBoneMatrices[(int)inBoneIndices.x] * vec4(pos, 0.0, 1.0);
     vec2 transformed = boneMatrices[(int)inBoneIndices.x] * vec4(pos, 0.0, 1.0);
 
     vec2 mixed = mix(transformedParent, transformed, inBoneWeights.x);
