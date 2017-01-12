@@ -1,7 +1,6 @@
 
 import renpy.display
 import pygame_sdl2 as pygame
-import random
 import ctypes
 
 from OpenGL import GL as gl
@@ -310,12 +309,12 @@ class SkinnedRenderer(BaseRenderer):
     def init(self, image, vertexShader, pixeShader):
         self.shader = utils.Shader(vertexShader, pixeShader)
 
-        #self.loadJson(image, "bones.json")
-
-        #Assume LiveComposite. Not that great, relies on specific RenPy implementation...
-        self.loadLiveComposite(image)
-
-        self.updateBones()
+        if 0:
+            self.loadJson(image, "bones.json")
+        else:
+            #Assume LiveComposite. Not that great, relies on specific RenPy implementation...
+            self.loadLiveComposite(image)
+            self.updateBones()
 
     def updateBones(self):
         transforms = self.computeBoneTransforms()
@@ -346,6 +345,8 @@ class SkinnedRenderer(BaseRenderer):
         container = image.visit()[0]
         self.size = container.style.xmaximum, container.style.ymaximum
 
+        previousName = self.root.name
+
         for i, child in enumerate(container.children):
             placement = child.get_placement()
             base = child.children[0]
@@ -359,7 +360,7 @@ class SkinnedRenderer(BaseRenderer):
             y = placement[1] + crop[1]
 
             bone = skinned.Bone(boneName)
-            bone.parent = self.root.name
+            bone.parent = previousName
             bone.image = skinned.Image(base.filename, crop[0], crop[1], surface.get_width(), surface.get_height())
             bone.pos = (x, y)
             bone.pivot = (bone.image.width / 2.0, bone.image.height / 2.0)
@@ -368,11 +369,12 @@ class SkinnedRenderer(BaseRenderer):
             bone.triangulate()
             bone.updateVerticesFromTriangles()
 
-            self.root.children.append(boneName) #TODO Just store real objects...?
+            self.bones[previousName].children.append(boneName)
+            self.bones[boneName] = bone
 
             self.skinTextures.setTexture(bone.image.name, surface)
 
-            self.bones[boneName] = bone
+            previousName = bone.name
 
     def cropSurface(self, surface, rect):
         cropped = pygame.Surface((rect[2], rect[3]), 0, surface)
@@ -527,10 +529,10 @@ class SkinnedRenderer(BaseRenderer):
 
         skinning.push(bone, transform)
 
-        for childName in bone.children:
-            if bone.image:
-                imageBone = bone
+        if bone.image:
+            imageBone = bone
 
+        for childName in bone.children:
             self.computeBoneTransformRecursive(self.bones[childName], imageBone, transforms, skinning)
 
         skinning.pop()

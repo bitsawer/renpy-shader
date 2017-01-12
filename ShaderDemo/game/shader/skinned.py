@@ -178,6 +178,12 @@ def saveToFile(bones, path):
     with open(path, "w") as f:
         json.dump(data, f, indent=1, cls=JsonEncoder, separators=(",", ": "), sort_keys=True)
 
+def _getArray(tp, obj, key):
+    data = obj.get(key)
+    if data:
+        return makeArray(tp, data)
+    return None
+
 def loadFromFile(path):
     data = None
     with open(path, "r") as f:
@@ -204,17 +210,11 @@ def loadFromFile(path):
         bone.visible = raw["visible"]
         bone.wireFrame = raw["wireFrame"]
 
-        verts = raw.get("vertices")
-        if verts:
-            bone.vertices = makeArray(gl.GLfloat, verts)
-
-        uvs = raw.get("uvs")
-        if uvs:
-            bone.uvs = makeArray(gl.GLfloat, uvs)
-
-        indices = raw.get("indices")
-        if indices:
-            bone.indices = makeArray(gl.GLuint, indices)
+        bone.vertices = _getArray(gl.GLfloat, raw, "vertices")
+        bone.uvs = _getArray(gl.GLfloat, raw, "uvs")
+        bone.indices = _getArray(gl.GLuint, raw, "indices")
+        bone.boneWeights = _getArray(gl.GLfloat, raw, "boneWeights")
+        bone.boneIndices = _getArray(gl.GLfloat, raw, "boneIndices")
 
         bones[bone.name] = bone
 
