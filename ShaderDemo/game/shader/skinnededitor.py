@@ -70,9 +70,9 @@ class AttributeEdit:
 
 
 class ExtrudeBone:
-    def __init__(self, editor, bone, mouse):
-        self.bone = bone
+    def __init__(self, editor, mouse, bone):
         self.mouse = mouse
+        self.bone = bone
         self.pivot = editor.getBonePivotTransformed(bone)
 
     def findNextFreeBoneName(self, bones, base):
