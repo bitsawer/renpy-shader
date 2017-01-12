@@ -317,6 +317,9 @@ class SkinnedEditor:
         self.stopDrag()
 
     def stopDrag(self):
+        if self.get(DRAG_PIVOT):
+            self.context.renderer.updateBones()
+
         self.set(DRAG_PIVOT, None)
         self.set(DRAG_POS, None)
 
