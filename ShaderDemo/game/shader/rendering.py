@@ -310,10 +310,10 @@ class SkinnedRenderer(BaseRenderer):
     def init(self, image, vertexShader, pixeShader):
         self.shader = utils.Shader(vertexShader, pixeShader)
 
-        self.loadJson(image, "bones.json")
+        #self.loadJson(image, "bones.json")
 
         #Assume LiveComposite. Not that great, relies on specific RenPy implementation...
-        #self.loadLiveComposite(image)
+        self.loadLiveComposite(image)
 
         self.updateBones()
 

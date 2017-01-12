@@ -99,12 +99,16 @@ class Bone:
                 x = self.vertices[i]
                 y = self.vertices[i + 1]
                 v = transforms[index].matrix.transform(euclid.Vector3(x, y, 0))
+                v.z = 0.0
 
                 nearby = findBoneInfluences((v.x, v.y), mapping)
-                nearest = nearby[0][1]
-
-                weights.extend([1.0, 0.0, 0.0, 0.0])
-                indices.extend([float(nearest.index), 0.0, 0.0, 0.0])
+                if len(nearby) > 0:
+                    nearest = nearby[0][1]
+                    weights.extend([1.0, 0.0, 0.0, 0.0])
+                    indices.extend([float(nearest.index), 0.0, 0.0, 0.0])
+                else:
+                    weights.extend([1.0, 0.0, 0.0, 0.0])
+                    indices.extend([float(index), 0.0, 0.0, 0.0])
 
             #TODO bone index must never change at the moment...
             self.boneWeights = makeArray(gl.GLfloat, weights)
@@ -121,7 +125,7 @@ class Bone:
         pointsSegments.add_polygon([self.points])
         triangulation = delaunay.triangulate(pointsSegments.points, pointsSegments.infos, pointsSegments.segments)
 
-        expanded = geometry.offsetPolygon(self.points, -1)
+        expanded = geometry.offsetPolygon(self.points, -1) #TODO 0 better, do nothing?
         shorten = 0.5
 
         self.triangles = []
@@ -142,6 +146,7 @@ def findBoneInfluences(vertex, transforms):
     distances = []
     for trans in transforms.values():
         if not trans.bone.parent:
+            #Skip root bone
             continue
 
         start = trans.matrix.transform(euclid.Vector3(trans.bone.pivot[0], trans.bone.pivot[1], 0))

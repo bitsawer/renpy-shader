@@ -54,10 +54,10 @@ init python:
     config.keymap["screenshot"].remove("s")
 
     editorSettings = {
-        "wireframe": False,
+        "wireframe": True,
         "imageAreas": True,
         "pivots": True,
-        "names": True,
+        "names": False,
         "debugAnimate": False,
     }
 

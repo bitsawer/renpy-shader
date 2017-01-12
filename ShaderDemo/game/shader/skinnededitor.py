@@ -424,8 +424,9 @@ class SkinnedEditor:
                 #    context.overlayCanvas.lines("#0f0", True, tri)
 
                 polyPoints = self.getPolyPoints(bone)
-                for p in polyPoints:
-                    context.overlayCanvas.circle("#0f0", p, 3)
+                for i, p in enumerate(polyPoints):
+                    color = (0, int(float(i) / len(polyPoints) * 255), 0)
+                    context.overlayCanvas.circle(color, p, 3)
 
             if self.settings["pivots"]:
                 if bone.parent:
