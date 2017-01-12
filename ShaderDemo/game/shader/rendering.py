@@ -364,7 +364,6 @@ class SkinnedRenderer(BaseRenderer):
             bone.pos = (x, y)
             bone.pivot = (bone.image.width / 2.0, bone.image.height / 2.0)
             bone.zOrder = i
-            #bone.updateVertices()
             bone.updatePoints(surface)
             bone.triangulate()
             bone.updateVerticesFromTriangles()
@@ -462,7 +461,8 @@ class SkinnedRenderer(BaseRenderer):
 
         self.shader.uniformMatrix4f(shader.PROJECTION, self.getProjection())
 
-        self.bindAttributeArray(self.shader, "inVertex", bone.vertices, 4)
+        self.bindAttributeArray(self.shader, "inVertex", bone.vertices, 2)
+        self.bindAttributeArray(self.shader, "inUv", bone.uvs, 2)
         self.bindAttributeArray(self.shader, "inBoneWeights", bone.boneWeights, 4)
         self.bindAttributeArray(self.shader, "inBoneIndices", bone.boneIndices, 4)
 
@@ -476,6 +476,7 @@ class SkinnedRenderer(BaseRenderer):
             gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL)
 
         self.unbindAttributeArray(self.shader, "inVertex")
+        self.unbindAttributeArray(self.shader, "inUv")
         self.unbindAttributeArray(self.shader, "inBoneWeights")
         self.unbindAttributeArray(self.shader, "inBoneIndices")
 

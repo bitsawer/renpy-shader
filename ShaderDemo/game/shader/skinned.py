@@ -38,6 +38,7 @@ class Bone:
         self.color = (0, 0, 0) #Not serialized
 
         self.vertices = None
+        self.uvs = None
         self.indices = None
         self.boneWeights = None
         self.boneIndices = None
@@ -45,45 +46,28 @@ class Bone:
         self.points = []
         self.triangles = []
 
-    def updateVertices(self):
-        w = self.image.width
-        h = self.image.height
-
-        gridSize = 10
-        vertices, uvs, indices = geometry.createGrid((0, 0, w, h), None, gridSize, gridSize)
-
-        verts = []
-        for i in range(len(vertices)):
-            verts.append(vertices[i][0])
-            verts.append(vertices[i][1])
-
-            xUv = uvs[i][0]
-            yUv = uvs[i][1]
-            verts.append(xUv)
-            verts.append(yUv)
-
-        self.vertices = makeArray(gl.GLfloat, verts)
-        self.indices = makeArray(gl.GLuint, indices)
-
     def updateVerticesFromTriangles(self):
         w = self.image.width
         h = self.image.height
 
         verts = []
+        uvs = []
         indices = []
 
         for tri in self.triangles:
             for v in tri:
                 xUv = v[0] / float(w)
                 yUv = v[1] / float(h)
-                verts.extend([v[0], v[1], xUv, yUv])
-                indices.append(len(verts) / 4 - 1)
+                verts.extend([v[0], v[1]])
+                uvs.extend([xUv, yUv])
+                indices.append(len(verts) / 2 - 1)
 
-        vCount = len(verts) / 4 / 3
+        vCount = len(verts) / 2 / 3
         if vCount != len(self.triangles):
             raise RuntimeError("Invalid vertex count: %i of %i" % (vCount, len(self.triangles)))
 
         self.vertices = makeArray(gl.GLfloat, verts)
+        self.uvs = makeArray(gl.GLfloat, uvs)
         self.indices = makeArray(gl.GLuint, indices)
 
     def updateWeights(self, index, transforms):
@@ -95,7 +79,7 @@ class Bone:
 
             weights = []
             indices = []
-            for i in range(0, len(self.vertices), 4):
+            for i in range(0, len(self.vertices), 2):
                 x = self.vertices[i]
                 y = self.vertices[i + 1]
                 v = transforms[index].matrix.transform(euclid.Vector3(x, y, 0))
@@ -222,11 +206,15 @@ def loadFromFile(path):
 
         verts = raw.get("vertices")
         if verts:
-            bone.vertices = (gl.GLfloat * len(verts))(*verts)
+            bone.vertices = makeArray(gl.GLfloat, verts)
+
+        uvs = raw.get("uvs")
+        if uvs:
+            bone.uvs = makeArray(gl.GLfloat, uvs)
 
         indices = raw.get("indices")
         if indices:
-            bone.indices = (gl.GLuint * len(indices))(*indices)
+            bone.indices = makeArray(gl.GLuint, indices)
 
         bones[bone.name] = bone
 

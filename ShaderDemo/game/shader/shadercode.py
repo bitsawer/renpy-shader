@@ -261,7 +261,8 @@ uniform mat4 boneMatrices[32];
 uniform vec2 screenSize;
 uniform float shownTime;
 
-attribute vec4 inVertex;
+attribute vec2 inVertex;
+attribute vec2 inUv;
 attribute vec4 inBoneWeights;
 attribute vec4 inBoneIndices;
 
@@ -274,11 +275,11 @@ vec2 toScreen(vec2 point)
 
 void main()
 {
-    varUv = inVertex.zw;
+    varUv = inUv;
     vec2 pos = vec2(0.0, 0.0);
 
     mat4 boneMatrix = boneMatrices[(int)inBoneIndices.x];
-    pos += (boneMatrix * vec4(inVertex.xy, 0.0, 1.0) * inBoneWeights.x).xy;
+    pos += (boneMatrix * vec4(inVertex, 0.0, 1.0) * inBoneWeights.x).xy;
     gl_Position = projection * vec4(toScreen(pos.xy), 0.0, 1.0);
 }
 """
