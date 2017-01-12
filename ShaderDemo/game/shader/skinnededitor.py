@@ -14,6 +14,11 @@ FONT = pygame.font.Font(None, 20)
 PICK_DISTANCE_PIVOT = 20
 PICK_DISTANCE_CROP = 5
 
+PIVOT_SIZE = 6
+PIVOT_COLOR = (255, 0, 0)
+ACTIVE_COLOR = (0, 255, 0)
+HOVER_COLOR = (255, 255, 0)
+
 DRAG_PIVOT = "dragPivot"
 DRAG_POS = "dragPos"
 ACTIVE_BONE_NAME = "activeBoneName"
@@ -107,8 +112,8 @@ class ExtrudeBone:
         pass
 
     def draw(self, editor):
-        editor.context.overlayCanvas.line("#f00", (self.pivot.x, self.pivot.y), editor.mouse)
-        editor.context.overlayCanvas.circle(self.bone.color, editor.mouse, 8)
+        editor.context.overlayCanvas.line(PIVOT_COLOR, (self.pivot.x, self.pivot.y), editor.mouse)
+        editor.context.overlayCanvas.circle(PIVOT_COLOR, editor.mouse, PIVOT_SIZE)
 
 class PoseMode:
     def __init__(self):
@@ -252,6 +257,8 @@ class SkinnedEditor:
                 oldParent.children.remove(boneName)
             newParent.children.append(boneName)
             poseBone.parent = newParent.name
+
+        self.context.renderer.updateBones()
 
     def handleEvents(self):
         self.mouse = self.get(MOUSE)
@@ -408,14 +415,13 @@ class SkinnedEditor:
 
             pos = self.getBonePos(bone)
             pivot = self.getBonePivotTransformed(bone)
-            activeColor = (0, 255, 0)
 
             if self.settings["imageAreas"] and bone.image:
                 areaColor = (255, 255, 0)
                 lines = self.getImageLines(bone)
                 if not hoverPivotBone and hoverCropBone and bone.name == hoverCropBone.name:
                     self.drawText(hoverCropBone.name, "#fff", (mouse[0] + 20, mouse[1]))
-                    areaColor = activeColor
+                    areaColor = ACTIVE_COLOR
                 context.overlayCanvas.lines(areaColor, False, lines)
 
                 #triangles = self.getTriangles(bone)
@@ -433,15 +439,17 @@ class SkinnedEditor:
                     parentTrans = self.transformsMap[bone.parent]
                     parentBone = parentTrans.bone
                     parentPos = self.getBonePivotTransformed(parentBone)
-                    context.overlayCanvas.line("#00f", (pivot.x, pivot.y), (parentPos.x, parentPos.y))
+                    context.overlayCanvas.line(PIVOT_COLOR, (pivot.x, pivot.y), (parentPos.x, parentPos.y))
 
-                context.overlayCanvas.circle(bone.color, (pivot.x, pivot.y), 8)
+                context.overlayCanvas.circle(PIVOT_COLOR, (pivot.x, pivot.y), PIVOT_SIZE)
                 if hoverPivotBone and bone.name == hoverPivotBone.name:
-                    context.overlayCanvas.circle(activeColor, (pivot.x, pivot.y), 4)
+                    context.overlayCanvas.circle(HOVER_COLOR, (pivot.x, pivot.y), PIVOT_SIZE - 1)
+                if activeBone and bone.name == activeBone.name:
+                    context.overlayCanvas.circle(ACTIVE_COLOR, (pivot.x, pivot.y), PIVOT_SIZE - 2)
 
                 textColor = "#fff"
                 if activeBone and bone.name == activeBone.name:
-                    textColor = activeColor
+                    textColor = ACTIVE_COLOR
 
                 if self.settings["names"]:
                     self.drawText(bone.name, textColor, (pivot.x + 15, pivot.y - 10))
