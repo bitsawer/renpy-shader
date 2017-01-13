@@ -58,7 +58,7 @@ class Bone:
             for v in tri:
                 xUv = v[0] / float(w)
                 yUv = v[1] / float(h)
-                verts.extend([v[0] + self.pos[0], v[1] + self.pos[1]])
+                verts.extend([v[0], v[1]])
                 uvs.extend([xUv, yUv])
                 indices.append(len(verts) / 2 - 1)
 
@@ -69,6 +69,12 @@ class Bone:
         self.vertices = makeArray(gl.GLfloat, verts)
         self.uvs = makeArray(gl.GLfloat, uvs)
         self.indices = makeArray(gl.GLuint, indices)
+
+    def moveVertices(self, offset):
+        if self.vertices:
+            for i in range(0, len(self.vertices), 2):
+                self.vertices[i] = self.vertices[i] + offset[0]
+                self.vertices[i + 1] = self.vertices[i + 1] + offset[1]
 
     def updateWeights(self, index, transforms):
         if self.vertices:
@@ -82,10 +88,8 @@ class Bone:
             for i in range(0, len(self.vertices), 2):
                 x = self.vertices[i]
                 y = self.vertices[i + 1]
-                v = transforms[index].matrix.transform(euclid.Vector3(x, y, 0))
-                v.z = 0.0
 
-                nearby = findBoneInfluences((v.x, v.y), mapping)
+                nearby = findBoneInfluences((x, y), mapping)
                 if len(nearby) > 0:
                     nearest = nearby[0][1]
                     weights.extend([1.0, 0.0, 0.0, 0.0])
@@ -133,11 +137,11 @@ def findBoneInfluences(vertex, transforms):
             #Skip root bone
             continue
 
-        start = trans.matrix.transform(euclid.Vector3(trans.bone.pivot[0], trans.bone.pivot[1], 0))
+        start = trans.bone.pivot
         for child in trans.bone.children:
             childTrans = transforms[child]
-            end = childTrans.matrix.transform(euclid.Vector3(childTrans.bone.pivot[0], childTrans.bone.pivot[1], 0))
-            distances.append((geometry.pointToLineDistance(vertex, (start.x, start.y), (end.x, end.y)), trans))
+            end = childTrans.bone.pivot
+            distances.append((geometry.pointToLineDistance(vertex, start, end), trans))
 
     distances.sort(key=lambda x: x[0])
     return distances[:4]

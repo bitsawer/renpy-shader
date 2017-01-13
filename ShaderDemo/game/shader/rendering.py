@@ -366,6 +366,7 @@ class SkinnedRenderer(BaseRenderer):
             bone.updatePoints(surface)
             bone.triangulate()
             bone.updateVerticesFromTriangles()
+            bone.moveVertices(bone.pos)
 
             self.bones[previousName].children.append(boneName)
             self.bones[boneName] = bone

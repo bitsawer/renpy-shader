@@ -101,7 +101,7 @@ class ExtrudeBone:
         newName =  self.findNextFreeBoneName(bones, " ".join(parts))
 
         bone = skinned.Bone(newName)
-        bone.pivot = editor.mouse
+        bone.pivot = editor.getBoneInverseTranslation(bones[self.bone.name], editor.mouse)
         bone.zOrder = parent.zOrder + 1
         bones[bone.name] = bone
 
@@ -380,6 +380,11 @@ class SkinnedEditor:
                     pos = boneMatrix.transform(euclid.Vector3(v[0], v[1]))
                     triangles.append((pos.x, pos.y))
         return triangles
+
+    def getBoneInverseTranslation(self, bone, translation):
+        inverse = self.transformsMap[bone.name].matrix.inverse()
+        result = inverse.transform(euclid.Vector3(translation[0], translation[1]))
+        return (result.x, result.y)
 
     def getBonePivotTransformed(self, bone):
         v = self.transformsMap[bone.name].matrix.transform(self.getBonePivot(bone))
