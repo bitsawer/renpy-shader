@@ -76,7 +76,7 @@ class Bone:
                 self.vertices[i] = self.vertices[i] + offset[0]
                 self.vertices[i + 1] = self.vertices[i + 1] + offset[1]
 
-    def updateWeights(self, index, transforms):
+    def updateVertexWeights(self, index, transforms):
         if self.vertices:
             mapping = {}
             for i, trans in enumerate(transforms):
@@ -98,7 +98,6 @@ class Bone:
                     weights.extend([1.0, 0.0, 0.0, 0.0])
                     indices.extend([float(index), 0.0, 0.0, 0.0])
 
-            #TODO bone index must never change at the moment...
             self.boneWeights = makeArray(gl.GLfloat, weights)
             self.boneIndices = makeArray(gl.GLfloat, indices)
 
@@ -108,7 +107,7 @@ class Bone:
         offseted = geometry.offsetPolygon(simplified, -5)
         self.points = geometry.simplifyEdgePixels(offseted, 40)
 
-    def triangulate(self):
+    def triangulatePoints(self):
         pointsSegments = delaunay.ToPointsAndSegments()
         pointsSegments.add_polygon([self.points])
         triangulation = delaunay.triangulate(pointsSegments.points, pointsSegments.infos, pointsSegments.segments)

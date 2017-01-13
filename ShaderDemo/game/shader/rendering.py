@@ -319,7 +319,7 @@ class SkinnedRenderer(BaseRenderer):
         for i, transform in enumerate(transforms):
             bone = transform.bone
             bone.color = (random.randint(32, 255), random.randint(64, 255), random.randint(32, 255))
-            bone.updateWeights(i, transforms)
+            bone.updateVertexWeights(i, transforms)
 
     def loadJson(self, image, path):
         container = image.visit()[0]
@@ -343,7 +343,7 @@ class SkinnedRenderer(BaseRenderer):
         container = image.visit()[0]
         self.size = container.style.xmaximum, container.style.ymaximum
 
-        previousName = self.root.name
+        baseBoneName = self.root.name
 
         for i, child in enumerate(container.children):
             placement = child.get_placement()
@@ -358,22 +358,23 @@ class SkinnedRenderer(BaseRenderer):
             y = placement[1] + crop[1]
 
             bone = skinned.Bone(boneName)
-            bone.parent = previousName
+            bone.parent = baseBoneName
             bone.image = skinned.Image(base.filename, crop[0], crop[1], surface.get_width(), surface.get_height())
             bone.pos = (x, y)
             bone.pivot = (bone.pos[0] + bone.image.width / 2.0, bone.pos[1] + bone.image.height / 2.0)
             bone.zOrder = i
             bone.updatePoints(surface)
-            bone.triangulate()
+            bone.triangulatePoints()
             bone.updateVerticesFromTriangles()
             bone.moveVertices(bone.pos)
 
-            self.bones[previousName].children.append(boneName)
+            self.bones[bone.parent].children.append(boneName)
             self.bones[boneName] = bone
 
             self.skinTextures.setTexture(bone.image.name, surface)
 
-            previousName = bone.name
+            if baseBoneName == self.root.name:
+                baseBoneName = bone.name
 
     def cropSurface(self, surface, rect):
         cropped = pygame.Surface((rect[2], rect[3]), 0, surface)

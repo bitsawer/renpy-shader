@@ -276,10 +276,18 @@ vec2 toScreen(vec2 point)
 void main()
 {
     varUv = inUv;
-    vec2 pos = vec2(0.0, 0.0);
 
-    mat4 boneMatrix = boneMatrices[(int)inBoneIndices.x];
-    pos += (boneMatrix * vec4(inVertex, 0.0, 1.0) * inBoneWeights.x).xy;
+    vec2 pos = vec2(0.0, 0.0);
+    vec4 boneWeights = inBoneWeights;
+    ivec4 boneIndex = ivec4(inBoneIndices);
+
+    for (int i = 0; i < 4; i++) {
+        mat4 boneMatrix = boneMatrices[boneIndex.x];
+        pos += (boneMatrix * vec4(inVertex, 0.0, 1.0) * boneWeights.x).xy;
+
+        boneWeights = boneWeights.yzwx;
+        boneIndex = boneIndex.yzwx;
+    }
     gl_Position = projection * vec4(toScreen(pos.xy), 0.0, 1.0);
 }
 """
