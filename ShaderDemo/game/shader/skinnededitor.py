@@ -286,7 +286,7 @@ class SkinnedEditor:
             bone = self.pickPivot(pos)
             if bone:
                 self.setActiveBone(bone)
-                self.set(DRAG_PIVOT, (bone, pos, bone.pivot))
+                self.set(DRAG_PIVOT, (bone, self.getBoneInverseTranslation(bone, pos), bone.pivot))
             else:
                 self.setActiveBone(None)
                 self.set(DRAG_PIVOT, None)
@@ -302,7 +302,8 @@ class SkinnedEditor:
         dragPivot = self.get(DRAG_PIVOT)
         if dragPivot:
             bone, oldMouse, oldHead = dragPivot
-            delta = (oldMouse[0] - pos[0], oldMouse[1] - pos[1])
+            inverse = self.getBoneInverseTranslation(bone, pos)
+            delta = (oldMouse[0] - inverse[0], oldMouse[1] - inverse[1])
             pivot = bone.pivot
             bone.pivot = (oldHead[0] - delta[0], oldHead[1] - delta[1])
 
