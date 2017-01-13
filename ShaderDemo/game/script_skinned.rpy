@@ -2,7 +2,7 @@
 image doll = LiveComposite(
     (800, 1000),
     (0, 0), "doll base.png",
-    #(249, 318), "doll skirt.png",
+    (249, 318), "doll skirt.png",
     #(0, 0), "doll lforearm.png",
     #(0, 0), "doll larm.png",
     #(0, 0), "doll lhand.png",

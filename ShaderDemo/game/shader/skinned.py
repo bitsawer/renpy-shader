@@ -58,7 +58,7 @@ class Bone:
             for v in tri:
                 xUv = v[0] / float(w)
                 yUv = v[1] / float(h)
-                verts.extend([v[0], v[1]])
+                verts.extend([v[0] + self.pos[0], v[1] + self.pos[1]])
                 uvs.extend([xUv, yUv])
                 indices.append(len(verts) / 2 - 1)
 

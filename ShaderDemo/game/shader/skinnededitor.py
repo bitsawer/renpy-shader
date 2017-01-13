@@ -367,7 +367,7 @@ class SkinnedEditor:
         if bone.points:
             boneMatrix = self.transformsMap[bone.name].matrix
             for point in bone.points:
-                pos = boneMatrix.transform(euclid.Vector3(point[0], point[1]))
+                pos = boneMatrix.transform(euclid.Vector3(bone.pos[0] + point[0], bone.pos[1] + point[1]))
                 points.append((pos.x, pos.y))
         return points
 
