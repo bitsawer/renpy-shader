@@ -8,13 +8,10 @@ import euclid
 import skinned
 import geometry
 
-pygame.font.init()
-FONT = pygame.font.Font(None, 20)
-
-PICK_DISTANCE_PIVOT = 20
+PIVOT_SIZE = 6
+PICK_DISTANCE_PIVOT = PIVOT_SIZE * 2
 PICK_DISTANCE_CROP = 5
 
-PIVOT_SIZE = 6
 PIVOT_COLOR = (255, 0, 0)
 ACTIVE_COLOR = (0, 255, 0)
 HOVER_COLOR = (255, 255, 0)
@@ -24,6 +21,10 @@ DRAG_POS = "dragPos"
 ACTIVE_BONE_NAME = "activeBoneName"
 MOUSE = "mouse"
 MODE = "mode"
+
+pygame.font.init()
+FONT_SIZE = 20
+FONT = pygame.font.Font(None, FONT_SIZE)
 
 class AttributeEdit:
     def __init__(self, editor, mouse, bone, attribute, duplicates=None):
@@ -128,6 +129,7 @@ class PoseMode:
         if event.type == pygame.KEYDOWN:
             key = event.unicode
             activeBone = self.editor.getActiveBone()
+            hover = self.editor.pickPivot(pos)
 
             rotAxis = "z"
             scaleAxis = "y"
@@ -142,8 +144,11 @@ class PoseMode:
                     key = "s"
                     scaleDup = []
 
-            if key == "h" and activeBone:
-                activeBone.visible = not activeBone.visible
+            if key == "h" and hover:
+                hover.visible = not hover.visible
+                return True
+            if key == "x" and hover:
+                self.editor.deleteBone(hover)
                 return True
             if key == "r" and activeBone:
                 self.newEdit(AttributeEdit(self.editor, pos, activeBone, "rotation." + rotAxis))
@@ -243,6 +248,19 @@ class SkinnedEditor:
         surface = FONT.render(text, True, color)
         self.context.overlayCanvas.get_surface().blit(surface, pos)
 
+    def deleteBone(self, bone):
+        if not bone.parent:
+            return
+
+        bones = self.context.renderer.bones
+        for child in bone.children:
+            bones[child].parent = bone.parent
+
+        bones[bone.parent].children.remove(bone.name)
+        del bones[bone.name]
+
+        self.context.renderer.updateBones()
+
     def connectBone(self, boneName, parentName):
         bones = self.context.renderer.bones
         poseBone = bones[boneName]
@@ -269,7 +287,7 @@ class SkinnedEditor:
             handled = self.mode.handleEvent((event, pos))
             if not handled:
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    self.handleMouseDown(pos)
+                    self.handleMouseDown(event, pos)
                 elif event.type == pygame.MOUSEMOTION:
                     self.handleMouseMotion(pos)
                 elif event.type == pygame.MOUSEBUTTONUP:
@@ -278,25 +296,34 @@ class SkinnedEditor:
         if self.mouse:
             self.set(MOUSE, self.mouse)
 
-    def handleMouseDown(self, pos):
+    def handleMouseDown(self, event, pos):
         self.stopDrag()
 
-        bone = None
-        if self.settings["pivots"]:
-            bone = self.pickPivot(pos)
-            if bone:
-                self.setActiveBone(bone)
-                self.set(DRAG_PIVOT, (bone, self.getBoneInverseTranslation(bone, pos), bone.pivot))
-            else:
-                self.setActiveBone(None)
-                self.set(DRAG_PIVOT, None)
+        if event.button == 1:
+            bone = None
+            if self.settings["pivots"]:
+                bone = self.pickPivot(pos)
+                if bone:
+                    self.setActiveBone(bone)
+                    self.set(DRAG_PIVOT, (bone, self.getBoneInverseTranslation(bone, pos), bone.pivot))
+                else:
+                    self.setActiveBone(None)
+                    self.set(DRAG_PIVOT, None)
 
-        if self.settings["imageAreas"] and not bone:
-            bone = self.pickCrop(pos)
-            if bone:
-                self.set(DRAG_POS, (bone, pos, bone.pos))
-            else:
-                self.set(DRAG_POS, None)
+            if self.settings["imageAreas"] and not bone:
+                bone = self.pickCrop(pos)
+                if bone:
+                    self.set(DRAG_POS, (bone, pos, bone.pos))
+                else:
+                    self.set(DRAG_POS, None)
+        elif event.button == 4:
+            hover = self.pickPivot(pos)
+            if hover:
+                hover.zOrder += 1
+        elif event.button == 5:
+            hover = self.pickPivot(pos)
+            if hover:
+                hover.zOrder -= 1
 
     def handleMouseMotion(self, pos):
         dragPivot = self.get(DRAG_PIVOT)
@@ -463,4 +490,27 @@ class SkinnedEditor:
                 if self.settings["names"]:
                     self.drawText(bone.name, textColor, (pivot.x + 15, pivot.y - 10))
 
+        if hoverPivotBone:
+            self.visualizeBoneProperties(hoverPivotBone, mouse)
+
         self.mode.draw()
+
+    def visualizeBoneProperties(self, bone, mouse):
+        color = (0, 0, 0)
+        x = 10
+        y = 10
+
+        name = bone.name
+        if bone.vertices:
+            name += " (%i polygons, %i vertices)" % (len(bone.indices) // 3, len(bone.vertices) // 2)
+        self.drawText(name, color, (x, y))
+        y += FONT_SIZE
+
+        degrees = tuple([math.degrees(d) for d in (bone.rotation.x,  bone.rotation.y,  bone.rotation.z)])
+        self.drawText("Rotation - x: %.1f, y: %.1f, z: %.1f" % degrees, color, (x, y))
+        y += FONT_SIZE
+
+        self.drawText("Scale     - x: %.1f, y: %.1f, z: %.1f" % (bone.scale.x,  bone.scale.y,  bone.scale.z), color, (x, y))
+        y += FONT_SIZE
+
+        self.drawText("Z-order  - %i" % bone.zOrder, color, (x, y))
