@@ -26,7 +26,20 @@ pygame.font.init()
 FONT_SIZE = 20
 FONT = pygame.font.Font(None, FONT_SIZE)
 
-class AttributeEdit:
+class Action:
+    def cancel(self, editor):
+        pass
+
+    def apply(self, editor):
+        pass
+
+    def update(self, editor):
+        pass
+
+    def draw(self, editor):
+        pass
+
+class AttributeEdit(Action):
     def __init__(self, editor, mouse, bone, attribute, duplicates=None):
         self.mouse = mouse
         self.bone = bone
@@ -75,7 +88,7 @@ class AttributeEdit:
         editor.drawText("%s%s: %.1f" % (name, axis, value), "#fff", (editor.mouse[0] + 20, editor.mouse[1]))
 
 
-class ExtrudeBone:
+class ExtrudeBone(Action):
     def __init__(self, editor, mouse, bone):
         self.mouse = mouse
         self.bone = bone
@@ -115,6 +128,37 @@ class ExtrudeBone:
     def draw(self, editor):
         editor.context.overlayCanvas.line(PIVOT_COLOR, (self.pivot.x, self.pivot.y), editor.mouse)
         editor.context.overlayCanvas.circle(PIVOT_COLOR, editor.mouse, PIVOT_SIZE)
+
+class ConnectBone(Action):
+    def __init__(self, editor, mouse, bone):
+        self.mouse = mouse
+        self.bone = bone
+        self.pivot = editor.getBonePivotTransformed(bone)
+
+    def isValidParent(self, editor, parent):
+        if parent and self.bone.name != parent.name:
+            name = parent.name
+            while name:
+                bone = editor.getBone(name)
+                if bone.name == self.bone.name:
+                    #This bone connection would create a looping bone hierarchy
+                    return False
+                name = bone.parent
+            return True
+        return False
+
+    def apply(self, editor):
+        hover = editor.pickPivot(editor.mouse)
+        if self.isValidParent(editor, hover):
+            editor.connectBone(self.bone.name, hover.name)
+
+    def draw(self, editor):
+        color = (255, 255, 0)
+        hover = editor.pickPivot(editor.mouse)
+        if self.isValidParent(editor, hover):
+            color = (0, 255, 0)
+        editor.context.overlayCanvas.line(color, (self.pivot.x, self.pivot.y), editor.mouse)
+        editor.context.overlayCanvas.circle(color, editor.mouse, PIVOT_SIZE)
 
 class PoseMode:
     def __init__(self):
@@ -159,6 +203,9 @@ class PoseMode:
                 return True
             if key == "e" and activeBone:
                 self.newEdit(ExtrudeBone(self.editor, pos, activeBone))
+                return True
+            if key == "c" and activeBone:
+                self.newEdit(ConnectBone(self.editor, pos, activeBone))
                 return True
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if self.active:
@@ -229,20 +276,12 @@ class SkinnedEditor:
 
     def debugAnimate(self, animate):
         context = self.context
-        #TODO Rotate all bones that have a parent other than root
-        BASE = "doll base"
-        self.connectBone("doll lforearm", BASE)
-        self.connectBone("doll larm", "doll lforearm")
-        self.connectBone("doll lhand", "doll larm")
-        self.connectBone("doll hair", BASE)
-        self.connectBone("doll skirt", BASE)
-
-        for name in ("doll hair", "doll lforearm", "doll larm", "doll lhand"):
-            bone = self.getBone(name)
-            if animate:
+        bones = context.renderer.bones
+        for name, bone in bones.items():
+            if animate and bone.parent:
                 bone.rotation.z = math.sin(context.time * 0.5)
-            #else:
-            #    bone.rotation.z = 0.0
+            else:
+                bone.rotation.z = 0.0
 
     def drawText(self, text, color, pos):
         surface = FONT.render(text, True, color)
@@ -254,14 +293,14 @@ class SkinnedEditor:
 
         bones = self.context.renderer.bones
         for child in bone.children:
-            bones[child].parent = bone.parent
+            self.connectBone(child, bone.parent, False)
 
         bones[bone.parent].children.remove(bone.name)
         del bones[bone.name]
 
         self.context.renderer.updateBones()
 
-    def connectBone(self, boneName, parentName):
+    def connectBone(self, boneName, parentName, update=True):
         bones = self.context.renderer.bones
         poseBone = bones[boneName]
         newParent = bones[parentName]
@@ -276,7 +315,8 @@ class SkinnedEditor:
             newParent.children.append(boneName)
             poseBone.parent = newParent.name
 
-        self.context.renderer.updateBones()
+        if update:
+            self.context.renderer.updateBones()
 
     def handleEvents(self):
         self.mouse = self.get(MOUSE)
