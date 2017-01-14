@@ -22,6 +22,13 @@ class Image:
         self.width = width
         self.height = height
 
+IGNORES = [
+    "color",
+    "uvs",
+    "points",
+    "triangles",
+]
+
 class Bone:
     def __init__(self, name):
         self.name = name
@@ -47,19 +54,11 @@ class Bone:
         self.triangles = []
 
     def updateVerticesFromTriangles(self):
-        w = self.image.width
-        h = self.image.height
-
         verts = []
-        uvs = []
         indices = []
-
         for tri in self.triangles:
             for v in tri:
-                xUv = v[0] / float(w)
-                yUv = v[1] / float(h)
                 verts.extend([v[0], v[1]])
-                uvs.extend([xUv, yUv])
                 indices.append(len(verts) / 2 - 1)
 
         vCount = len(verts) / 2 / 3
@@ -67,8 +66,18 @@ class Bone:
             raise RuntimeError("Invalid vertex count: %i of %i" % (vCount, len(self.triangles)))
 
         self.vertices = makeArray(gl.GLfloat, verts)
-        self.uvs = makeArray(gl.GLfloat, uvs)
         self.indices = makeArray(gl.GLuint, indices)
+
+    def updateUvs(self):
+        if self.vertices:
+            w = self.image.width
+            h = self.image.height
+            uvs = []
+            for i in range(0, len(self.vertices), 2):
+                xUv = (self.vertices[i] - self.pos[0]) / float(w)
+                yUv = (self.vertices[i + 1] - self.pos[1]) / float(h)
+                uvs.extend([xUv, yUv])
+            self.uvs = makeArray(gl.GLfloat, uvs)
 
     def moveVertices(self, offset):
         if self.vertices:
@@ -165,7 +174,11 @@ def shortenLine(a, b, relative):
 class JsonEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, (Bone, Image)):
-            return obj.__dict__
+            d = obj.__dict__.copy()
+            for ignore in IGNORES:
+                if ignore in d:
+                    del d[ignore]
+            return d
         elif isinstance(obj, euclid.Vector3):
             return (obj.x, obj.y, obj.z)
         elif isinstance(obj, ctypes.Array):
@@ -214,7 +227,6 @@ def loadFromFile(path):
         bone.wireFrame = raw["wireFrame"]
 
         bone.vertices = _getArray(gl.GLfloat, raw, "vertices")
-        bone.uvs = _getArray(gl.GLfloat, raw, "uvs")
         bone.indices = _getArray(gl.GLuint, raw, "indices")
         bone.boneWeights = _getArray(gl.GLfloat, raw, "boneWeights")
         bone.boneIndices = _getArray(gl.GLfloat, raw, "boneIndices")

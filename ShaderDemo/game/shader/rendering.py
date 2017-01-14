@@ -314,6 +314,9 @@ class SkinnedRenderer(BaseRenderer):
             self.loadLiveComposite(image)
             self.updateBones()
 
+        for bone in self.bones.values():
+            bone.updateUvs()
+
     def updateBones(self):
         transforms = self.computeBoneTransforms()
         for i, transform in enumerate(transforms):
@@ -343,8 +346,6 @@ class SkinnedRenderer(BaseRenderer):
         container = image.visit()[0]
         self.size = container.style.xmaximum, container.style.ymaximum
 
-        baseBoneName = self.root.name
-
         for i, child in enumerate(container.children):
             placement = child.get_placement()
             base = child.children[0]
@@ -358,7 +359,7 @@ class SkinnedRenderer(BaseRenderer):
             y = placement[1] + crop[1]
 
             bone = skinned.Bone(boneName)
-            bone.parent = baseBoneName
+            bone.parent = self.root.name
             bone.image = skinned.Image(base.filename, crop[0], crop[1], surface.get_width(), surface.get_height())
             bone.pos = (x, y)
             bone.pivot = (bone.pos[0] + bone.image.width / 2.0, bone.pos[1] + bone.image.height / 2.0)
@@ -372,9 +373,6 @@ class SkinnedRenderer(BaseRenderer):
             self.bones[boneName] = bone
 
             self.skinTextures.setTexture(bone.image.name, surface)
-
-            if baseBoneName == self.root.name:
-                baseBoneName = bone.name
 
     def cropSurface(self, surface, rect):
         cropped = pygame.Surface((rect[2], rect[3]), 0, surface)

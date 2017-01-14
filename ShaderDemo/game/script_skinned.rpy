@@ -9,7 +9,7 @@ image doll = LiveComposite(
     #(0, 0), "doll hair.png",
 )
 
-screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, xalign=0.5, yalign=1.0):
+screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, xalign=0.5, yalign=0.5):
     modal True
     add ShaderDisplayable(shader.MODE_SKINNED, name, shader.VS_SKINNED, pixelShader, textures, uniforms, None, update):
         xalign xalign
@@ -72,6 +72,7 @@ init python:
         if saveEdits:
             saveEdits = False
             editor.saveToFile()
+            renpy.notify("File saved")
 
 
 label start_skinned:
