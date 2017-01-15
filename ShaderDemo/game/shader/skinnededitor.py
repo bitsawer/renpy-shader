@@ -292,7 +292,7 @@ class SkinnedEditor:
             return
 
         bones = self.context.renderer.bones
-        for child in bone.children:
+        for child in bone.children[:]:
             self.connectBone(child, bone.parent, False)
 
         bones[bone.parent].children.remove(bone.name)
