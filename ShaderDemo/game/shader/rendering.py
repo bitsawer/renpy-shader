@@ -307,7 +307,7 @@ class SkinnedRenderer(BaseRenderer):
     def init(self, image, vertexShader, pixeShader):
         self.shader = utils.Shader(vertexShader, pixeShader)
 
-        if 0:
+        if 1:
             self.loadJson(image, "bones.json")
         else:
             #Assume LiveComposite. Not that great, relies on specific RenPy implementation...
@@ -323,6 +323,7 @@ class SkinnedRenderer(BaseRenderer):
             bone = transform.bone
             bone.color = (random.randint(32, 255), random.randint(64, 255), random.randint(32, 255))
             bone.updateVertexWeights(i, transforms)
+            bone.sortVertices(transforms)
 
     def loadJson(self, image, path):
         container = image.visit()[0]
@@ -419,6 +420,8 @@ class SkinnedRenderer(BaseRenderer):
 
         gl.glClearColor(*self.clearColor)
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+
+        gl.glDisable(gl.GL_DEPTH_TEST)
 
         screenSize = self.getSize()
         self.shader.uniformf("screenSize", *screenSize)

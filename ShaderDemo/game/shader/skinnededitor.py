@@ -271,6 +271,9 @@ class SkinnedEditor:
         else:
             self.set(ACTIVE_BONE_NAME, None)
 
+    def getBones(self):
+        return self.context.renderer.bones
+
     def getBone(self, name):
         return self.context.renderer.bones[name]
 
@@ -298,7 +301,7 @@ class SkinnedEditor:
         bones[bone.parent].children.remove(bone.name)
         del bones[bone.name]
 
-        self.context.renderer.updateBones()
+        self.updateBones()
 
     def connectBone(self, boneName, parentName, update=True):
         bones = self.context.renderer.bones
@@ -316,7 +319,16 @@ class SkinnedEditor:
             poseBone.parent = newParent.name
 
         if update:
-            self.context.renderer.updateBones()
+            self.updateBones()
+
+    def updateBones(self):
+        self.context.renderer.updateBones()
+
+    def setBoneZOrder(self, bone, newZ):
+        delta = newZ - bone.zOrder
+        children = [bone] + bone.getAllChildren(self.getBones())
+        for child in children:
+            child.zOrder += delta
 
     def handleEvents(self):
         self.mouse = self.get(MOUSE)
@@ -359,11 +371,13 @@ class SkinnedEditor:
         elif event.button == 4:
             hover = self.pickPivot(pos)
             if hover:
-                hover.zOrder += 1
+                self.setBoneZOrder(hover, hover.zOrder + 1)
+                self.updateBones()
         elif event.button == 5:
             hover = self.pickPivot(pos)
             if hover:
-                hover.zOrder -= 1
+                self.setBoneZOrder(hover, hover.zOrder - 1)
+                self.updateBones()
 
     def handleMouseMotion(self, pos):
         dragPivot = self.get(DRAG_PIVOT)
@@ -387,7 +401,7 @@ class SkinnedEditor:
 
     def stopDrag(self):
         if self.get(DRAG_PIVOT):
-            self.context.renderer.updateBones()
+            self.updateBones()
 
         self.set(DRAG_PIVOT, None)
         self.set(DRAG_POS, None)
@@ -507,11 +521,12 @@ class SkinnedEditor:
                 #    context.overlayCanvas.lines("#0f0", True, tri)
 
                 polyPoints = self.getPolyPoints(bone)
-                context.overlayCanvas.lines("#ff0", True, polyPoints)
+                if polyPoints:
+                    context.overlayCanvas.lines("#ff0", True, polyPoints)
 
-                for i, p in enumerate(polyPoints):
-                    color = (0, int(float(i) / len(polyPoints) * 255), 0)
-                    context.overlayCanvas.circle(color, p, 3)
+                    for i, p in enumerate(polyPoints):
+                        color = (0, int(float(i) / len(polyPoints) * 255), 0)
+                        context.overlayCanvas.circle(color, p, 3)
 
             if self.settings["pivots"]:
                 if bone.parent:

@@ -53,6 +53,16 @@ class Bone:
         self.points = []
         self.triangles = []
 
+    def getAllChildren(self, bones, results=None):
+        if not results:
+            results = []
+
+        for name in self.children:
+            child = bones[name]
+            results.append(child)
+            child.getAllChildren(bones, results)
+        return results
+
     def updateVerticesFromTriangles(self):
         verts = []
         indices = []
@@ -67,6 +77,22 @@ class Bone:
 
         self.vertices = makeArray(gl.GLfloat, verts)
         self.indices = makeArray(gl.GLuint, indices)
+
+    def sortVertices(self, transforms):
+        if self.vertices:
+            triangles = []
+            for i in range(0, len(self.indices), 3):
+                a, b, c = self.indices[i], self.indices[i + 1], self.indices[i + 2]
+                boneIndex = int(self.boneIndices[a * 4])
+                trans = transforms[boneIndex]
+                triangles.append((trans.bone, a, b, c))
+            triangles.sort(key=lambda b: b[0].zOrder)
+
+            indices = []
+            for tri in triangles:
+                indices.extend(tri[1:])
+
+            self.indices = makeArray(gl.GLuint, indices)
 
     def updateUvs(self):
         if self.vertices:
@@ -100,9 +126,14 @@ class Bone:
 
                 nearby = findBoneInfluences((x, y), mapping)
                 if len(nearby) > 0:
-                    nearest = nearby[0][1]
-                    weights.extend([1.0, 0.0, 0.0, 0.0])
-                    indices.extend([float(nearest.index), 0.0, 0.0, 0.0])
+                    #influence = 1.0 / len(nearby)
+                    for x in range(4):
+                        if x < len(nearby):
+                            weights.append(nearby[x].weight)
+                            indices.append(float(nearby[x].transform.index))
+                        else:
+                            weights.append(0.0)
+                            indices.append(0.0)
                 else:
                     weights.extend([1.0, 0.0, 0.0, 0.0])
                     indices.extend([float(index), 0.0, 0.0, 0.0])
@@ -138,8 +169,29 @@ class Bone:
             if inside >= 2:
                 self.triangles.append(((a[0], a[1]), (b[0], b[1]), (c[0], c[1])))
 
+class BoneWeight:
+    def __init__(self, distance, transform):
+        self.distance = distance
+        self.transform = transform
+        self.bone = transform.bone
+        self.weight = 0.0
+
+SHORTEN_LINE = 0.9
+
 def findBoneInfluences(vertex, transforms):
     distances = []
+    nearest = findNearestBone(vertex, transforms)
+    if nearest:
+        nearest.weight = 1.0
+        distances.append(nearest)
+
+    distances.sort(key=lambda w: w.distance)
+    return distances[:4]
+
+def findNearestBone(vertex, transforms):
+    nearest = None
+    minDistance = None
+
     for trans in transforms.values():
         if not trans.bone.parent:
             #Skip root bone
@@ -147,13 +199,18 @@ def findBoneInfluences(vertex, transforms):
 
         start = trans.bone.pivot
         for child in trans.bone.children:
-            childTrans = transforms[child]
-            end = childTrans.bone.pivot
-            #TODO shorten the lines a bit, otherwise order can cause different results
-            distances.append((geometry.pointToLineDistance(vertex, start, end), trans))
+            end = transforms[child].bone.pivot
+            distance = pointToShortenedLineDistance(vertex, start, end, SHORTEN_LINE)
+            if minDistance is None or distance < minDistance:
+                minDistance = distance
+                nearest = BoneWeight(distance, trans)
 
-    distances.sort(key=lambda x: x[0])
-    return distances[:4]
+    return nearest
+
+def pointToShortenedLineDistance(point, start, end, shorten):
+    startShort = shortenLine(start, end, shorten)
+    endShort = shortenLine(end, start, shorten)
+    return geometry.pointToLineDistance(point, startShort, endShort)
 
 def shortenLine(a, b, relative):
     x1, y1 = a
