@@ -112,16 +112,16 @@ class Bone:
 
     def updatePoints(self, surface):
         points = geometry.findEdgePixelsOrdered(surface)
-        simplified = geometry.simplifyEdgePixels(points, 10)
-        offseted = geometry.offsetPolygon(simplified, -5)
-        self.points = geometry.simplifyEdgePixels(offseted, 40)
+        distance = (surface.get_width() + surface.get_height()) / 10000.0 #TODO Magic
+        simplified = geometry.simplifyEdgePixels(points, 40)
+        self.points = geometry.offsetPolygon(simplified, -5) #TODO Increase this once better weighting is in?
 
     def triangulatePoints(self):
         pointsSegments = delaunay.ToPointsAndSegments()
         pointsSegments.add_polygon([self.points])
         triangulation = delaunay.triangulate(pointsSegments.points, pointsSegments.infos, pointsSegments.segments)
 
-        expanded = geometry.offsetPolygon(self.points, -1) #TODO 0 better, do nothing?
+        expanded = self.points #geometry.offsetPolygon(self.points, -1) #TODO 0 better, do nothing?
         shorten = 0.5
 
         self.triangles = []
@@ -149,6 +149,7 @@ def findBoneInfluences(vertex, transforms):
         for child in trans.bone.children:
             childTrans = transforms[child]
             end = childTrans.bone.pivot
+            #TODO shorten the lines a bit, otherwise order can cause different results
             distances.append((geometry.pointToLineDistance(vertex, start, end), trans))
 
     distances.sort(key=lambda x: x[0])

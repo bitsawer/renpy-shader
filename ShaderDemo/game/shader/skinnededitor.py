@@ -84,7 +84,7 @@ class AttributeEdit(Action):
         if "rotation" in self.attribute:
             value = math.degrees(value)
 
-        editor.context.overlayCanvas.line("#f00", (self.pivot.x, self.pivot.y), editor.mouse)
+        editor.context.overlayCanvas.line("#0f0", (self.pivot.x, self.pivot.y), editor.mouse)
         editor.drawText("%s%s: %.1f" % (name, axis, value), "#fff", (editor.mouse[0] + 20, editor.mouse[1]))
 
 
@@ -369,6 +369,7 @@ class SkinnedEditor:
         dragPivot = self.get(DRAG_PIVOT)
         if dragPivot:
             bone, oldMouse, oldHead = dragPivot
+            #TODO Save the bone start transform, otherwise precision error accumulate while dragging...
             inverse = self.getBoneInverseTranslation(bone, pos)
             delta = (oldMouse[0] - inverse[0], oldMouse[1] - inverse[1])
             pivot = bone.pivot
@@ -506,6 +507,8 @@ class SkinnedEditor:
                 #    context.overlayCanvas.lines("#0f0", True, tri)
 
                 polyPoints = self.getPolyPoints(bone)
+                context.overlayCanvas.lines("#ff0", True, polyPoints)
+
                 for i, p in enumerate(polyPoints):
                     color = (0, int(float(i) / len(polyPoints) * 255), 0)
                     context.overlayCanvas.circle(color, p, 3)
