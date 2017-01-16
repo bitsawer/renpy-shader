@@ -315,6 +315,10 @@ class SkinnedRenderer(BaseRenderer):
             self.updateBones()
 
         for bone in self.bones.values():
+            if 0:
+                bone.subdivide(2000)
+                self.updateBones()
+
             bone.updateUvs()
 
     def updateBones(self):
@@ -450,7 +454,7 @@ class SkinnedRenderer(BaseRenderer):
 
     def renderBoneTransform(self, transform, context):
         bone = transform.bone
-        if not bone.image or not bone.visible:
+        if not bone.image:
             return
 
         screenSize = self.getSize()
@@ -467,8 +471,9 @@ class SkinnedRenderer(BaseRenderer):
         self.bindAttributeArray(self.shader, "inBoneWeights", bone.boneWeights, 4)
         self.bindAttributeArray(self.shader, "inBoneIndices", bone.boneIndices, 4)
 
-        self.shader.uniformf("wireFrame", 0)
-        gl.glDrawElements(gl.GL_TRIANGLES, len(bone.indices), gl.GL_UNSIGNED_INT, bone.indices)
+        if bone.visible:
+            self.shader.uniformf("wireFrame", 0)
+            gl.glDrawElements(gl.GL_TRIANGLES, len(bone.indices), gl.GL_UNSIGNED_INT, bone.indices)
 
         if bone.wireFrame:
             self.shader.uniformf("wireFrame", 1)

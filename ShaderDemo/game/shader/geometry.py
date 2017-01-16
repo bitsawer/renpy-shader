@@ -296,3 +296,20 @@ def pointToLineDistance(point, a, b):
     dx = x - x3
     dy = y - y3
     return math.sqrt(dx*dx + dy*dy)
+
+def pointDistance(p1, p2):
+    return math.hypot(p2[0] - p1[0], p2[1] - p1[1])
+
+def triangleArea(p1, p2, p3):
+    a = pointDistance(p1, p2)
+    b = pointDistance(p2, p3)
+    c = pointDistance(p3, p1)
+
+    #Heron's formula
+    s = (a + b + c) / 2.0
+    return (s * (s - a) * (s - b) * (s - c)) ** 0.5
+
+def interpolate2d(p1, p2, s):
+    x = _interpolate(p1[0], p2[0], s)
+    y = _interpolate(p1[1], p2[1], s)
+    return (x, y)

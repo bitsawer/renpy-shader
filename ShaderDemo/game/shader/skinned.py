@@ -63,6 +63,58 @@ class Bone:
             child.getAllChildren(bones, results)
         return results
 
+    def getTriangleIndices(self):
+        triangles = []
+        if self.indices:
+            for i in range(0, len(self.indices), 3):
+                triangles.append((self.indices[i], self.indices[i + 1], self.indices[i + 2]))
+        return triangles
+
+    def getVertex(self, index):
+        return (self.vertices[index * 2], self.vertices[index * 2 + 1])
+
+    def subdivide(self, maxSize):
+        if self.vertices:
+            verts = self.vertices[:]
+            indices = self.indices[:]
+
+            for i, (a, b, c) in enumerate(self.getTriangleIndices()):
+                v1 = self.getVertex(a)
+                v2 = self.getVertex(b)
+                v3 = self.getVertex(c)
+                area = geometry.triangleArea(v1, v2, v3)
+                if area > maxSize: #TODO Also if triangle has a too long side
+                    self.subdivideTriangle(a, b, c, verts, indices, i)
+
+            self.vertices = makeArray(gl.GLfloat, verts)
+            self.indices = makeArray(gl.GLuint, [x for x in indices if x is not None])
+
+    def subdivideTriangle(self, a, b, c, verts, indices, index):
+        v1 = self.getVertex(a)
+        v2 = self.getVertex(b)
+        v3 = self.getVertex(c)
+
+        new1 = geometry.interpolate2d(v1, v2, 0.5)
+        new2 = geometry.interpolate2d(v2, v3, 0.5)
+        new3 = geometry.interpolate2d(v3, v1, 0.5)
+
+        indices[index * 3] = None
+        indices[index * 3 + 1] = None
+        indices[index * 3 + 2] = None
+
+        for v in [new1, new2, new3]:
+            verts.extend(v)
+
+        vertexCount = len(verts) // 2
+        d = vertexCount - 3
+        e = vertexCount - 2
+        f = vertexCount - 1
+
+        indices.extend([d, e, f])
+        indices.extend([a, d, f])
+        indices.extend([d, b, e])
+        indices.extend([f, e, c])
+
     def updateVerticesFromTriangles(self):
         verts = []
         indices = []
@@ -81,8 +133,7 @@ class Bone:
     def sortVertices(self, transforms):
         if self.vertices:
             triangles = []
-            for i in range(0, len(self.indices), 3):
-                a, b, c = self.indices[i], self.indices[i + 1], self.indices[i + 2]
+            for a, b, c in self.getTriangleIndices():
                 boneIndex = int(self.boneIndices[a * 4])
                 trans = transforms[boneIndex]
                 triangles.append((trans.bone, a, b, c))

@@ -8,7 +8,7 @@ import euclid
 import skinned
 import geometry
 
-PIVOT_SIZE = 6
+PIVOT_SIZE = 4
 PICK_DISTANCE_PIVOT = PIVOT_SIZE * 2
 PICK_DISTANCE_CROP = 5
 
