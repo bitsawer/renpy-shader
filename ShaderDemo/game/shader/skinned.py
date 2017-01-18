@@ -177,11 +177,10 @@ class Bone:
 
                 nearby = findBoneInfluences((x, y), mapping)
                 if len(nearby) > 0:
-                    #influence = 1.0 / len(nearby)
                     for x in range(4):
                         if x < len(nearby):
                             weights.append(nearby[x].weight)
-                            indices.append(float(nearby[x].transform.index))
+                            indices.append(float(nearby[x].index))
                         else:
                             weights.append(0.0)
                             indices.append(0.0)
@@ -221,8 +220,9 @@ class Bone:
                 self.triangles.append(((a[0], a[1]), (b[0], b[1]), (c[0], c[1])))
 
 class BoneWeight:
-    def __init__(self, distance, transform):
+    def __init__(self, distance, index, transform):
         self.distance = distance
+        self.index = index
         self.transform = transform
         self.bone = transform.bone
         self.weight = 0.0
@@ -233,8 +233,15 @@ def findBoneInfluences(vertex, transforms):
     distances = []
     nearest = findNearestBone(vertex, transforms)
     if nearest:
-        nearest.weight = 1.0
+        nearest.weight = 0.1
         distances.append(nearest)
+
+        if nearest.bone.parent:
+            parent = transforms[nearest.bone.parent]
+            distances.append(BoneWeight(1000, parent.index, parent))
+            distances[-1].weight = 0.9
+        else:
+            nearest.weight = 1.0
 
     distances.sort(key=lambda w: w.distance)
     return distances[:4]
@@ -244,17 +251,16 @@ def findNearestBone(vertex, transforms):
     minDistance = None
 
     for trans in transforms.values():
-        if not trans.bone.parent:
-            #Skip root bone
+        if not trans.bone.parent or not transforms[trans.bone.parent].bone.parent:
+            #Skip root bones
             continue
 
         start = trans.bone.pivot
-        for child in trans.bone.children:
-            end = transforms[child].bone.pivot
-            distance = pointToShortenedLineDistance(vertex, start, end, SHORTEN_LINE)
-            if minDistance is None or distance < minDistance:
-                minDistance = distance
-                nearest = BoneWeight(distance, trans)
+        end = transforms[trans.bone.parent].bone.pivot
+        distance = pointToShortenedLineDistance(vertex, start, end, SHORTEN_LINE)
+        if minDistance is None or distance < minDistance:
+            minDistance = distance
+            nearest = BoneWeight(distance, trans.index, trans)
 
     return nearest
 
