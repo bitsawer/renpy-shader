@@ -8,6 +8,8 @@ def makeArray(tp, values):
     return (tp * len(values))(*values)
 
 class SkinnedMesh:
+    jsonIgnore = ["uvs"]
+
     def __init__(self, vertices, indices, boneWeights=None, boneIndices=None):
         self.vertices = vertices
         self.indices = indices

@@ -7,7 +7,6 @@ from OpenGL import GL as gl
 import euclid
 import math
 import json
-import random
 
 import shader
 import shadercode
@@ -325,7 +324,6 @@ class SkinnedRenderer(BaseRenderer):
         transforms = self.computeBoneTransforms()
         for i, transform in enumerate(transforms):
             bone = transform.bone
-            bone.color = (random.randint(32, 255), random.randint(64, 255), random.randint(32, 255))
             if bone.mesh:
                 bone.mesh.updateVertexWeights(i, transforms)
                 bone.mesh.sortVertices(transforms)

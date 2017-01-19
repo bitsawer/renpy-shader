@@ -16,6 +16,8 @@ def makeArray(tp, values):
     return (tp * len(values))(*values)
 
 class SkinnedImage:
+    jsonIgnore = []
+
     def __init__(self, name, x, y, width, height):
         self.name = name
         self.x = x
@@ -23,14 +25,10 @@ class SkinnedImage:
         self.width = width
         self.height = height
 
-IGNORES = [
-    "color",
-    "uvs",
-    "points",
-    "triangles",
-]
 
 class SkinningBone:
+    jsonIgnore = ["points", "triangles"]
+
     def __init__(self, name):
         self.name = name
         self.children = []
@@ -43,7 +41,6 @@ class SkinningBone:
         self.zOrder = -1
         self.visible = True
         self.wireFrame = False
-        self.color = (0, 0, 0) #Not serialized
 
         self.mesh = None
 
@@ -101,11 +98,13 @@ class SkinningBone:
 
         self.mesh = skinnedmesh.SkinnedMesh(makeArray(gl.GLfloat, verts), makeArray(gl.GLuint, indices))
 
+JSON_IGNORES = []
+
 class JsonEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, (SkinningBone, SkinnedImage, skinnedmesh.SkinnedMesh)):
             d = obj.__dict__.copy()
-            for ignore in IGNORES:
+            for ignore in JSON_IGNORES + getattr(obj, "jsonIgnore", []):
                 if ignore in d:
                     del d[ignore]
             return d
