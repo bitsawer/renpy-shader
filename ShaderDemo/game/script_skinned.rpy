@@ -116,16 +116,20 @@ init python:
             rigFile = fileName
 
     def subdivideActiveMesh(editor):
-        if editor.subdivide(500):
-            notify("Subdivision done")
+        active = editor.getActiveBone()
+        if active:
+            if editor.subdivide(active, 500):
+                notify("Subdivision done")
+            else:
+                notify("Subdivision not possible")
         else:
-            notify("Subdivision not possible")
+            notify("No mesh bone selected")
 
     def renameActiveBone(editor):
         active = editor.getActiveBone()
         if active:
             newName = userInput("Rename bone to...", active.name)
-            if editor.renameBone(active.name, newName):
+            if editor.renameBone(active, newName):
                 notify("Bone renamed")
             else:
                 notify("Renaming failed")
