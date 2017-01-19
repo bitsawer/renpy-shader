@@ -153,7 +153,7 @@ label start:
     a "Eek! Looks freaky! But don't worry, I'll explain what that image does."
     a "The red color tells where a wind-like distortion effect should be applied."
     a "The green color tells - you guessed it - where the eyes are."
-    a "And finally, the blue color tells where the mouth and it's corners are."
+    a "And finally, the blue color tells where the mouth and its corners are."
     a "The brighter the color, the more strongly the effects will be applied."
     a "Naturally, a black color means that no effect should be applied to that location in the image."
     a "Also note that the influence image is smaller than my actual color image."
@@ -189,7 +189,7 @@ label start:
     #normal sprite image, but they will consume much more memory and processing power. So it is
     #recommended to use normal RenPy statements with normal images.
 
-    #One of the disadvantage of using Python to do this is that we lose RenPy screen prediction.
+    #One of the disadvantages of using Python to do this is that we lose RenPy screen prediction.
     #This can affect image loading performance. You can manully give hints
     #by using:
     #   -renpy.start_predict_screen() and renpy.stop_predict_screen()
