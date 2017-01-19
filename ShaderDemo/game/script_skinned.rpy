@@ -31,7 +31,7 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, a
                 #xminimum 150
                 text "Rig: " + name
 
-                text "Toggles":
+                text "Visual":
                     size 15
 
                 textbutton "Wireframes" action ToggleDict(editorSettings, "wireframe")
@@ -43,6 +43,7 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, a
                 text "Operations":
                     size 15
 
+                textbutton "Rename" action [SetVariable("renameBoneFlag", True), RestartStatement()]
                 textbutton "Subdivide" action [SetVariable("subdivideMesh", True), RestartStatement()]
 
                 text "File":
@@ -93,6 +94,8 @@ init python:
 
     subdivideMesh = False
 
+    renameBoneFlag = False
+
     frameNumber = 0
 
     def userInput(prompt, *args):
@@ -118,8 +121,19 @@ init python:
         else:
             notify("Subdivision not possible")
 
+    def renameActiveBone(editor):
+        active = editor.getActiveBone()
+        if active:
+            newName = userInput("Rename bone to...", active.name)
+            if editor.renameBone(active.name, newName):
+                notify("Bone renamed")
+            else:
+                notify("Renaming failed")
+        else:
+            notify("No bone selected")
+
     def editUpdate(context):
-        global saveRig, subdivideMesh
+        global saveRig, subdivideMesh, renameBoneFlag
 
         editor = skinnededitor.SkinnedEditor(context, editorSettings)
         editor.update()
@@ -127,6 +141,10 @@ init python:
         if subdivideMesh:
             subdivideMesh = False
             subdivideActiveMesh(editor)
+
+        if renameBoneFlag:
+            renameBoneFlag = False
+            renameActiveBone(editor)
 
         if saveRig:
             saveRig = False

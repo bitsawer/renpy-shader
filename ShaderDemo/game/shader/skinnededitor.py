@@ -298,6 +298,25 @@ class SkinnedEditor:
             return True
         return False
 
+    def renameBone(self, oldName, newName):
+        bones = self.getBones()
+        if newName not in bones:
+            bone = bones[oldName]
+            bone.name = newName
+
+            if bone.parent:
+                bones[bone.parent].children.remove(oldName)
+                bones[bone.parent].children.append(newName)
+
+            for child in bone.children:
+                bones[child].parent = newName
+
+            del bones[oldName]
+            bones[newName] = bone
+
+            return True
+        return False
+
     def deleteBone(self, bone):
         if not bone.parent:
             return
