@@ -249,8 +249,8 @@ class SkinnedEditor:
         self.handleEvents()
         self.visualizeBones()
 
-    def saveToFile(self):
-        skin.saveToFile(self.context.renderer.bones, "bones.json")
+    def saveSkeletonToFile(self, name):
+        skin.saveToFile(self.context.renderer.bones, name)
 
     def get(self, key):
         return self.context.store.get(key)

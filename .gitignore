@@ -10,3 +10,5 @@
 saves/
 OpenGL/
 junk/
+
+*.rig

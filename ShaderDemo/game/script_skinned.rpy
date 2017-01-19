@@ -9,9 +9,9 @@ image doll = LiveComposite(
     #(0, 0), "doll hair.png",
 )
 
-screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, xalign=0.5, yalign=0.5):
+screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, args=None, xalign=0.5, yalign=0.5):
     modal True
-    add ShaderDisplayable(shader.MODE_SKINNED, name, shader.VS_SKINNED, pixelShader, textures, uniforms, None, update):
+    add ShaderDisplayable(shader.MODE_SKINNED, name, shader.VS_SKINNED, pixelShader, textures, uniforms, None, update, args):
         xalign xalign
         yalign yalign
         #rotate 45
@@ -32,18 +32,16 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, x
 
             textbutton "Wireframes" action [ToggleDict(editorSettings, "wireframe"), RestartStatement()]
             textbutton "Image areas" action [ToggleDict(editorSettings, "imageAreas"), RestartStatement()]
-            textbutton "Bone points" action [ToggleDict(editorSettings, "pivots"), RestartStatement()]
+            textbutton "Bones" action [ToggleDict(editorSettings, "pivots"), RestartStatement()]
             textbutton "Bone names" action [ToggleDict(editorSettings, "names"), RestartStatement()]
             textbutton "Debug animate" action [ToggleDict(editorSettings, "debugAnimate"), RestartStatement()]
 
             text "Actions":
                 size 15
 
-            textbutton "Autoconnect" action NullAction() #TODO Set a flag and check in update
             textbutton "Reload" action Confirm("Are you sure you want to reload?", Jump("start_skinned"))
             #textbutton "Save" action Confirm("Are you sure you want to save?", Function(editSave))
-            textbutton "Save" action SetVariable("saveEdits", True)
-
+            textbutton "Save rig" action SetVariable("saveRig", True)
 
 init python:
     from shader import skinnededitor
@@ -61,24 +59,38 @@ init python:
         "debugAnimate": False,
     }
 
-    saveEdits = False
+    saveRig = False
+    rigFile = "bones.rig"
+
+    def userInput(prompt, *args):
+        #TODO Exclude invalid characters...
+        return renpy.invoke_in_new_context(renpy.input, prompt, *args)
+
+    def notify(text):
+        renpy.notify(text)
 
     def editUpdate(context):
-        global saveEdits
+        global saveRig, rigFile
 
         editor = skinnededitor.SkinnedEditor(context, editorSettings)
         editor.update()
 
-        if saveEdits:
-            saveEdits = False
-            editor.saveToFile()
-            renpy.notify("File saved")
+        if saveRig:
+            saveRig = False
+            fileName = userInput("Save rig as...", rigFile)
+            if fileName:
+                if not fileName.strip().lower().endswith(".rig"):
+                    fileName = fileName + ".rig"
+                editor.saveSkeletonToFile(fileName)
+                notify("Rig saved to '%s'" % fileName)
+                rigFile = fileName
 
 
 label start_skinned:
 label main_menu: #TODO For fast testing
     $ _controllerContextStore._clear()
 
-    call screen skinnedScreen("doll", shader.PS_SKINNED, {"tex1": "amy influence"}, update=editUpdate, _tag="amy", _layer="amy") #nopredict
+    call screen skinnedScreen("doll", shader.PS_SKINNED, {"tex1": "amy influence"},
+        update=editUpdate, args={"rigFile": rigFile}, _tag="amy", _layer="amy") #nopredict
 
     "The End"

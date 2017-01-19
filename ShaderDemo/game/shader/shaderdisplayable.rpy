@@ -93,7 +93,7 @@ init python:
             renpy.config.interact_callbacks.append(_interactCallback)
 
     class ShaderDisplayable(renpy.Displayable):
-        def __init__(self, mode, image, vertexShader, pixelShader, textures=None, uniforms=None, create=None, update=None, **properties):
+        def __init__(self, mode, image, vertexShader, pixelShader, textures=None, uniforms=None, create=None, update=None, args=None, **properties):
             super(ShaderDisplayable, self).__init__(**properties)
 
             self.mode = mode
@@ -104,7 +104,8 @@ init python:
             self.uniforms = uniforms
             self.createCallback = create
             self.updateCallback = update
-            self.tag = mode + "/" + image + "/" + vertexShader + "/" + pixelShader + "/" + str(textures) + "/" + str(uniforms)
+            self.tag = mode + "/" + image + "/" + vertexShader + "/" + pixelShader + "/" + str(textures) + "/" + str(uniforms) + "/" + str(args)
+            self.args = args or {}
 
             self.mousePos = (0, 0)
             self.mouseVelocity = (0, 0)
@@ -135,8 +136,7 @@ init python:
                 renderer.init(self.vertexShader, self.pixelShader, w, h)
             elif self.mode == shader.MODE_SKINNED:
                 renderer = shader.SkinnedRenderer()
-                renderer.init(self.image, self.vertexShader, self.pixelShader)
-                #renderer.loadTest()
+                renderer.init(self.image, self.vertexShader, self.pixelShader, self.args)
             else:
                 raise RuntimeError("Unknown mode: %s" % self.mode)
 
