@@ -454,7 +454,13 @@ class SkinnedRenderer(BaseRenderer):
     def renderBoneTransform(self, transform, context):
         bone = transform.bone
         mesh = bone.mesh
+
         if not bone.image or not mesh:
+            #No image or mesh attached
+            return
+
+        if not bone.visible and not bone.wireFrame:
+            #Nothing to draw
             return
 
         screenSize = self.getSize()
