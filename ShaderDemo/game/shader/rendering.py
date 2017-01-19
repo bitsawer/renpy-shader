@@ -304,7 +304,7 @@ class SkinnedRenderer(BaseRenderer):
         self.bones = {}
 
     def init(self, image, vertexShader, pixeShader, args):
-        self.shader = utils.Shader(vertexShader, pixeShader)
+        self.shader = utils.Shader(vertexShader.replace("MAX_BONES", str(skin.MAX_BONES)), pixeShader)
 
         rig = args.get("rigFile")
         if rig:
@@ -488,7 +488,6 @@ class SkinnedRenderer(BaseRenderer):
         self.unbindAttributeArray(self.shader, "inBoneWeights")
         self.unbindAttributeArray(self.shader, "inBoneIndices")
 
-
     def computeBoneTransforms(self):
         transforms = []
         skinning = SkinningStack()
@@ -496,6 +495,10 @@ class SkinnedRenderer(BaseRenderer):
         self.computeBoneTransformRecursive(self.root, transforms, skinning)
         skinning.pop()
         transforms.sort(key=lambda t: t.bone.zOrder)
+
+        if len(transforms) > skin.MAX_BONES:
+            raise RuntimeError("Too many bones, maximum is %i" % skin.MAX_BONES)
+
         return transforms
 
     def computeBoneTransformRecursive(self, bone, transforms, skinning):

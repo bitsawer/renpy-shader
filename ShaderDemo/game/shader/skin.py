@@ -11,6 +11,7 @@ import delaunay
 import skinnedmesh
 
 VERSION = 1
+MAX_BONES = 64
 
 def makeArray(tp, values):
     return (tp * len(values))(*values)

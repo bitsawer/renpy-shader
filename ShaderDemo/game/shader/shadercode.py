@@ -256,7 +256,7 @@ VS_SKINNED = """
 
 uniform mat4 projection;
 
-uniform mat4 boneMatrices[32];
+uniform mat4 boneMatrices[MAX_BONES];
 
 uniform vec2 screenSize;
 uniform float shownTime;
