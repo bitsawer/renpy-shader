@@ -13,7 +13,7 @@ import shader
 import shadercode
 import mesh
 import utils
-import skinned
+import skin
 
 class TextureEntry:
     def __init__(self, image, sampler):
@@ -334,7 +334,7 @@ class SkinnedRenderer(BaseRenderer):
         container = image.visit()[0]
         self.size = container.style.xmaximum, container.style.ymaximum
 
-        self.bones = skinned.loadFromFile(path)
+        self.bones = skin.loadFromFile(path)
         for name, bone in self.bones.items():
             if not bone.parent:
                 self.root = bone
@@ -346,7 +346,7 @@ class SkinnedRenderer(BaseRenderer):
                 self.skinTextures.setTexture(bone.image.name, surface)
 
     def loadLiveComposite(self, image):
-        self.root = skinned.Bone("root")
+        self.root = skin.SkinningBone("root")
         self.bones = {self.root.name: self.root}
 
         container = image.visit()[0]
@@ -364,9 +364,9 @@ class SkinnedRenderer(BaseRenderer):
             x = placement[0] + crop[0]
             y = placement[1] + crop[1]
 
-            bone = skinned.Bone(boneName)
+            bone = skin.SkinningBone(boneName)
             bone.parent = self.root.name
-            bone.image = skinned.Image(base.filename, crop[0], crop[1], surface.get_width(), surface.get_height())
+            bone.image = skin.SkinnedImage(base.filename, crop[0], crop[1], surface.get_width(), surface.get_height())
             bone.pos = (x, y)
             bone.pivot = (bone.pos[0] + bone.image.width / 2.0, bone.pos[1] + bone.image.height / 2.0)
             bone.zOrder = i

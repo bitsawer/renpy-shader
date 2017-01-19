@@ -15,7 +15,7 @@ VERSION = 1
 def makeArray(tp, values):
     return (tp * len(values))(*values)
 
-class Image:
+class SkinnedImage:
     def __init__(self, name, x, y, width, height):
         self.name = name
         self.x = x
@@ -30,7 +30,7 @@ IGNORES = [
     "triangles",
 ]
 
-class Bone:
+class SkinningBone:
     def __init__(self, name):
         self.name = name
         self.children = []
@@ -104,7 +104,7 @@ class Bone:
 
 class JsonEncoder(json.JSONEncoder):
     def default(self, obj):
-        if isinstance(obj, (Bone, Image, skinnedmesh.SkinnedMesh)):
+        if isinstance(obj, (SkinningBone, SkinnedImage, skinnedmesh.SkinnedMesh)):
             d = obj.__dict__.copy()
             for ignore in IGNORES:
                 if ignore in d:
@@ -141,13 +141,13 @@ def loadFromFile(path):
 
     bones = {}
     for name, raw in data["bones"].items():
-        bone = Bone(raw["name"])
+        bone = SkinningBone(raw["name"])
         bone.children = raw["children"]
         bone.parent = raw["parent"]
 
         image = raw.get("image")
         if image:
-            bone.image = Image(image["name"], image["x"], image["y"], image["width"], image["height"])
+            bone.image = SkinnedImage(image["name"], image["x"], image["y"], image["width"], image["height"])
 
         bone.pos = raw["pos"]
         bone.pivot = raw["pivot"]

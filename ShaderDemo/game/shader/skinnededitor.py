@@ -5,7 +5,7 @@ import ctypes
 
 import pygame
 import euclid
-import skinned
+import skin
 import geometry
 
 PIVOT_SIZE = 4
@@ -114,7 +114,7 @@ class ExtrudeBone(Action):
             parts = parts[:-1]
         newName =  self.findNextFreeBoneName(bones, " ".join(parts))
 
-        bone = skinned.Bone(newName)
+        bone = skin.SkinningBone(newName)
         bone.pivot = editor.getBoneInverseTranslation(bones[self.bone.name], editor.mouse)
         bone.zOrder = parent.zOrder + 1
         bones[bone.name] = bone
@@ -250,7 +250,7 @@ class SkinnedEditor:
         self.visualizeBones()
 
     def saveToFile(self):
-        skinned.saveToFile(self.context.renderer.bones, "bones.json")
+        skin.saveToFile(self.context.renderer.bones, "bones.json")
 
     def get(self, key):
         return self.context.store.get(key)
