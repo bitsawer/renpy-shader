@@ -529,36 +529,3 @@ class SkinnedRenderer(BaseRenderer):
             self.computeBoneTransformRecursive(self.bones[childName], transforms, skinning)
 
         skinning.pop()
-
-
-    def loadTest(self):
-        surface = pygame.image.load("E:/vn/skeleton/combined/combined.png")
-        self.setTexture(shader.TEX0, surface)
-
-        with open("E:/vn/skeleton/combined/combined.json") as meta:
-            self.metadata = json.load(meta)
-
-        self.bones = {}
-        for bone in self.metadata["bones"]:
-            surfaces = self.loadSkinImages(bone)
-            self.bones[bone["name"]] = SkinnedBone(bone, surfaces[0])
-
-        self.root = self.bones[self.findRootName(self.metadata)]
-
-    def loadSkinImages(self, bone):
-        surfaces = []
-        for imageType in ["image", "imageWeights"]:
-            surface = pygame.image.load("E:/vn/skeleton/combined/" + bone[imageType])
-            self.skinTextures.setTexture(bone["name"] + "." + imageType, surface)
-            surfaces.append(surface)
-        return surfaces
-
-    def findRootName(self, metadata):
-        children = set()
-        for bone in metadata["bones"]:
-            children.update(bone["children"])
-
-        for bone in metadata["bones"]:
-            if bone["name"] not in children:
-                return bone["name"]
-        return None
