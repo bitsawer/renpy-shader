@@ -16,32 +16,56 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, a
         yalign yalign
         #rotate 45
 
+    drag:
+        drag_handle (0, 0, 1.0, 1.0)
+
+        frame:
+            xmargin 5
+            ymargin 5
+            xpadding 10
+            ypadding 10
+
+            vbox:
+                spacing 10
+                #xmaximum 150
+                #xminimum 150
+                text "Rig: " + name
+
+                text "Toggles":
+                    size 15
+
+                textbutton "Wireframes" action ToggleDict(editorSettings, "wireframe")
+                textbutton "Image areas" action ToggleDict(editorSettings, "imageAreas")
+                textbutton "Bones" action ToggleDict(editorSettings, "pivots")
+                textbutton "Bone names" action ToggleDict(editorSettings, "names")
+                textbutton "Debug animate" action ToggleDict(editorSettings, "debugAnimate")
+
+                text "Actions":
+                    size 15
+
+                textbutton "Reload" action Confirm("Are you sure you want to reload?", Jump("start_skinned"))
+                #textbutton "Save" action Confirm("Are you sure you want to save?", Function(editSave))
+                textbutton "Save rig" action SetVariable("saveRig", True)
+
+    drag:
+        drag_handle (0, 0, 1.0, 1.0)
+        xalign 1.0
+
+        frame:
+            xmargin 5
+            ymargin 5
+            xpadding 10
+            ypadding 10
+            text "Animation: "
+
     frame:
-        xpadding 10
-        ypadding 10
-
-
-        vbox:
+        yalign 1.0
+        hbox:
             spacing 10
-            #xmaximum 150
-            #xminimum 150
-            text name
 
-            text "Toggles":
-                size 15
+            textbutton "Frame: %i" % (frameNumber + 1) yalign 0.5 xsize 150
+            bar value VariableValue("frameNumber", 64)
 
-            textbutton "Wireframes" action [ToggleDict(editorSettings, "wireframe"), RestartStatement()]
-            textbutton "Image areas" action [ToggleDict(editorSettings, "imageAreas"), RestartStatement()]
-            textbutton "Bones" action [ToggleDict(editorSettings, "pivots"), RestartStatement()]
-            textbutton "Bone names" action [ToggleDict(editorSettings, "names"), RestartStatement()]
-            textbutton "Debug animate" action [ToggleDict(editorSettings, "debugAnimate"), RestartStatement()]
-
-            text "Actions":
-                size 15
-
-            textbutton "Reload" action Confirm("Are you sure you want to reload?", Jump("start_skinned"))
-            #textbutton "Save" action Confirm("Are you sure you want to save?", Function(editSave))
-            textbutton "Save rig" action SetVariable("saveRig", True)
 
 init python:
     from shader import skinnededitor
@@ -61,6 +85,7 @@ init python:
 
     saveRig = False
     rigFile = "bones.rig"
+    frameNumber = 0
 
     def userInput(prompt, *args):
         #TODO Exclude invalid characters...
