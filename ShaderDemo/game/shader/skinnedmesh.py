@@ -179,23 +179,6 @@ def pointToBoneDistance(point, bone, transforms):
     return pointToShortenedLineDistance(point, bone.pivot, transforms[bone.parent].bone.pivot, SHORTEN_LINE)
 
 def pointToShortenedLineDistance(point, start, end, shorten):
-    startShort = shortenLine(start, end, shorten)
-    endShort = shortenLine(end, start, shorten)
+    startShort, endShort = geometry.shortenLine(start, end, shorten)
     return geometry.pointToLineDistance(point, startShort, endShort)
 
-def shortenLine(a, b, relative):
-    x1, y1 = a
-    x2, y2 = b
-
-    dx = x2 - x1
-    dy = y2 - y1
-    length = math.sqrt(dx * dx + dy * dy)
-    if length > 0:
-        dx /= length
-        dy /= length
-
-    dx *= length - (length * relative)
-    dy *= length - (length * relative)
-    x3 = x1 + dx
-    y3 = y1 + dy
-    return x3, y3

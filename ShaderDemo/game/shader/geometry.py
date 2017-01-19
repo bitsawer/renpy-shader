@@ -313,3 +313,25 @@ def interpolate2d(p1, p2, s):
     x = _interpolate(p1[0], p2[0], s)
     y = _interpolate(p1[1], p2[1], s)
     return (x, y)
+
+def shortenLine(a, b, relative):
+    aShort = shortenLineEnd(a, b, relative)
+    bShort = shortenLineEnd(b, a, relative)
+    return aShort, bShort
+
+def shortenLineEnd(a, b, relative):
+    x1, y1 = a
+    x2, y2 = b
+
+    dx = x2 - x1
+    dy = y2 - y1
+    length = math.sqrt(dx * dx + dy * dy)
+    if length > 0:
+        dx /= length
+        dy /= length
+
+    dx *= length - (length * relative)
+    dy *= length - (length * relative)
+    x3 = x1 + dx
+    y3 = y1 + dy
+    return x3, y3

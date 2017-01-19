@@ -80,8 +80,7 @@ class SkinningBone:
 
             inside = 0
             for line in [(a, b), (b, c), (c, a)]:
-                short1 = skinnedmesh.shortenLine(line[0], line[1], shorten)
-                short2 = skinnedmesh.shortenLine(line[1], line[0], shorten)
+                short1, short2 = geometry.shortenLine(line[0], line[1], shorten)
                 if geometry.insidePolygon(short1[0], short1[1], expanded) and geometry.insidePolygon(short2[0], short2[1], expanded):
                     inside += 1
 
