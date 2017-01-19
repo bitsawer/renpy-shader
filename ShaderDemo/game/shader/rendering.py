@@ -315,19 +315,20 @@ class SkinnedRenderer(BaseRenderer):
             self.updateBones()
 
         for bone in self.bones.values():
-            if 0:
-                bone.subdivide(2000)
-                self.updateBones()
+            if bone.mesh:
+                #bone.mesh.subdivide(500)
+                bone.mesh.updateUvs(bone)
 
-            bone.updateUvs()
+        #self.updateBones() #Only if subdivision is used
 
     def updateBones(self):
         transforms = self.computeBoneTransforms()
         for i, transform in enumerate(transforms):
             bone = transform.bone
             bone.color = (random.randint(32, 255), random.randint(64, 255), random.randint(32, 255))
-            bone.updateVertexWeights(i, transforms)
-            bone.sortVertices(transforms)
+            if bone.mesh:
+                bone.mesh.updateVertexWeights(i, transforms)
+                bone.mesh.sortVertices(transforms)
 
     def loadJson(self, image, path):
         container = image.visit()[0]
@@ -369,10 +370,11 @@ class SkinnedRenderer(BaseRenderer):
             bone.pos = (x, y)
             bone.pivot = (bone.pos[0] + bone.image.width / 2.0, bone.pos[1] + bone.image.height / 2.0)
             bone.zOrder = i
-            bone.updatePoints(surface)
-            bone.triangulatePoints()
-            bone.updateVerticesFromTriangles()
-            bone.moveVertices(bone.pos)
+            if bone.image:
+                bone.updatePoints(surface)
+                bone.triangulatePoints()
+                bone.updateMeshFromTriangles()
+                bone.mesh.moveVertices(bone.pos)
 
             self.bones[bone.parent].children.append(boneName)
             self.bones[boneName] = bone
@@ -454,7 +456,8 @@ class SkinnedRenderer(BaseRenderer):
 
     def renderBoneTransform(self, transform, context):
         bone = transform.bone
-        if not bone.image:
+        mesh = bone.mesh
+        if not bone.image or not mesh:
             return
 
         screenSize = self.getSize()
@@ -466,19 +469,19 @@ class SkinnedRenderer(BaseRenderer):
 
         self.shader.uniformMatrix4f(shader.PROJECTION, self.getProjection())
 
-        self.bindAttributeArray(self.shader, "inVertex", bone.vertices, 2)
-        self.bindAttributeArray(self.shader, "inUv", bone.uvs, 2)
-        self.bindAttributeArray(self.shader, "inBoneWeights", bone.boneWeights, 4)
-        self.bindAttributeArray(self.shader, "inBoneIndices", bone.boneIndices, 4)
+        self.bindAttributeArray(self.shader, "inVertex", mesh.vertices, 2)
+        self.bindAttributeArray(self.shader, "inUv", mesh.uvs, 2)
+        self.bindAttributeArray(self.shader, "inBoneWeights", mesh.boneWeights, 4)
+        self.bindAttributeArray(self.shader, "inBoneIndices", mesh.boneIndices, 4)
 
         if bone.visible:
             self.shader.uniformf("wireFrame", 0)
-            gl.glDrawElements(gl.GL_TRIANGLES, len(bone.indices), gl.GL_UNSIGNED_INT, bone.indices)
+            gl.glDrawElements(gl.GL_TRIANGLES, len(mesh.indices), gl.GL_UNSIGNED_INT, mesh.indices)
 
         if bone.wireFrame:
             self.shader.uniformf("wireFrame", 1)
             gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINE)
-            gl.glDrawElements(gl.GL_TRIANGLES, len(bone.indices), gl.GL_UNSIGNED_INT, bone.indices)
+            gl.glDrawElements(gl.GL_TRIANGLES, len(mesh.indices), gl.GL_UNSIGNED_INT, mesh.indices)
             gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL)
 
         self.unbindAttributeArray(self.shader, "inVertex")

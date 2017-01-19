@@ -559,8 +559,8 @@ class SkinnedEditor:
         y = 10
 
         name = bone.name
-        if bone.vertices:
-            name += " (%i polygons, %i vertices)" % (len(bone.indices) // 3, len(bone.vertices) // 2)
+        if bone.mesh:
+            name += " (%i polygons, %i vertices)" % (len(bone.mesh.indices) // 3, len(bone.mesh.vertices) // 2)
         self.drawText(name, color, (x, y))
         y += FONT_SIZE
 

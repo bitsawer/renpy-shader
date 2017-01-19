@@ -8,6 +8,7 @@ import rendering
 import euclid
 import geometry
 import delaunay
+import skinnedmesh
 
 VERSION = 1
 
@@ -44,11 +45,7 @@ class Bone:
         self.wireFrame = False
         self.color = (0, 0, 0) #Not serialized
 
-        self.vertices = None
-        self.uvs = None
-        self.indices = None
-        self.boneWeights = None
-        self.boneIndices = None
+        self.mesh = None
 
         self.points = []
         self.triangles = []
@@ -62,134 +59,6 @@ class Bone:
             results.append(child)
             child.getAllChildren(bones, results)
         return results
-
-    def getTriangleIndices(self):
-        triangles = []
-        if self.indices:
-            for i in range(0, len(self.indices), 3):
-                triangles.append((self.indices[i], self.indices[i + 1], self.indices[i + 2]))
-        return triangles
-
-    def getVertex(self, index):
-        return (self.vertices[index * 2], self.vertices[index * 2 + 1])
-
-    def subdivide(self, maxSize):
-        if self.vertices:
-            verts = self.vertices[:]
-            indices = self.indices[:]
-
-            for i, (a, b, c) in enumerate(self.getTriangleIndices()):
-                v1 = self.getVertex(a)
-                v2 = self.getVertex(b)
-                v3 = self.getVertex(c)
-                area = geometry.triangleArea(v1, v2, v3)
-                if area > maxSize: #TODO Also if triangle has a too long side
-                    self.subdivideTriangle(a, b, c, verts, indices, i)
-
-            self.vertices = makeArray(gl.GLfloat, verts)
-            self.indices = makeArray(gl.GLuint, [x for x in indices if x is not None])
-
-    def subdivideTriangle(self, a, b, c, verts, indices, index):
-        v1 = self.getVertex(a)
-        v2 = self.getVertex(b)
-        v3 = self.getVertex(c)
-
-        new1 = geometry.interpolate2d(v1, v2, 0.5)
-        new2 = geometry.interpolate2d(v2, v3, 0.5)
-        new3 = geometry.interpolate2d(v3, v1, 0.5)
-
-        indices[index * 3] = None
-        indices[index * 3 + 1] = None
-        indices[index * 3 + 2] = None
-
-        for v in [new1, new2, new3]:
-            verts.extend(v)
-
-        vertexCount = len(verts) // 2
-        d = vertexCount - 3
-        e = vertexCount - 2
-        f = vertexCount - 1
-
-        indices.extend([d, e, f])
-        indices.extend([a, d, f])
-        indices.extend([d, b, e])
-        indices.extend([f, e, c])
-
-    def updateVerticesFromTriangles(self):
-        verts = []
-        indices = []
-        for tri in self.triangles:
-            for v in tri:
-                verts.extend([v[0], v[1]])
-                indices.append(len(verts) / 2 - 1)
-
-        vCount = len(verts) / 2 / 3
-        if vCount != len(self.triangles):
-            raise RuntimeError("Invalid vertex count: %i of %i" % (vCount, len(self.triangles)))
-
-        self.vertices = makeArray(gl.GLfloat, verts)
-        self.indices = makeArray(gl.GLuint, indices)
-
-    def sortVertices(self, transforms):
-        if self.vertices:
-            triangles = []
-            for a, b, c in self.getTriangleIndices():
-                boneIndex = int(self.boneIndices[a * 4])
-                trans = transforms[boneIndex]
-                triangles.append((trans.bone, a, b, c))
-            triangles.sort(key=lambda b: b[0].zOrder)
-
-            indices = []
-            for tri in triangles:
-                indices.extend(tri[1:])
-
-            self.indices = makeArray(gl.GLuint, indices)
-
-    def updateUvs(self):
-        if self.vertices:
-            w = self.image.width
-            h = self.image.height
-            uvs = []
-            for i in range(0, len(self.vertices), 2):
-                xUv = (self.vertices[i] - self.pos[0]) / float(w)
-                yUv = (self.vertices[i + 1] - self.pos[1]) / float(h)
-                uvs.extend([xUv, yUv])
-            self.uvs = makeArray(gl.GLfloat, uvs)
-
-    def moveVertices(self, offset):
-        if self.vertices:
-            for i in range(0, len(self.vertices), 2):
-                self.vertices[i] = self.vertices[i] + offset[0]
-                self.vertices[i + 1] = self.vertices[i + 1] + offset[1]
-
-    def updateVertexWeights(self, index, transforms):
-        if self.vertices:
-            mapping = {}
-            for i, trans in enumerate(transforms):
-                trans.index = i
-                mapping[trans.bone.name] = trans
-
-            weights = []
-            indices = []
-            for i in range(0, len(self.vertices), 2):
-                x = self.vertices[i]
-                y = self.vertices[i + 1]
-
-                nearby = findBoneInfluences((x, y), mapping)
-                if len(nearby) > 0:
-                    for x in range(4):
-                        if x < len(nearby):
-                            weights.append(nearby[x].weight)
-                            indices.append(float(nearby[x].index))
-                        else:
-                            weights.append(0.0)
-                            indices.append(0.0)
-                else:
-                    weights.extend([1.0, 0.0, 0.0, 0.0])
-                    indices.extend([float(index), 0.0, 0.0, 0.0])
-
-            self.boneWeights = makeArray(gl.GLfloat, weights)
-            self.boneIndices = makeArray(gl.GLfloat, indices)
 
     def updatePoints(self, surface):
         points = geometry.findEdgePixelsOrdered(surface)
@@ -211,84 +80,31 @@ class Bone:
 
             inside = 0
             for line in [(a, b), (b, c), (c, a)]:
-                short1 = shortenLine(line[0], line[1], shorten)
-                short2 = shortenLine(line[1], line[0], shorten)
+                short1 = skinnedmesh.shortenLine(line[0], line[1], shorten)
+                short2 = skinnedmesh.shortenLine(line[1], line[0], shorten)
                 if geometry.insidePolygon(short1[0], short1[1], expanded) and geometry.insidePolygon(short2[0], short2[1], expanded):
                     inside += 1
 
             if inside >= 2:
                 self.triangles.append(((a[0], a[1]), (b[0], b[1]), (c[0], c[1])))
 
-class BoneWeight:
-    def __init__(self, distance, index, transform):
-        self.distance = distance
-        self.index = index
-        self.transform = transform
-        self.bone = transform.bone
-        self.weight = 0.0
+    def updateMeshFromTriangles(self):
+        verts = []
+        indices = []
+        for tri in self.triangles:
+            for v in tri:
+                verts.extend([v[0], v[1]])
+                indices.append(len(verts) / 2 - 1)
 
-SHORTEN_LINE = 0.9
+        vCount = len(verts) / 2 / 3
+        if vCount != len(self.triangles):
+            raise RuntimeError("Invalid vertex count: %i of %i" % (vCount, len(self.triangles)))
 
-def findBoneInfluences(vertex, transforms):
-    distances = []
-    nearest = findNearestBone(vertex, transforms)
-    if nearest:
-        nearest.weight = 0.1
-        distances.append(nearest)
-
-        if nearest.bone.parent:
-            parent = transforms[nearest.bone.parent]
-            distances.append(BoneWeight(1000, parent.index, parent))
-            distances[-1].weight = 0.9
-        else:
-            nearest.weight = 1.0
-
-    distances.sort(key=lambda w: w.distance)
-    return distances[:4]
-
-def findNearestBone(vertex, transforms):
-    nearest = None
-    minDistance = None
-
-    for trans in transforms.values():
-        if not trans.bone.parent or not transforms[trans.bone.parent].bone.parent:
-            #Skip root bones
-            continue
-
-        start = trans.bone.pivot
-        end = transforms[trans.bone.parent].bone.pivot
-        distance = pointToShortenedLineDistance(vertex, start, end, SHORTEN_LINE)
-        if minDistance is None or distance < minDistance:
-            minDistance = distance
-            nearest = BoneWeight(distance, trans.index, trans)
-
-    return nearest
-
-def pointToShortenedLineDistance(point, start, end, shorten):
-    startShort = shortenLine(start, end, shorten)
-    endShort = shortenLine(end, start, shorten)
-    return geometry.pointToLineDistance(point, startShort, endShort)
-
-def shortenLine(a, b, relative):
-    x1, y1 = a
-    x2, y2 = b
-
-    dx = x2 - x1
-    dy = y2 - y1
-    length = math.sqrt(dx * dx + dy * dy)
-    if length > 0:
-        dx /= length
-        dy /= length
-
-    dx *= length - (length * relative)
-    dy *= length - (length * relative)
-    x3 = x1 + dx
-    y3 = y1 + dy
-    return x3, y3
+        self.mesh = skinnedmesh.SkinnedMesh(makeArray(gl.GLfloat, verts), makeArray(gl.GLuint, indices))
 
 class JsonEncoder(json.JSONEncoder):
     def default(self, obj):
-        if isinstance(obj, (Bone, Image)):
+        if isinstance(obj, (Bone, Image, skinnedmesh.SkinnedMesh)):
             d = obj.__dict__.copy()
             for ignore in IGNORES:
                 if ignore in d:
@@ -341,10 +157,13 @@ def loadFromFile(path):
         bone.visible = raw["visible"]
         bone.wireFrame = raw["wireFrame"]
 
-        bone.vertices = _getArray(gl.GLfloat, raw, "vertices")
-        bone.indices = _getArray(gl.GLuint, raw, "indices")
-        bone.boneWeights = _getArray(gl.GLfloat, raw, "boneWeights")
-        bone.boneIndices = _getArray(gl.GLfloat, raw, "boneIndices")
+        mesh = raw.get("mesh")
+        if mesh:
+            vertices = _getArray(gl.GLfloat, mesh, "vertices")
+            indices = _getArray(gl.GLuint, mesh, "indices")
+            boneWeights = _getArray(gl.GLfloat, mesh, "boneWeights")
+            boneIndices = _getArray(gl.GLfloat, mesh, "boneIndices")
+            bone.mesh = skinnedmesh.SkinnedMesh(vertices, indices, boneWeights, boneIndices)
 
         bones[bone.name] = bone
 
