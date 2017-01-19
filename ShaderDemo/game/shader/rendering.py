@@ -316,10 +316,7 @@ class SkinnedRenderer(BaseRenderer):
 
         for bone in self.bones.values():
             if bone.mesh:
-                #bone.mesh.subdivide(500)
                 bone.mesh.updateUvs(bone)
-
-        #self.updateBones() #Only if subdivision is used
 
     def updateBones(self):
         transforms = self.computeBoneTransforms()
@@ -328,6 +325,7 @@ class SkinnedRenderer(BaseRenderer):
             if bone.mesh:
                 bone.mesh.updateVertexWeights(i, transforms)
                 bone.mesh.sortVertices(transforms)
+                bone.mesh.updateUvs(bone)
 
     def loadJson(self, image, path):
         container = image.visit()[0]

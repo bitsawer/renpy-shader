@@ -40,7 +40,12 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, a
                 textbutton "Bone names" action ToggleDict(editorSettings, "names")
                 textbutton "Debug animate" action ToggleDict(editorSettings, "debugAnimate")
 
-                text "Actions":
+                text "Operations":
+                    size 15
+
+                textbutton "Subdivide" action [SetVariable("subdivideMesh", True), RestartStatement()]
+
+                text "File":
                     size 15
 
                 textbutton "Reload" action Confirm("Are you sure you want to reload?", Jump("start_skinned"))
@@ -85,6 +90,9 @@ init python:
 
     saveRig = False
     rigFile = "bones.rig"
+
+    subdivideMesh = False
+
     frameNumber = 0
 
     def userInput(prompt, *args):
@@ -94,21 +102,35 @@ init python:
     def notify(text):
         renpy.notify(text)
 
+    def saveRigFile(editor):
+        global rigFile
+        fileName = userInput("Save rig as...", rigFile)
+        if fileName:
+            if not fileName.strip().lower().endswith(".rig"):
+                fileName = fileName + ".rig"
+            editor.saveSkeletonToFile(fileName)
+            notify("Rig saved to '%s'" % fileName)
+            rigFile = fileName
+
+    def subdivideActiveMesh(editor):
+        if editor.subdivide(500):
+            notify("Subdivision done")
+        else:
+            notify("Subdivision not possible")
+
     def editUpdate(context):
-        global saveRig, rigFile
+        global saveRig, subdivideMesh
 
         editor = skinnededitor.SkinnedEditor(context, editorSettings)
         editor.update()
 
+        if subdivideMesh:
+            subdivideMesh = False
+            subdivideActiveMesh(editor)
+
         if saveRig:
             saveRig = False
-            fileName = userInput("Save rig as...", rigFile)
-            if fileName:
-                if not fileName.strip().lower().endswith(".rig"):
-                    fileName = fileName + ".rig"
-                editor.saveSkeletonToFile(fileName)
-                notify("Rig saved to '%s'" % fileName)
-                rigFile = fileName
+            saveRigFile(editor)
 
 
 label start_skinned:

@@ -290,6 +290,14 @@ class SkinnedEditor:
         surface = FONT.render(text, True, color)
         self.context.overlayCanvas.get_surface().blit(surface, pos)
 
+    def subdivide(self, minSize):
+        active = self.getActiveBone()
+        if active and active.mesh:
+            active.mesh.subdivide(minSize)
+            self.updateBones()
+            return True
+        return False
+
     def deleteBone(self, bone):
         if not bone.parent:
             return

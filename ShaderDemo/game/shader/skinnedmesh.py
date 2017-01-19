@@ -128,7 +128,11 @@ class SkinnedMesh:
         self.boneWeights = makeArray(gl.GLfloat, weights)
         self.boneIndices = makeArray(gl.GLfloat, indices)
 
-    def mergeDuplicates(self):
+    def mergeDuplicateVertices(self):
+        pass
+
+    def findDeformingFaceIndices(self, transforms):
+        #TODO For subdivision, do it for faces that are close to bone pivots
         pass
 
 
