@@ -415,19 +415,14 @@ class SkinnedRenderer(BaseRenderer):
     def render(self, context):
         self.shader.bind()
 
-        self.shader.uniformf("imageSize", *self.getSize())
-
         self.setUniforms(self.shader, context.uniforms)
+        self.shader.uniformf("screenSize", *self.getSize())
 
         #self.textureMap.bindTextures(self.shader)
 
         gl.glClearColor(*self.clearColor)
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
-
         gl.glDisable(gl.GL_DEPTH_TEST)
-
-        screenSize = self.getSize()
-        self.shader.uniformf("screenSize", *screenSize)
 
         transforms = self.computeBoneTransforms()
 
@@ -463,7 +458,6 @@ class SkinnedRenderer(BaseRenderer):
             #Nothing to draw
             return
 
-        screenSize = self.getSize()
         tex = self.skinTextures.textures[bone.image.name]
 
         self.shader.uniformi(shader.TEX0, 0)
