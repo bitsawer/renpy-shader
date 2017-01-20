@@ -1256,6 +1256,7 @@ screen notify(message):
     style_prefix "notify"
 
     frame at notify_appear:
+        xalign 0.5
         text message
 
     timer 3.25 action Hide('notify')
