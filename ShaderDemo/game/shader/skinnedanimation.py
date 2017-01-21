@@ -1,5 +1,7 @@
 
+import pygame
 import euclid
+import utils
 
 class KeyFrame:
     def __init__(self):
@@ -29,6 +31,15 @@ def keyDataChanged(a, b):
         return True
     return False
 
+def interpolateKeyData(a, b, weight):
+    key = KeyFrame()
+    key.pivot = utils.interpolate2d(a.pivot, b.pivot, weight)
+    key.rotation = euclid.Vector3(*utils.interpolate3d(a.rotation, b.rotation, weight))
+    key.scale = euclid.Vector3(*utils.interpolate3d(a.scale, b.scale, weight))
+    key.zOrder = a.zOrder
+    key.visible = a.visible
+    return key
+
 class Frame:
     def __init__(self):
         self.keys = {}
@@ -49,66 +60,27 @@ class SkinnedAnimation:
         while len(self.frames) < count:
             self.frames.append(Frame())
 
-    def canInsertBefore(self, frameNumber, bone):
-        i = frameNumber - 1
-        while i >= 0:
-            frame = self.frames[i]
-            if bone.name in frame.keys:
-                key = frame.getBoneKey(bone.name)
-                return keyDataChanged(key, bone)
-            i -= 1
-        return True
+    def update(self, frameNumber, editor):
+        for event, pos in editor.context.events:
+            if event.type == pygame.KEYDOWN:
+                key = event.unicode
+                if key == "i":
+                    bone = editor.getActiveBone()
+                    if bone:
+                        key = self.frames[frameNumber].getBoneKey(bone.name)
+                        copyKeyData(bone, key)
 
-    def canInsertAfter(self, frameNumber, bone):
-        i = frameNumber + 1
-        while i < len(self.frames):
-            frame = self.frames[i]
-            if bone.name in frame.keys:
-                key = frame.getBoneKey(bone.name)
-                return keyDataChanged(key, bone)
-            i += 1
-        return True
-
-    def findNewKeyFrames(self, frameNumber, bones):
-        new = []
-        changed = []
-        frame = self.frames[frameNumber]
-        for name in bones:
-            key = frame.keys.get(name)
-            if key is not None:
-                if keyDataChanged(key, bones[name]):
-                    changed.append(name)
-            else:
-                new.append(name)
-        return new, changed
-
-    def update(self, frameNumber, bones, editor):
-        frame = self.frames[frameNumber]
-        new, changed = self.findNewKeyFrames(frameNumber, bones)
-        updated = [] + changed
-
-        for name in new:
-            bone = bones[name]
-            if self.canInsertBefore(frameNumber, bone) and self.canInsertAfter(frameNumber, bone) or frameNumber == 0:
-                updated.append(name)
-
-        for name in updated:
-            bone = bones[name]
-            key = frame.getBoneKey(name)
-            copyKeyData(bone, key)
-
-        self.cleanupDuplicateKeys(bones, frameNumber)
-
-        self.drawDebug(editor, frameNumber, changed)
+        self.cleanupDuplicateKeys(editor.getBones(), frameNumber)
 
     def cleanupDuplicateKeys(self, bones, frameNumber):
         for name, bone in bones.items():
             keys = self.getBoneKeyFrames(name)
+            duplicates = set()
             i = 0
             while i < len(keys):
                 index = keys[i]
                 i2 = i + 1
-                duplicates = set()
+
                 while i2 < len(keys):
                     index2 = keys[i2]
                     if not keyDataChanged(self.frames[index].keys[name], self.frames[index2].keys[name]):
@@ -123,23 +95,13 @@ class SkinnedAnimation:
                 if index > 0:
                     del self.frames[index].keys[name]
 
-    def drawDebug(self, editor, frameNumber, changed):
-        x = 10
-        y = 10
+    def drawDebug(self, editor, frameNumber):
         height = 20
         color = (255, 0, 0)
-
-        editor.drawText("Frame: %i of %i" % (frameNumber, len(self.frames)), color, (x, y))
-        y += height
-
-        for i, name in enumerate(changed):
-            editor.drawText(name, color, (x, y))
-            y += height
-
-        x = 200
+        x = 400
         y = 10
         for i, frame in enumerate(self.frames):
-            if i > 0 and frame.keys:
+            if frame.keys: # i > 0 and
                 editor.drawText("Frame %i:" % i, color, (x, y))
                 y += height
                 for name, key in frame.keys.items():
@@ -154,7 +116,10 @@ class SkinnedAnimation:
         return results
 
     def updateBones(self, bones):
-        #TODO Remove frames that had their bones removed etc...
+        #TODO Remove frames that had their bones:
+        # -removed
+        # -renamed
+        # -etc...
         pass
 
     def findKeyFrameRange(self, frameNumber, bone):
@@ -183,5 +148,11 @@ class SkinnedAnimation:
         for name, bone in bones.items():
             start, end = self.findKeyFrameRange(frameNumber, bone)
             if start is not None and end is not None:
-                key = self.frames[start].keys[name]
-                copyKeyData(key, bone)
+                startKey = self.frames[start].keys[name]
+                endKey = self.frames[end].keys[name]
+                if startKey == endKey:
+                    copyKeyData(startKey, bone)
+                else:
+                    weight = float(frameNumber - start) / (end - start)
+                    key = interpolateKeyData(startKey, endKey, weight)
+                    copyKeyData(key, bone)

@@ -51,6 +51,17 @@ def interpolate(a, b, s):
     #Simple linear interpolation
     return a + s * (b - a)
 
+def interpolate2d(p1, p2, s):
+    x = interpolate(p1[0], p2[0], s)
+    y = interpolate(p1[1], p2[1], s)
+    return (x, y)
+
+def interpolate3d(p1, p2, s):
+    x = interpolate(p1[0], p2[0], s)
+    y = interpolate(p1[1], p2[1], s)
+    z = interpolate(p1[2], p2[2], s)
+    return (x, y, z)
+
 def makeFloatArray(elements, count):
     raw = (gl.GLfloat * (len(elements) * count))()
     for i in range(len(elements)):

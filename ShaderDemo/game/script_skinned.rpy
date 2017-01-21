@@ -98,6 +98,7 @@ init python:
     renameBoneFlag = False
 
     frameNumber = 0
+    frameNumberLast = -1
     maxFrames = 64
 
     def userInput(prompt, *args):
@@ -139,15 +140,17 @@ init python:
             notify("No bone selected")
 
     def editUpdate(context):
-        global saveRig, subdivideMesh, renameBoneFlag
+        global saveRig, subdivideMesh, renameBoneFlag, frameNumberLast
 
         editor = skinnededitor.SkinnedEditor(context, editorSettings)
         editor.update()
 
         animation.setFrameCount(maxFrames + 1)
-        if not editor.isUserInteracting():
+        animation.update(frameNumber, editor)
+        if frameNumberLast != frameNumber:
+            frameNumberLast = frameNumber
             animation.apply(frameNumber, editor.getBones())
-            animation.update(frameNumber, editor.getBones(), editor)
+        animation.drawDebug(editor, frameNumber)
 
         if subdivideMesh:
             subdivideMesh = False
