@@ -97,7 +97,31 @@ class SkinnedAnimation:
             key = frame.getBoneKey(name)
             copyKeyData(bone, key)
 
+        self.cleanupDuplicateKeys(bones, frameNumber)
+
         self.drawDebug(editor, frameNumber, changed)
+
+    def cleanupDuplicateKeys(self, bones, frameNumber):
+        for name, bone in bones.items():
+            keys = self.getBoneKeyFrames(name)
+            i = 0
+            while i < len(keys):
+                index = keys[i]
+                i2 = i + 1
+                duplicates = set()
+                while i2 < len(keys):
+                    index2 = keys[i2]
+                    if not keyDataChanged(self.frames[index].keys[name], self.frames[index2].keys[name]):
+                        if index == frameNumber:
+                            duplicates.add(index)
+                        elif index2 == frameNumber:
+                            duplicates.add(index2)
+                    i2 += 1
+
+                for index in duplicates:
+                    if index > 0:
+                        del self.frames[index].keys[name]
+                i += 1
 
     def drawDebug(self, editor, frameNumber, changed):
         x = 10
