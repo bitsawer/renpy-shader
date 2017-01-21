@@ -69,7 +69,7 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, a
         hbox:
             spacing 10
             $ playText = "||" if framePlay else ">>"
-            textbutton "Frame: %i" % frameNumber yalign 0.5 xsize 150
+            textbutton "Frame: %i" % frameNumber yalign 0.5 xsize 150 action Function(changeFrameCount)
             textbutton "<" yalign 0.5 keysym "j" action SetVariable("frameNumber", max(frameNumber - 1, 0))
             textbutton playText yalign 0.5 xsize 50 keysym "k" action SetVariable("framePlay", not framePlay)
             textbutton ">" yalign 0.5 keysym "l" action SetVariable("frameNumber", min(frameNumber + 1, maxFrames))
@@ -109,12 +109,22 @@ init python:
     framePlay = False
     maxFrames = 60
 
-    def userInput(prompt, *args):
+    def userInput(prompt, *args, **kwargs):
         #TODO Exclude invalid characters...
-        return renpy.invoke_in_new_context(renpy.input, prompt, *args)
+        return renpy.invoke_in_new_context(renpy.input, prompt, *args, **kwargs)
 
     def notify(text):
         renpy.notify(text)
+
+    def changeFrameCount():
+        global maxFrames, frameNumber
+        try:
+            count = eval(userInput("Set animation frame count", str(maxFrames), allow=list("1234567890*/+-")))
+            if count > 0 and count < 10000:
+                maxFrames = count
+                frameNumber = min(frameNumber, maxFrames)
+        except:
+            pass
 
     def saveRigFile(editor):
         global rigFile
