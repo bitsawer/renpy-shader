@@ -68,8 +68,14 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, a
         yalign 1.0
         hbox:
             spacing 10
-
+            $ playText = "||" if framePlay else ">>"
             textbutton "Frame: %i" % frameNumber yalign 0.5 xsize 150
+            textbutton "<" yalign 0.5 keysym "j" action SetVariable("frameNumber", max(frameNumber - 1, 0))
+            textbutton playText yalign 0.5 xsize 50 keysym "k" action SetVariable("framePlay", not framePlay)
+            textbutton ">" yalign 0.5 keysym "l" action SetVariable("frameNumber", min(frameNumber + 1, maxFrames))
+
+            timer 0.01 repeat True action If(framePlay, SetVariable("frameNumber", (frameNumber + 1) % maxFrames), NullAction())
+
             bar value VariableValue("frameNumber", maxFrames)
 
 
@@ -99,6 +105,7 @@ init python:
 
     frameNumber = 0
     frameNumberLast = -1
+    framePlay = False
     maxFrames = 64
 
     def userInput(prompt, *args):
