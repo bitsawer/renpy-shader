@@ -194,6 +194,8 @@ class PoseMode:
             if key == "x" and hover:
                 self.editor.deleteBone(hover)
                 return True
+            if key == "g" and activeBone:
+                pass #TODO Grab
             if key == "r" and activeBone:
                 self.newEdit(AttributeEdit(self.editor, pos, activeBone, "rotation." + rotAxis))
                 return True
@@ -228,6 +230,9 @@ class PoseMode:
             self.active.update(self.editor)
             self.active.draw(self.editor)
 
+    def isUserInteracting(self):
+        return bool(self.active)
+
 
 class SkinnedEditor:
     def __init__(self, context, settings):
@@ -242,7 +247,7 @@ class SkinnedEditor:
             self.mode = PoseMode()
             self.set(MODE, self.mode)
         self.mode.update(self)
-
+        self.userInteracting = self.mode.isUserInteracting()
 
     def update(self):
         #self.debugAnimate(self.settings["debugAnimate"])
@@ -431,6 +436,12 @@ class SkinnedEditor:
 
         self.set(DRAG_PIVOT, None)
         self.set(DRAG_POS, None)
+
+    def isDragging(self):
+        return self.get(DRAG_PIVOT) or self.get(DRAG_POS)
+
+    def isUserInteracting(self):
+        return self.isDragging() or self.userInteracting or self.mode.isUserInteracting()
 
     def pickPivot(self, pos):
         closest = None

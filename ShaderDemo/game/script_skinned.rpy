@@ -69,12 +69,13 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, a
         hbox:
             spacing 10
 
-            textbutton "Frame: %i" % (frameNumber + 1) yalign 0.5 xsize 150
-            bar value VariableValue("frameNumber", 64)
+            textbutton "Frame: %i" % frameNumber yalign 0.5 xsize 150
+            bar value VariableValue("frameNumber", maxFrames)
 
 
 init python:
     from shader import skinnededitor
+    from shader import skinnedanimation
 
     #config.keymap["input_delete"] = []
     config.keymap["game_menu"].remove("mouseup_3")
@@ -97,6 +98,7 @@ init python:
     renameBoneFlag = False
 
     frameNumber = 0
+    maxFrames = 64
 
     def userInput(prompt, *args):
         #TODO Exclude invalid characters...
@@ -142,6 +144,11 @@ init python:
         editor = skinnededitor.SkinnedEditor(context, editorSettings)
         editor.update()
 
+        animation.setFrameCount(maxFrames + 1)
+        if not editor.isUserInteracting():
+            animation.apply(frameNumber, editor.getBones())
+        animation.update(frameNumber, editor.getBones(), editor)
+
         if subdivideMesh:
             subdivideMesh = False
             subdivideActiveMesh(editor)
@@ -158,6 +165,8 @@ init python:
 label start_skinned:
 label main_menu: #TODO For fast testing
     $ _controllerContextStore._clear()
+
+    $ animation = skinnedanimation.SkinnedAnimation()
 
     call screen skinnedScreen("doll", shader.PS_SKINNED, {"tex1": "amy influence"},
         update=editUpdate, args={"rigFile": rigFile}, _tag="amy", _layer="amy") #nopredict
