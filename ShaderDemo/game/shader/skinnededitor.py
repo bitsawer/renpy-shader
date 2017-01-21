@@ -291,8 +291,10 @@ class SkinnedEditor:
             else:
                 bone.rotation.z = 0.0
 
-    def drawText(self, text, color, pos):
+    def drawText(self, text, color, pos, align=-1):
         surface = FONT.render(text, True, color)
+        if align == 1:
+            pos = (pos[0] - surface.get_width(), pos[1])
         self.context.overlayCanvas.get_surface().blit(surface, pos)
 
     def subdivide(self, bone, minSize):

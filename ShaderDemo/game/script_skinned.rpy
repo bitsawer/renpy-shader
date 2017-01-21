@@ -74,12 +74,13 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, a
             textbutton playText yalign 0.5 xsize 50 keysym "k" action SetVariable("framePlay", not framePlay)
             textbutton ">" yalign 0.5 keysym "l" action SetVariable("frameNumber", min(frameNumber + 1, maxFrames))
 
-            timer 0.01 repeat True action If(framePlay, SetVariable("frameNumber", (frameNumber + 1) % maxFrames), NullAction())
+            timer 1.0 / shader.config.fps repeat True action If(framePlay, SetVariable("frameNumber", (frameNumber + 1) % (maxFrames + 1)), NullAction())
 
             bar value VariableValue("frameNumber", maxFrames)
 
 
 init python:
+    import shader
     from shader import skinnededitor
     from shader import skinnedanimation
 
@@ -106,7 +107,7 @@ init python:
     frameNumber = 0
     frameNumberLast = -1
     framePlay = False
-    maxFrames = 64
+    maxFrames = 60
 
     def userInput(prompt, *args):
         #TODO Exclude invalid characters...
@@ -159,7 +160,8 @@ init python:
             animation.apply(frameNumber, editor.getBones())
 
         if editorSettings["pivots"]:
-            animation.drawDebug(editor, frameNumber)
+            animation.drawDebugText(editor, frameNumber)
+            animation.drawDebugKeyFrames(editor, frameNumber)
 
         if subdivideMesh:
             subdivideMesh = False

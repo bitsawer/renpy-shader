@@ -99,23 +99,49 @@ class SkinnedAnimation:
                 if index > 0:
                     del self.frames[index].keys[name]
 
-    def drawDebug(self, editor, frameNumber):
+    def drawDebugText(self, editor, frameNumber):
         height = 20
-        color = (255, 0, 0)
-        x = 400
+        color = (0, 255, 0)
+        align = 1
+        x = editor.context.renderer.getSize()[0] - 10
         y = 10
-        for i, frame in enumerate(self.frames):
-            if frame.keys: # i > 0 and
-                editor.drawText("Frame %i:" % i, color, (x, y))
-                y += height
-                for name, key in frame.keys.items():
-                    editor.drawText("Key %s" % name, (255, 255, 0), (x, y))
-                    y += height
 
+        active = editor.getActiveBone()
+        if active:
+            editor.drawText("Keys for bone '%s'" % active.name, (0, 255, 0), (x, y), align)
+            y += height
+            for i, frame in enumerate(self.frames):
+                if active.name in frame.keys:
+                    editor.drawText("%i" % i, (0, 0, 0), (x, y), align)
+                    y += height
+        else:
+            for i, frame in enumerate(self.frames):
+                if frame.keys: # i > 0 and
+                    editor.drawText("Frame %i" % i, color, (x, y), align)
+                    y += height
+                    for name, key in frame.keys.items():
+                        editor.drawText("%s" % name, (0, 0, 0), (x, y), align)
+                        y += height
+
+    def drawDebugKeyFrames(self, editor, frameNumber):
+        keyframes = set()
+        currents = set()
         bones = editor.getBones()
-        for name, key in self.frames[frameNumber].keys.items():
+        for name, bone in bones.items():
+            for i, frame in enumerate(self.frames):
+                if name in frame.keys:
+                    if i == frameNumber:
+                        currents.add(name)
+                    else:
+                        keyframes.add(name)
+
+        for name in keyframes:
             pos = editor.getBonePivotTransformed(bones[name])
-            editor.context.overlayCanvas.circle((0, 255, 255), (pos.x, pos.y), 8, 1)
+            editor.context.overlayCanvas.circle((255, 255, 0), (pos.x, pos.y), 8, 1)
+
+        for name in currents:
+            pos = editor.getBonePivotTransformed(bones[name])
+            editor.context.overlayCanvas.circle((0, 255, 0), (pos.x, pos.y), 8, 1)
 
     def getBoneKeyFrames(self, name):
         results = []
