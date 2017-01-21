@@ -63,12 +63,16 @@ class SkinnedAnimation:
     def update(self, frameNumber, editor):
         for event, pos in editor.context.events:
             if event.type == pygame.KEYDOWN:
-                key = event.unicode
-                if key == "i":
+                key = event.key
+                if key == pygame.K_i:
                     bone = editor.getActiveBone()
                     if bone:
-                        key = self.frames[frameNumber].getBoneKey(bone.name)
-                        copyKeyData(bone, key)
+                        if event.mod & pygame.KMOD_ALT:
+                            if bone.name in self.frames[frameNumber].keys:
+                                del self.frames[frameNumber].keys[bone.name]
+                        else:
+                            key = self.frames[frameNumber].getBoneKey(bone.name)
+                            copyKeyData(bone, key)
 
         self.cleanupDuplicateKeys(editor.getBones(), frameNumber)
 
@@ -107,6 +111,11 @@ class SkinnedAnimation:
                 for name, key in frame.keys.items():
                     editor.drawText("Key %s" % name, (255, 255, 0), (x, y))
                     y += height
+
+        bones = editor.getBones()
+        for name, key in self.frames[frameNumber].keys.items():
+            pos = editor.getBonePivotTransformed(bones[name])
+            editor.context.overlayCanvas.circle((0, 255, 255), (pos.x, pos.y), 8, 1)
 
     def getBoneKeyFrames(self, name):
         results = []

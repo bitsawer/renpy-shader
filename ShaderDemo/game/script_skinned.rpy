@@ -150,7 +150,9 @@ init python:
         if frameNumberLast != frameNumber:
             frameNumberLast = frameNumber
             animation.apply(frameNumber, editor.getBones())
-        animation.drawDebug(editor, frameNumber)
+
+        if editorSettings["pivots"]:
+            animation.drawDebug(editor, frameNumber)
 
         if subdivideMesh:
             subdivideMesh = False
