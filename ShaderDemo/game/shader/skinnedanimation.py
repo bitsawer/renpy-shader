@@ -117,11 +117,11 @@ class SkinnedAnimation:
                         elif index2 == frameNumber:
                             duplicates.add(index2)
                     i2 += 1
-
-                for index in duplicates:
-                    if index > 0:
-                        del self.frames[index].keys[name]
                 i += 1
+
+            for index in duplicates:
+                if index > 0:
+                    del self.frames[index].keys[name]
 
     def drawDebug(self, editor, frameNumber, changed):
         x = 10
@@ -157,15 +157,31 @@ class SkinnedAnimation:
         #TODO Remove frames that had their bones removed etc...
         pass
 
+    def findKeyFrameRange(self, frameNumber, bone):
+        start = None
+        end = None
+
+        i = frameNumber
+        while i >= 0:
+            if bone.name in self.frames[i].keys:
+                start = i
+                break
+            i -= 1
+
+        i = frameNumber
+        while i < len(self.frames):
+            if bone.name in self.frames[i].keys:
+                end = i
+                break
+            i += 1
+
+        return start, end
+
     def apply(self, frameNumber, bones):
         frame = self.frames[frameNumber]
 
         for name, bone in bones.items():
-            key = None
-            for i in range(frameNumber + 1):
-                closest = self.frames[i].keys.get(name)
-                if closest:
-                    key = closest
-
-            if key is not None:
+            start, end = self.findKeyFrameRange(frameNumber, bone)
+            if start is not None and end is not None:
+                key = self.frames[start].keys[name]
                 copyKeyData(key, bone)

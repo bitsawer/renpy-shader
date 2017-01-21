@@ -147,7 +147,7 @@ init python:
         animation.setFrameCount(maxFrames + 1)
         if not editor.isUserInteracting():
             animation.apply(frameNumber, editor.getBones())
-        animation.update(frameNumber, editor.getBones(), editor)
+            animation.update(frameNumber, editor.getBones(), editor)
 
         if subdivideMesh:
             subdivideMesh = False
