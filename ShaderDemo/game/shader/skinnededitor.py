@@ -171,42 +171,48 @@ class PoseMode:
     def handleEvent(self, event):
         event, pos = event
         if event.type == pygame.KEYDOWN:
-            key = event.unicode
+            key = event.key
+            alt = event.mod & pygame.KMOD_ALT
             activeBone = self.editor.getActiveBone()
-            hover = self.editor.pickPivot(pos)
 
             rotAxis = "z"
             scaleAxis = "y"
             scaleDup = ["x", "z"]
 
-            if self.active and key in ("x", "y", "z"):
+            if self.active and key in (pygame.K_x, pygame.K_y, pygame.K_z):
                 if "rotation" in self.active.attribute:
-                    rotAxis = key
-                    key = "r"
+                    rotAxis = chr(key)
+                    key = pygame.K_r
                 elif "scale" in self.active.attribute:
-                    scaleAxis = key
-                    key = "s"
+                    scaleAxis = chr(key)
+                    key = pygame.K_s
                     scaleDup = []
 
-            if key == "h" and hover:
-                hover.visible = not hover.visible
+            if key == pygame.K_h and activeBone:
+                activeBone.visible = not activeBone.visible
                 return True
-            if key == "x" and hover:
-                self.editor.deleteBone(hover)
+            if key == pygame.K_x and activeBone:
+                self.editor.deleteBone(activeBone)
                 return True
-            if key == "g" and activeBone:
+            if key == pygame.K_g and activeBone:
                 pass #TODO Grab
-            if key == "r" and activeBone:
-                self.newEdit(AttributeEdit(self.editor, pos, activeBone, "rotation." + rotAxis))
+            if key == pygame.K_r and activeBone:
+                if alt:
+                    activeBone.rotation = euclid.Vector3(0.0, 0.0, 0.0)
+                else:
+                    self.newEdit(AttributeEdit(self.editor, pos, activeBone, "rotation." + rotAxis))
                 return True
-            if key == "s" and activeBone:
+            if key == pygame.K_s and activeBone:
                 #TODO Cancel bug does not undo all values...
-                self.newEdit(AttributeEdit(self.editor, pos, activeBone, "scale." + scaleAxis, scaleDup))
+                if alt:
+                    activeBone.scale = euclid.Vector3(1.0, 1.0, 1.0)
+                else:
+                    self.newEdit(AttributeEdit(self.editor, pos, activeBone, "scale." + scaleAxis, scaleDup))
                 return True
-            if key == "e" and activeBone:
+            if key == pygame.K_e and activeBone:
                 self.newEdit(ExtrudeBone(self.editor, pos, activeBone))
                 return True
-            if key == "c" and activeBone:
+            if key == pygame.K_c and activeBone:
                 self.newEdit(ConnectBone(self.editor, pos, activeBone))
                 return True
         elif event.type == pygame.MOUSEBUTTONDOWN:
