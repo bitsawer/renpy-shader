@@ -107,6 +107,9 @@ class FrameBuffer:
         if self.texture:
             gl.glDeleteTextures(1, self.texture)
             self.texture = 0
+        if self.depthBuffer:
+            gl.glDeleteRenderbuffers(1, self.depthBuffer)
+            self.depthBuffer = 0
         if self.buffer:
             gl.glDeleteFramebuffers(1, self.buffer)
             self.buffer = 0
