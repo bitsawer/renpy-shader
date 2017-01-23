@@ -45,6 +45,7 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, a
 
                 textbutton "Rename bone" action [SetVariable("renameBoneFlag", True), RestartStatement()]
                 textbutton "Subdivide image" action [SetVariable("subdivideMesh", True), RestartStatement()]
+                textbutton "Reset pose" action [SetVariable("resetPoseFlag", True), RestartStatement()]
 
                 text "File":
                     size 15
@@ -103,6 +104,7 @@ init python:
     subdivideMesh = False
 
     renameBoneFlag = False
+    resetPoseFlag = False
 
     frameNumber = 0
     frameNumberLast = -1
@@ -161,7 +163,7 @@ init python:
             notify("No bone selected")
 
     def editUpdate(context):
-        global saveRig, subdivideMesh, renameBoneFlag, frameNumberLast
+        global saveRig, subdivideMesh, renameBoneFlag, resetPoseFlag, frameNumberLast
 
         editor = skinnededitor.SkinnedEditor(context, editorSettings)
         editor.update()
@@ -184,6 +186,11 @@ init python:
         if renameBoneFlag:
             renameBoneFlag = False
             renameActiveBone(editor, animation)
+
+        if resetPoseFlag:
+            resetPoseFlag = False
+            editor.resetPose()
+            notify("Pose reset")
 
         if saveRig:
             saveRig = False
