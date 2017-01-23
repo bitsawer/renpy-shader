@@ -205,23 +205,30 @@ class SkinnedAnimation:
                     jump = abs(boneFrames[current] - index)
                     i += jump
 
+                missing = i - len(self.frames)
+                if missing > 0:
+                    #Add a keyframe to smooth the transition back to frame 0
+                    start, end = self.findKeyFrameRange(self.frames, boneFrames[0], name)
+                    if end is not None:
+                        copyKeyData(self.frames[end].keys[name], baked[len(baked) - 1].getBoneKey(name))
+
         return baked
 
-    def findKeyFrameRange(self, frames, frameNumber, bone):
+    def findKeyFrameRange(self, frames, frameNumber, boneName):
         start = None
         end = None
 
         #TODO modulo frame search?
         i = frameNumber
         while i >= 0:
-            if bone.name in frames[i].keys:
+            if boneName in frames[i].keys:
                 start = i
                 break
             i -= 1
 
         i = frameNumber
         while i < len(frames):
-            if bone.name in frames[i].keys:
+            if boneName in frames[i].keys:
                 end = i
                 break
             i += 1
@@ -243,7 +250,7 @@ class SkinnedAnimation:
         baked = self.bakeFrames()
 
         for name, bone in bones.items():
-            start, end = self.findKeyFrameRange(baked, frameNumber, bone)
+            start, end = self.findKeyFrameRange(baked, frameNumber, bone.name)
             if start is not None and end is not None:
                 startKey = baked[start].keys[name]
                 endKey = baked[end].keys[name]
