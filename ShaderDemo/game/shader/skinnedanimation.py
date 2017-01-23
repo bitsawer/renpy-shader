@@ -52,7 +52,8 @@ class Frame:
         return key
 
 class SkinnedAnimation:
-    def __init__(self):
+    def __init__(self, name):
+        self.name = name
         self.frames = [Frame()]
 
     def setFrameCount(self, count):
@@ -149,6 +150,13 @@ class SkinnedAnimation:
             if name in frame.keys:
                 results.append(i)
         return results
+
+    def renameBone(self, oldName, newName):
+        for frame in self.frames:
+            if oldName in frame.keys:
+                key = frame.keys[oldName]
+                del frame.keys[oldName]
+                frame.keys[newName] = key
 
     def updateBones(self, bones):
         #TODO Remove frames that had their bones:

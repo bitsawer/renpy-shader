@@ -35,7 +35,7 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, a
                     size 15
 
                 textbutton "Wireframes" action ToggleDict(editorSettings, "wireframe")
-                textbutton "Image areas" action ToggleDict(editorSettings, "imageAreas")
+                textbutton "Images" action ToggleDict(editorSettings, "imageAreas")
                 textbutton "Bones" action ToggleDict(editorSettings, "pivots")
                 textbutton "Bone names" action ToggleDict(editorSettings, "names")
                 textbutton "Debug animate" action ToggleDict(editorSettings, "debugAnimate")
@@ -43,8 +43,8 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, a
                 text "Operations":
                     size 15
 
-                textbutton "Rename" action [SetVariable("renameBoneFlag", True), RestartStatement()]
-                textbutton "Subdivide" action [SetVariable("subdivideMesh", True), RestartStatement()]
+                textbutton "Rename bone" action [SetVariable("renameBoneFlag", True), RestartStatement()]
+                textbutton "Subdivide image" action [SetVariable("subdivideMesh", True), RestartStatement()]
 
                 text "File":
                     size 15
@@ -62,7 +62,7 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, a
             ymargin 5
             xpadding 10
             ypadding 10
-            text "Animation: "
+            text "Animation: " + animation.name
 
     frame:
         yalign 1.0
@@ -146,11 +146,14 @@ init python:
         else:
             notify("No mesh bone selected")
 
-    def renameActiveBone(editor):
+    def renameActiveBone(editor, animation):
         active = editor.getActiveBone()
         if active:
-            newName = userInput("Rename bone to...", active.name)
+            oldName = active.name
+            newName = userInput("Rename bone to...", oldName)
             if editor.renameBone(active, newName):
+                animation.renameBone(oldName, newName)
+                editor.setActiveBone(active)
                 notify("Bone renamed")
             else:
                 notify("Renaming failed")
@@ -179,7 +182,7 @@ init python:
 
         if renameBoneFlag:
             renameBoneFlag = False
-            renameActiveBone(editor)
+            renameActiveBone(editor, animation)
 
         if saveRig:
             saveRig = False
@@ -190,7 +193,7 @@ label start_skinned:
 label main_menu: #TODO For fast testing
     $ _controllerContextStore._clear()
 
-    $ animation = skinnedanimation.SkinnedAnimation()
+    $ animation = skinnedanimation.SkinnedAnimation("untitled")
 
     call screen skinnedScreen("doll", shader.PS_SKINNED, {"tex1": "amy influence"},
         update=editUpdate, args={"rigFile": rigFile}, _tag="amy", _layer="amy") #nopredict

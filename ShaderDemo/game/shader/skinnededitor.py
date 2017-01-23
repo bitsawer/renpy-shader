@@ -404,18 +404,19 @@ class SkinnedEditor:
             if self.settings["imageAreas"] and not bone:
                 bone = self.pickCrop(pos)
                 if bone:
+                    self.setActiveBone(bone)
                     self.set(DRAG_POS, (bone, pos, bone.pos))
                 else:
                     self.set(DRAG_POS, None)
         elif event.button == 4:
-            hover = self.pickPivot(pos)
-            if hover:
-                self.setBoneZOrder(hover, hover.zOrder + 1)
+            active = self.getActiveBone()
+            if active:
+                self.setBoneZOrder(active, active.zOrder + 1)
                 self.updateBones()
         elif event.button == 5:
-            hover = self.pickPivot(pos)
-            if hover:
-                self.setBoneZOrder(hover, hover.zOrder - 1)
+            active = self.getActiveBone()
+            if active:
+                self.setBoneZOrder(active, active.zOrder - 1)
                 self.updateBones()
 
     def handleMouseMotion(self, pos):
@@ -433,7 +434,8 @@ class SkinnedEditor:
             bone, oldMouse, oldPos = dragPos
             delta = (oldMouse[0] - pos[0], oldMouse[1] - pos[1])
             pos = bone.pos
-            bone.pos = (oldPos[0] - delta[0], oldPos[1] - delta[1])
+            #TODO Breaks uv generation...
+            #bone.pos = (oldPos[0] - delta[0], oldPos[1] - delta[1])
 
     def handleMouseUp(self, pos):
         self.stopDrag()
@@ -544,7 +546,7 @@ class SkinnedEditor:
             hoverPivotBone = self.pickPivot(mouse)
             hoverCropBone = self.pickCrop(mouse)
 
-        for trans in self.transforms:
+        for trans in reversed(self.transforms):
             bone = trans.bone
             #bone.wireFrame = ((activeBone and bone.name == activeBone.name) or not activeBone) and self.settings["wireframe"]
             bone.wireFrame = self.settings["wireframe"]
