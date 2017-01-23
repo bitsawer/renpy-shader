@@ -9,6 +9,18 @@ image doll = LiveComposite(
     #(0, 0), "doll hair.png",
 )
 
+screen easingScreen(oldEasing):
+    frame:
+        xalign 0.5
+        yalign 0.5
+        vbox:
+            spacing 5
+            text "Set animation easing" xalign 0.5 yalign 0.3
+            for name in easing.EASINGS:
+                if name == oldEasing:
+                    $ name = ">> " + name + " <<"
+                textbutton name xalign 0.5 action Return(name)
+
 screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, args=None, xalign=0.5, yalign=0.5):
     modal True
     add ShaderDisplayable(shader.MODE_SKINNED, name, shader.VS_SKINNED, pixelShader, textures, uniforms, None, update, args):
@@ -63,7 +75,15 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, a
             ymargin 5
             xpadding 10
             ypadding 10
-            text "Animation: " + animation.name
+            vbox:
+                spacing 10
+
+                text "Animation: " + animation.name
+
+                text "Operations":
+                    size 15
+
+                textbutton "Easing" action SetVariable("showEasingsFlag", True)
 
     frame:
         yalign 1.0
@@ -84,6 +104,7 @@ init python:
     import shader
     from shader import skinnededitor
     from shader import skinnedanimation
+    from shader import easing
 
     #config.keymap["input_delete"] = []
     config.keymap["game_menu"].remove("mouseup_3")
@@ -105,6 +126,7 @@ init python:
 
     renameBoneFlag = False
     resetPoseFlag = False
+    showEasingsFlag = False
 
     frameNumber = 0
     frameNumberLast = -1
@@ -162,8 +184,19 @@ init python:
         else:
             notify("No bone selected")
 
+    def askEasing(oldEasing):
+        return renpy.call_screen("easingScreen", oldEasing)
+
+    def setActiveEasing(editor, animation):
+        active = editor.getActiveBone()
+        if active:
+            result = renpy.invoke_in_new_context(askEasing, animation.getBoneData(active.name).easing)
+            animation.getBoneData(active.name).easing = result
+        else:
+            notify("No bone selected")
+
     def editUpdate(context):
-        global saveRig, subdivideMesh, renameBoneFlag, resetPoseFlag, frameNumberLast
+        global saveRig, subdivideMesh, renameBoneFlag, resetPoseFlag, showEasingsFlag, frameNumberLast
 
         editor = skinnededitor.SkinnedEditor(context, editorSettings)
         editor.update()
@@ -191,6 +224,10 @@ init python:
             resetPoseFlag = False
             editor.resetPose()
             notify("Pose reset")
+
+        if showEasingsFlag:
+            showEasingsFlag = False
+            setActiveEasing(editor, animation)
 
         if saveRig:
             saveRig = False

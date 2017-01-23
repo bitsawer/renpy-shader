@@ -83,6 +83,13 @@ class SkinnedAnimation:
             return data.easing
         return DEFAULT_EASING
 
+    def getBoneData(self, name):
+        data = self.boneData.get(name)
+        if not data:
+            data = BoneData()
+            self.boneData[name] = data
+        return data
+
     def setFrameCount(self, count):
         self.frames = self.frames[:count]
         while len(self.frames) < count:
