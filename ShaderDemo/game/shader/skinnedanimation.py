@@ -44,6 +44,11 @@ class Frame:
     def __init__(self):
         self.keys = {}
 
+    def copy(self):
+        copy = Frame()
+        copy.keys = self.keys.copy()
+        return copy
+
     def getBoneKey(self, name):
         key = self.keys.get(name)
         if not key:
@@ -93,6 +98,8 @@ class SkinnedAnimation:
                             duplicates.add(index)
                         elif index2 == frameNumber:
                             duplicates.add(index2)
+                    else:
+                        break
                     i2 += 1
                 i += 1
 
@@ -151,6 +158,13 @@ class SkinnedAnimation:
                 results.append(i)
         return results
 
+    def getKeyBones(self):
+        bones = set()
+        for frame in self.frames:
+            for name in frame.keys:
+                bones.add(name)
+        return list(bones)
+
     def renameBone(self, oldName, newName):
         for frame in self.frames:
             if oldName in frame.keys:
@@ -165,34 +179,74 @@ class SkinnedAnimation:
         # -etc...
         pass
 
-    def findKeyFrameRange(self, frameNumber, bone):
+    def bakeFrames(self):
+        baked = []
+        for frame in self.frames:
+            baked.append(frame.copy())
+
+        for name in self.getKeyBones():
+            boneFrames = self.getBoneKeyFrames(name)
+            if len(boneFrames) > 1:
+                current = len(boneFrames) - 1
+                step = -1
+                i = boneFrames[-1]
+                while i < len(self.frames):
+                    index = boneFrames[current]
+                    copyKeyData(self.frames[index].keys[name], baked[i].getBoneKey(name))
+
+                    current += step
+                    if current == -1:
+                        current = 1
+                        step = 1
+                    elif current == len(boneFrames):
+                        current = len(boneFrames) - 2
+                        step = -1
+
+                    jump = abs(boneFrames[current] - index)
+                    i += jump
+
+        return baked
+
+    def findKeyFrameRange(self, frames, frameNumber, bone):
         start = None
         end = None
 
+        #TODO modulo frame search?
         i = frameNumber
         while i >= 0:
-            if bone.name in self.frames[i].keys:
+            if bone.name in frames[i].keys:
                 start = i
                 break
             i -= 1
 
         i = frameNumber
-        while i < len(self.frames):
-            if bone.name in self.frames[i].keys:
+        while i < len(frames):
+            if bone.name in frames[i].keys:
                 end = i
                 break
             i += 1
 
         return start, end
 
+    def debugBake(self, editor):
+        baked = self.bakeFrames()
+
+        x = 400
+        y = 10
+        for i, frame in enumerate(baked):
+            for name, key in frame.keys.items():
+                editor.drawText("Baked: %s - %s" % (i, name), (0, 0, 0), (x, y))
+                y += 20
+
+
     def apply(self, frameNumber, bones):
-        frame = self.frames[frameNumber]
+        baked = self.bakeFrames()
 
         for name, bone in bones.items():
-            start, end = self.findKeyFrameRange(frameNumber, bone)
+            start, end = self.findKeyFrameRange(baked, frameNumber, bone)
             if start is not None and end is not None:
-                startKey = self.frames[start].keys[name]
-                endKey = self.frames[end].keys[name]
+                startKey = baked[start].keys[name]
+                endKey = baked[end].keys[name]
                 if startKey == endKey:
                     copyKeyData(startKey, bone)
                 else:

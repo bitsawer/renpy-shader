@@ -175,6 +175,7 @@ init python:
         if editorSettings["pivots"]:
             animation.drawDebugText(editor, frameNumber)
             animation.drawDebugKeyFrames(editor, frameNumber)
+            animation.debugBake(editor)
 
         if subdivideMesh:
             subdivideMesh = False
