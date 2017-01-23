@@ -2,6 +2,8 @@
 import pygame
 import euclid
 import utils
+import skinnededitor
+import easing
 
 class KeyFrame:
     def __init__(self):
@@ -56,10 +58,30 @@ class Frame:
             self.keys[name] = key
         return key
 
+DEFAULT_EASING = "outBack"
+
+class BoneData:
+    def __init__(self):
+        self.repeat = True
+        self.easing = DEFAULT_EASING
+
 class SkinnedAnimation:
     def __init__(self, name):
         self.name = name
         self.frames = [Frame()]
+        self.boneData = {}
+
+    def isRepeating(self, name):
+        data = self.boneData.get(name)
+        if not data or data.repeat:
+            return True
+        return False
+
+    def getEasing(self, name):
+        data = self.boneData.get(name)
+        if data:
+            return data.easing
+        return DEFAULT_EASING
 
     def setFrameCount(self, count):
         self.frames = self.frames[:count]
@@ -69,9 +91,9 @@ class SkinnedAnimation:
     def update(self, frameNumber, editor):
         for event, pos in editor.context.events:
             if event.type == pygame.KEYDOWN:
+                bone = editor.getActiveBone()
                 key = event.key
                 if key == pygame.K_i:
-                    bone = editor.getActiveBone()
                     if bone:
                         if event.mod & pygame.KMOD_ALT:
                             if bone.name in self.frames[frameNumber].keys:
@@ -79,6 +101,13 @@ class SkinnedAnimation:
                         else:
                             key = self.frames[frameNumber].getBoneKey(bone.name)
                             copyKeyData(bone, key)
+                elif key == pygame.K_m:
+                    if bone:
+                        data = self.boneData.get(bone.name)
+                        if not data:
+                            data = BoneData()
+                            self.boneData[bone.name] = data
+                        data.repeat = not data.repeat
 
         self.cleanupDuplicateKeys(editor.getBones(), frameNumber)
 
@@ -144,12 +173,22 @@ class SkinnedAnimation:
                         keyframes.add(name)
 
         for name in keyframes:
-            pos = editor.getBonePivotTransformed(bones[name])
-            editor.context.overlayCanvas.circle((255, 255, 0), (pos.x, pos.y), 8, 1)
+            self.drawDebugBone(editor, bones, name, False)
 
         for name in currents:
-            pos = editor.getBonePivotTransformed(bones[name])
-            editor.context.overlayCanvas.circle((0, 255, 0), (pos.x, pos.y), 8, 1)
+            self.drawDebugBone(editor, bones, name, True)
+
+    def drawDebugBone(self, editor, bones, boneName, hasKeyframe):
+        pos = editor.getBonePivotTransformed(bones[boneName])
+        size = skinnededitor.PIVOT_SIZE * 2
+        color = (255, 255, 0)
+        if hasKeyframe:
+            color = (0, 255, 0)
+
+        if self.isRepeating(boneName):
+            editor.context.overlayCanvas.circle(color, (pos.x, pos.y), size, 1)
+        else:
+            editor.context.overlayCanvas.rect(color, (pos.x - size, pos.y - size, size * 2, size * 2), 1)
 
     def getBoneKeyFrames(self, name):
         results = []
@@ -186,7 +225,8 @@ class SkinnedAnimation:
 
         for name in self.getKeyBones():
             boneFrames = self.getBoneKeyFrames(name)
-            if len(boneFrames) > 1:
+
+            if len(boneFrames) > 1 and self.isRepeating(name):
                 current = len(boneFrames) - 1
                 step = -1
                 i = boneFrames[-1]
@@ -258,5 +298,6 @@ class SkinnedAnimation:
                     copyKeyData(startKey, bone)
                 else:
                     weight = float(frameNumber - start) / (end - start)
-                    key = interpolateKeyData(startKey, endKey, weight)
+                    eased = easing.EASINGS[self.getEasing(bone.name)](weight)
+                    key = interpolateKeyData(startKey, endKey, eased)
                     copyKeyData(key, bone)
