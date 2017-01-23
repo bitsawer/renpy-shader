@@ -27,6 +27,9 @@ FONT_SIZE = 20
 FONT = pygame.font.Font(None, FONT_SIZE)
 
 class Action:
+    def start(self, editor):
+        pass
+
     def cancel(self, editor):
         pass
 
@@ -39,53 +42,75 @@ class Action:
     def draw(self, editor):
         pass
 
-class AttributeEdit(Action):
-    def __init__(self, editor, mouse, bone, attribute, duplicates=None):
+
+class ScaleEdit(Action):
+    def __init__(self, editor, mouse, bone, attributes):
         self.mouse = mouse
         self.bone = bone
-        self.attribute = attribute
-        self.duplicates = duplicates
-        self.original = self.getValue()
-        self.pivot = editor.getBonePivotTransformed(bone)
-        self.value = self.original + math.atan2(mouse[0] - self.pivot[0], mouse[1] - self.pivot[1])
+        self.attributes = attributes
+        self.pivot = None
+        self.original = None
+        self.values = {}
 
-    def getValue(self):
-        v = self.bone
-        for attr in self.attribute.split("."):
-            v = getattr(v, attr)
-        return v
-
-    def setValue(self, value):
-        v = self.bone
-        attrs = self.attribute.split(".")
-        for attr in attrs[:-1]:
-            v = getattr(v, attr)
-        setattr(v, attrs[-1], value)
-
-        if self.duplicates:
-            for dup in self.duplicates:
-                setattr(v, dup, value)
+    def start(self, editor):
+        self.pivot = editor.getBonePivotTransformed(self.bone)
+        self.original = euclid.Vector3(self.bone.scale.x, self.bone.scale.y, self.bone.scale.z)
+        for attr in self.attributes:
+            self.values[attr] = getattr(self.original, attr) + math.atan2(self.mouse[0] - self.pivot[0], self.mouse[1] - self.pivot[1])
 
     def cancel(self, editor):
-        self.setValue(self.original)
-
-    def apply(self, editor):
-        pass
+        self.bone.scale = self.original
 
     def update(self, editor):
-        angle = math.atan2(editor.mouse[0] - self.pivot[0], editor.mouse[1] - self.pivot[1])
-        self.setValue(self.value - angle)
+        for attr in self.values:
+            angle = math.atan2(editor.mouse[0] - self.pivot[0], editor.mouse[1] - self.pivot[1])
+            setattr(self.bone.scale, attr, self.values[attr] - angle)
 
     def draw(self, editor):
-        name = self.attribute[0].upper()
-        axis = " (%s)" % self.attribute.split(".")[-1]
-
-        value = self.getValue()
-        if "rotation" in self.attribute:
-            value = math.degrees(value)
+        axes = []
+        angles = []
+        for axis in ["x", "y", "z"]:
+            if axis in self.values:
+                axes.append(axis)
+                angles.append("%.1f" % getattr(self.bone.scale, axis))
 
         editor.context.overlayCanvas.line("#0f0", (self.pivot.x, self.pivot.y), editor.mouse)
-        editor.drawText("%s%s: %.1f" % (name, axis, value), "#fff", (editor.mouse[0] + 20, editor.mouse[1]))
+        editor.drawText("S(%s): %s" % (", ".join(axes), ", ".join(angles)), "#fff", (editor.mouse[0] + 20, editor.mouse[1]))
+
+
+class RotationEdit(Action):
+    def __init__(self, editor, mouse, bone, attributes):
+        self.mouse = mouse
+        self.bone = bone
+        self.attributes = attributes
+        self.pivot = None
+        self.original = None
+        self.values = {}
+
+    def start(self, editor):
+        self.pivot = editor.getBonePivotTransformed(self.bone)
+        self.original = euclid.Vector3(self.bone.rotation.x, self.bone.rotation.y, self.bone.rotation.z)
+        for attr in self.attributes:
+            self.values[attr] = getattr(self.original, attr) + math.atan2(self.mouse[0] - self.pivot[0], self.mouse[1] - self.pivot[1])
+
+    def cancel(self, editor):
+        self.bone.rotation = self.original
+
+    def update(self, editor):
+        for attr in self.values:
+            angle = math.atan2(editor.mouse[0] - self.pivot[0], editor.mouse[1] - self.pivot[1])
+            setattr(self.bone.rotation, attr, self.values[attr] - angle)
+
+    def draw(self, editor):
+        axes = []
+        angles = []
+        for axis in ["x", "y", "z"]:
+            if axis in self.values:
+                axes.append(axis)
+                angles.append("%.1f" % math.degrees(getattr(self.bone.rotation, axis)))
+
+        editor.context.overlayCanvas.line("#0f0", (self.pivot.x, self.pivot.y), editor.mouse)
+        editor.drawText("R(%s): %s" % (", ".join(axes), ", ".join(angles)), "#fff", (editor.mouse[0] + 20, editor.mouse[1]))
 
 
 class ExtrudeBone(Action):
@@ -176,17 +201,14 @@ class PoseMode:
             activeBone = self.editor.getActiveBone()
 
             rotAxis = "z"
-            scaleAxis = "y"
-            scaleDup = ["x", "z"]
-
+            scaleAxes = ["x", "y", "z"]
             if self.active and key in (pygame.K_x, pygame.K_y, pygame.K_z):
-                if "rotation" in self.active.attribute:
+                if isinstance(self.active, RotationEdit):
                     rotAxis = chr(key)
                     key = pygame.K_r
-                elif "scale" in self.active.attribute:
-                    scaleAxis = chr(key)
+                elif isinstance(self.active, ScaleEdit):
+                    scaleAxes = [chr(key)]
                     key = pygame.K_s
-                    scaleDup = []
 
             if key == pygame.K_h and activeBone:
                 activeBone.visible = not activeBone.visible
@@ -200,14 +222,13 @@ class PoseMode:
                 if alt:
                     activeBone.rotation = euclid.Vector3(0.0, 0.0, 0.0)
                 else:
-                    self.newEdit(AttributeEdit(self.editor, pos, activeBone, "rotation." + rotAxis))
+                    self.newEdit(RotationEdit(self.editor, pos, activeBone, [rotAxis]))
                 return True
             if key == pygame.K_s and activeBone:
-                #TODO Cancel bug does not undo all values...
                 if alt:
                     activeBone.scale = euclid.Vector3(1.0, 1.0, 1.0)
                 else:
-                    self.newEdit(AttributeEdit(self.editor, pos, activeBone, "scale." + scaleAxis, scaleDup))
+                    self.newEdit(ScaleEdit(self.editor, pos, activeBone, scaleAxes))
                 return True
             if key == pygame.K_e and activeBone:
                 self.newEdit(ExtrudeBone(self.editor, pos, activeBone))
@@ -230,6 +251,7 @@ class PoseMode:
         if self.active:
             self.active.cancel(self.editor)
         self.active = edit
+        self.active.start(self.editor)
 
     def draw(self):
         if self.active:
@@ -580,7 +602,9 @@ class SkinnedEditor:
                     parentTrans = self.transformsMap[bone.parent]
                     parentBone = parentTrans.bone
                     parentPos = self.getBonePivotTransformed(parentBone)
-                    context.overlayCanvas.line(PIVOT_COLOR, (pivot.x, pivot.y), (parentPos.x, parentPos.y))
+                    if geometry.pointDistance((pivot.x, pivot.y), (parentPos.x, parentPos.y)) > 1:
+                        #TODO Line drawing hangs if passed same start and end?
+                        context.overlayCanvas.line(PIVOT_COLOR, (pivot.x, pivot.y), (parentPos.x, parentPos.y))
 
                 context.overlayCanvas.circle(PIVOT_COLOR, (pivot.x, pivot.y), PIVOT_SIZE)
                 if hoverPivotBone and bone.name == hoverPivotBone.name:
