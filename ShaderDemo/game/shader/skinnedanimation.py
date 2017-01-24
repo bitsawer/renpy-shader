@@ -10,7 +10,7 @@ class KeyFrame:
         self.pivot = None
         self.rotation = None
         self.scale = None
-        self.zOrder = None #TODO Can't animate this... Breaks vertex sorting
+        #self.zOrder = None #TODO Can't animate this efficiently, breaks vertex sorting...
         self.visible = None
         #self.alpha = 1.0 #TODO Add this
 
@@ -18,7 +18,7 @@ def copyKeyData(source, target):
     target.pivot = (source.pivot[0], source.pivot[1])
     target.rotation = euclid.Vector3(source.rotation.x, source.rotation.y, source.rotation.z)
     target.scale = euclid.Vector3(source.scale.x, source.scale.y, source.scale.z)
-    target.zOrder = source.zOrder
+    #target.zOrder = source.zOrder
     target.visible = source.visible
 
 def keyDataChanged(a, b):
@@ -28,8 +28,8 @@ def keyDataChanged(a, b):
         return True
     if a.scale != b.scale:
         return True
-    if a.zOrder != b.zOrder:
-        return True
+    #if a.zOrder != b.zOrder:
+    #    return True
     if a.visible != b.visible:
         return True
     return False
@@ -39,7 +39,7 @@ def interpolateKeyData(a, b, weight):
     key.pivot = utils.interpolate2d(a.pivot, b.pivot, weight)
     key.rotation = euclid.Vector3(*utils.interpolate3d(a.rotation, b.rotation, weight))
     key.scale = euclid.Vector3(*utils.interpolate3d(a.scale, b.scale, weight))
-    key.zOrder = a.zOrder
+    #key.zOrder = a.zOrder
     key.visible = a.visible
     return key
 
