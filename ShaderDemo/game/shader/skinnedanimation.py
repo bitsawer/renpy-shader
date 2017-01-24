@@ -10,8 +10,9 @@ class KeyFrame:
         self.pivot = None
         self.rotation = None
         self.scale = None
-        self.zOrder = None
+        self.zOrder = None #TODO Can't animate this... Breaks vertex sorting
         self.visible = None
+        #self.alpha = 1.0 #TODO Add this
 
 def copyKeyData(source, target):
     target.pivot = (source.pivot[0], source.pivot[1])
@@ -62,7 +63,8 @@ DEFAULT_EASING = "outBack"
 
 class BoneData:
     def __init__(self):
-        self.repeat = True
+        self.repeat = False
+        self.reversed = False
         self.easing = DEFAULT_EASING
 
 class SkinnedAnimation:
@@ -70,11 +72,18 @@ class SkinnedAnimation:
         self.name = name
         self.frames = [Frame()]
         self.boneData = {}
+        self.dirty = False
 
     def isRepeating(self, name):
         data = self.boneData.get(name)
-        if not data or data.repeat:
-            return True
+        if data:
+            return data.repeat
+        return False
+
+    def isReversed(self, name):
+        data = self.boneData.get(name)
+        if data:
+            return data.reversed
         return False
 
     def getEasing(self, name):
@@ -108,13 +117,17 @@ class SkinnedAnimation:
                         else:
                             key = self.frames[frameNumber].getBoneKey(bone.name)
                             copyKeyData(bone, key)
+                        self.dirty = True
                 elif key == pygame.K_m:
                     if bone:
-                        data = self.boneData.get(bone.name)
-                        if not data:
-                            data = BoneData()
-                            self.boneData[bone.name] = data
+                        data = self.getBoneData(bone.name)
                         data.repeat = not data.repeat
+                        self.dirty = True
+                elif key == pygame.K_o:
+                    if bone:
+                        data = self.getBoneData(bone.name)
+                        data.reversed = not data.reversed
+                        self.dirty = True
 
         self.cleanupDuplicateKeys(editor.getBones(), frameNumber)
 
@@ -187,15 +200,23 @@ class SkinnedAnimation:
 
     def drawDebugBone(self, editor, bones, boneName, hasKeyframe):
         pos = editor.getBonePivotTransformed(bones[boneName])
-        size = skinnededitor.PIVOT_SIZE * 2
+        size = skinnededitor.PIVOT_SIZE * 2 + 2
         color = (255, 255, 0)
+        width = 1
         if hasKeyframe:
             color = (0, 255, 0)
 
+        points = [[pos.x - size, pos.y - size], [pos.x + size, pos.y], [pos.x - size, pos.y + size]]
+        offset = 5
+        if self.isReversed(boneName):
+            points = [[pos.x + size, pos.y - size], [pos.x - size, pos.y], [pos.x + size, pos.y + size]]
+            offset = -offset
+        editor.context.overlayCanvas.lines(color, True, points, width)
+
         if self.isRepeating(boneName):
-            editor.context.overlayCanvas.circle(color, (pos.x, pos.y), size, 1)
-        else:
-            editor.context.overlayCanvas.rect(color, (pos.x - size, pos.y - size, size * 2, size * 2), 1)
+            for p in points:
+                p[0] = p[0] + offset
+            editor.context.overlayCanvas.lines(color, True, points, width)
 
     def getBoneKeyFrames(self, name):
         results = []
@@ -225,6 +246,22 @@ class SkinnedAnimation:
         # -etc...
         pass
 
+    def reverseKeyFrames(self, frames, keyFrames, name):
+        keys = {}
+        for index in keyFrames:
+            keys[index] = frames[index].keys[name]
+            del frames[index].keys[name]
+
+        first = keyFrames[0]
+        last = keyFrames[-1]
+        results = []
+        for index in keyFrames:
+            newIndex = first + (index - last)
+            frames[newIndex].keys[name] = keys[index]
+            results.append(newIndex)
+
+        return sorted(results)
+
     def bakeFrames(self):
         baked = []
         for frame in self.frames:
@@ -233,13 +270,17 @@ class SkinnedAnimation:
         for name in self.getKeyBones():
             boneFrames = self.getBoneKeyFrames(name)
 
+            if len(boneFrames) > 1 and self.isReversed(name):
+                boneFrames = self.reverseKeyFrames(baked, boneFrames, name)
+
             if len(boneFrames) > 1 and self.isRepeating(name):
                 current = len(boneFrames) - 1
                 step = -1
                 i = boneFrames[-1]
                 while i < len(self.frames):
                     index = boneFrames[current]
-                    copyKeyData(self.frames[index].keys[name], baked[i].getBoneKey(name))
+                    #copyKeyData(self.frames[index].keys[name], baked[i].getBoneKey(name))
+                    copyKeyData(baked[index].keys[name], baked[i].getBoneKey(name))
 
                     current += step
                     if current == -1:
@@ -284,7 +325,6 @@ class SkinnedAnimation:
 
     def debugBake(self, editor):
         baked = self.bakeFrames()
-
         x = 400
         y = 10
         for i, frame in enumerate(baked):
@@ -292,10 +332,10 @@ class SkinnedAnimation:
                 editor.drawText("Baked: %s - %s" % (i, name), (0, 0, 0), (x, y))
                 y += 20
 
-
     def apply(self, frameNumber, bones):
-        baked = self.bakeFrames()
+        self.dirty = False
 
+        baked = self.bakeFrames()
         for name, bone in bones.items():
             start, end = self.findKeyFrameRange(baked, frameNumber, bone.name)
             if start is not None and end is not None:

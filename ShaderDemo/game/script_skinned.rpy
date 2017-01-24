@@ -131,7 +131,7 @@ init python:
     frameNumber = 0
     frameNumberLast = -1
     framePlay = False
-    maxFrames = 60
+    maxFrames = 60 * 2
 
     def userInput(prompt, *args, **kwargs):
         #TODO Exclude invalid characters...
@@ -162,7 +162,7 @@ init python:
 
     def subdivideActiveMesh(editor):
         active = editor.getActiveBone()
-        if active:
+        if active and active.mesh:
             if editor.subdivide(active, 500):
                 notify("Subdivision done")
             else:
@@ -203,7 +203,7 @@ init python:
 
         animation.setFrameCount(maxFrames + 1)
         animation.update(frameNumber, editor)
-        if frameNumberLast != frameNumber:
+        if frameNumberLast != frameNumber or animation.dirty:
             frameNumberLast = frameNumber
             animation.apply(frameNumber, editor.getBones())
 
