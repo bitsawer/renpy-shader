@@ -214,8 +214,14 @@ class PoseMode:
             if key == pygame.K_h and activeBone:
                 activeBone.visible = not activeBone.visible
                 return True
-            if key == pygame.K_x and activeBone:
-                self.editor.deleteBone(activeBone)
+            if key == pygame.K_x:
+                if activeBone:
+                    self.editor.deleteBone(activeBone)
+                else:
+                    point = self.editor.pickPoint(pos)
+                    if point:
+                        del point[0].points[point[2]]
+                        self.editor.updateMeshesAndBones()
                 return True
             if key == pygame.K_g and activeBone:
                 pass #TODO Grab
