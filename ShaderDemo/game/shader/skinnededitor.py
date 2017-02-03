@@ -393,8 +393,7 @@ class SkinnedEditor:
         self.context.renderer.updateBones()
 
     def updateMeshesAndBones(self):
-        for bone in self.getBones().values():
-            self.context.renderer.updateBoneMesh(bone)
+        self.context.renderer.updateMeshes()
         self.updateBones()
 
     def setBoneZOrder(self, bone, newZ):

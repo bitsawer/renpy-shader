@@ -312,11 +312,19 @@ class SkinnedRenderer(BaseRenderer):
         else:
             #Assume LiveComposite. Not that great, relies on specific RenPy implementation...
             self.loadLiveComposite(image)
+            self.updateMeshes()
             self.updateBones()
 
         for bone in self.bones.values():
             if bone.mesh:
                 bone.mesh.updateUvs(bone)
+
+    def updateMeshes(self):
+        for bone in self.bones.values():
+            if bone.image:
+                bone.triangulatePoints()
+                bone.updateMeshFromTriangles()
+                bone.mesh.moveVertices(bone.pos)
 
     def updateBones(self):
         transforms = self.computeBoneTransforms()
@@ -326,12 +334,6 @@ class SkinnedRenderer(BaseRenderer):
                 bone.mesh.updateVertexWeights(i, transforms)
                 bone.mesh.sortVertices(transforms)
                 bone.mesh.updateUvs(bone)
-
-    def updateBoneMesh(self, bone):
-        if bone.image:
-            bone.triangulatePoints()
-            bone.updateMeshFromTriangles()
-            bone.mesh.moveVertices(bone.pos)
 
     def loadJson(self, image, path):
         container = image.visit()[0]
@@ -375,7 +377,6 @@ class SkinnedRenderer(BaseRenderer):
             bone.zOrder = i
             if bone.image:
                 bone.updatePoints(surface)
-                self.updateBoneMesh(bone)
 
             self.bones[bone.parent].children.append(boneName)
             self.bones[boneName] = bone
