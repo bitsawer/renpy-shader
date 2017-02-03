@@ -86,16 +86,25 @@ class SkinningBone:
                 self.triangles.append(((a[0], a[1]), (b[0], b[1]), (c[0], c[1])))
 
     def updateMeshFromTriangles(self):
+        MERGE_VERTICES = True
+
+        duplicates = {}
         verts = []
         indices = []
         for tri in self.triangles:
             for v in tri:
-                verts.extend([v[0], v[1]])
-                indices.append(len(verts) / 2 - 1)
+                #Consider vertices within one pixel identical
+                v = (int(round(v[0])), int(round(v[1])))
+                if v in duplicates and MERGE_VERTICES:
+                    indices.append(duplicates[v])
+                else:
+                    verts.extend([v[0], v[1]])
+                    index = len(verts) / 2 - 1
+                    indices.append(index)
+                    duplicates[v] = index
 
-        vCount = len(verts) / 2 / 3
-        if vCount != len(self.triangles):
-            raise RuntimeError("Invalid vertex count: %i of %i" % (vCount, len(self.triangles)))
+        if len(indices) % 3 != 0:
+            raise RuntimeError("Invalid index count: %i" % len(indices))
 
         self.mesh = skinnedmesh.SkinnedMesh(makeArray(gl.GLfloat, verts), makeArray(gl.GLuint, indices))
 
