@@ -136,7 +136,7 @@ def loadFromFile(path):
         data = json.load(f)
 
     if data["version"] != VERSION:
-        raise RuntimeError("Invalid version, should be %i" % VERSION)
+        raise RuntimeError("Incompatible file format version, should be %i" % VERSION)
 
     bones = {}
     for name, raw in data["bones"].items():

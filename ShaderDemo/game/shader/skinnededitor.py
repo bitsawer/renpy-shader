@@ -16,6 +16,7 @@ PIVOT_COLOR = (255, 0, 0)
 ACTIVE_COLOR = (0, 255, 0)
 HOVER_COLOR = (255, 255, 0)
 
+DRAG_POINT = "dragPoint"
 DRAG_PIVOT = "dragPivot"
 DRAG_POS = "dragPos"
 ACTIVE_BONE_NAME = "activeBoneName"
@@ -385,6 +386,11 @@ class SkinnedEditor:
     def updateBones(self):
         self.context.renderer.updateBones()
 
+    def updateMeshesAndBones(self):
+        for bone in self.getBones().values():
+            self.context.renderer.updateBoneMesh(bone)
+        self.updateBones()
+
     def setBoneZOrder(self, bone, newZ):
         delta = newZ - bone.zOrder
         children = [bone] + bone.getAllChildren(self.getBones())
@@ -429,12 +435,16 @@ class SkinnedEditor:
                     self.set(DRAG_PIVOT, None)
 
             if self.settings["imageAreas"] and not bone:
-                bone = self.pickCrop(pos)
-                if bone:
-                    self.setActiveBone(bone)
-                    self.set(DRAG_POS, (bone, pos, bone.pos))
+                point = self.pickPoint(pos)
+                if point:
+                    self.set(DRAG_POINT, (point, pos))
                 else:
-                    self.set(DRAG_POS, None)
+                    bone = self.pickCrop(pos)
+                    if bone:
+                        self.setActiveBone(bone)
+                        self.set(DRAG_POS, (bone, pos, bone.pos))
+                    else:
+                        self.set(DRAG_POS, None)
         elif event.button == 4:
             active = self.getActiveBone()
             if active:
@@ -447,6 +457,13 @@ class SkinnedEditor:
                 self.updateBones()
 
     def handleMouseMotion(self, pos):
+        dragPoint = self.get(DRAG_POINT)
+        if dragPoint:
+            bone, oldPos, index = dragPoint[0]
+            oldMouse = dragPoint[1]
+            delta = (oldMouse[0] - pos[0], oldMouse[1] - pos[1])
+            bone.points[index] = (oldPos[0] - delta[0], oldPos[1] - delta[1])
+
         dragPivot = self.get(DRAG_PIVOT)
         if dragPivot:
             bone, oldMouse, oldHead = dragPivot
@@ -468,17 +485,32 @@ class SkinnedEditor:
         self.stopDrag()
 
     def stopDrag(self):
-        if self.get(DRAG_PIVOT):
+        if self.get(DRAG_POINT):
+            self.updateMeshesAndBones()
+        elif self.get(DRAG_PIVOT):
             self.updateBones()
 
+        self.set(DRAG_POINT, None)
         self.set(DRAG_PIVOT, None)
         self.set(DRAG_POS, None)
 
     def isDragging(self):
-        return self.get(DRAG_PIVOT) or self.get(DRAG_POS)
+        return self.get(DRAG_POINT) or self.get(DRAG_PIVOT) or self.get(DRAG_POS)
 
     def isUserInteracting(self):
         return self.isDragging() or self.userInteracting or self.mode.isUserInteracting()
+
+    def pickPoint(self, pos):
+        closest = None
+        closestDistance = None
+        for bone in self.getBones().values():
+            for i, point in enumerate(self.getPolyPoints(bone)):
+                distance = geometry.pointDistance(pos, point)
+                if distance < PICK_DISTANCE_PIVOT:
+                    if not closest or distance < closestDistance:
+                        closest = (bone, bone.points[i], i)
+                        closestDistance = distance
+        return closest
 
     def pickPivot(self, pos):
         closest = None
@@ -567,9 +599,11 @@ class SkinnedEditor:
         mouse = self.mouse
         activeBone = self.getActiveBone()
 
+        hoverPoint = None
         hoverPivotBone = None
         hoverCropBone = None
         if mouse:
+            hoverPoint = self.pickPoint(mouse)
             hoverPivotBone = self.pickPivot(mouse)
             hoverCropBone = self.pickCrop(mouse)
 
@@ -600,7 +634,10 @@ class SkinnedEditor:
 
                     for i, p in enumerate(polyPoints):
                         color = (0, int(float(i) / len(polyPoints) * 255), 0)
+                        if hoverPoint and hoverPoint[0].name == bone.name and hoverPoint[2] == i:
+                            color = (255, 255, 0)
                         context.overlayCanvas.circle(color, p, 3)
+
 
             if self.settings["pivots"]:
                 if bone.parent:

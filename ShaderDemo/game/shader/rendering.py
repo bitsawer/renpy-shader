@@ -327,6 +327,12 @@ class SkinnedRenderer(BaseRenderer):
                 bone.mesh.sortVertices(transforms)
                 bone.mesh.updateUvs(bone)
 
+    def updateBoneMesh(self, bone):
+        if bone.image:
+            bone.triangulatePoints()
+            bone.updateMeshFromTriangles()
+            bone.mesh.moveVertices(bone.pos)
+
     def loadJson(self, image, path):
         container = image.visit()[0]
         self.size = container.style.xmaximum, container.style.ymaximum
@@ -369,9 +375,7 @@ class SkinnedRenderer(BaseRenderer):
             bone.zOrder = i
             if bone.image:
                 bone.updatePoints(surface)
-                bone.triangulatePoints()
-                bone.updateMeshFromTriangles()
-                bone.mesh.moveVertices(bone.pos)
+                self.updateBoneMesh(bone)
 
             self.bones[bone.parent].children.append(boneName)
             self.bones[boneName] = bone
