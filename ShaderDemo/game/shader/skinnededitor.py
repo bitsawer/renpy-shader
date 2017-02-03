@@ -434,17 +434,19 @@ class SkinnedEditor:
                     self.setActiveBone(None)
                     self.set(DRAG_PIVOT, None)
 
-            if self.settings["imageAreas"] and not bone:
+            point = None
+            if self.settings["edgePoints"] and not bone:
                 point = self.pickPoint(pos)
                 if point:
                     self.set(DRAG_POINT, (point, pos))
+
+            if self.settings["imageAreas"] and not bone and not point:
+                bone = self.pickCrop(pos)
+                if bone:
+                    self.setActiveBone(bone)
+                    self.set(DRAG_POS, (bone, pos, bone.pos))
                 else:
-                    bone = self.pickCrop(pos)
-                    if bone:
-                        self.setActiveBone(bone)
-                        self.set(DRAG_POS, (bone, pos, bone.pos))
-                    else:
-                        self.set(DRAG_POS, None)
+                    self.set(DRAG_POS, None)
         elif event.button == 4:
             active = self.getActiveBone()
             if active:
@@ -615,7 +617,7 @@ class SkinnedEditor:
             pos = self.getBonePos(bone)
             pivot = self.getBonePivotTransformed(bone)
 
-            if self.settings["imageAreas"] and bone.image:
+            if self.settings["imageAreas"] and bone.image and bone.visible:
                 areaColor = (255, 255, 0)
                 lines = self.getImageLines(bone)
                 if not hoverPivotBone and hoverCropBone and bone.name == hoverCropBone.name:
@@ -628,16 +630,15 @@ class SkinnedEditor:
                 #    tri = (triangles[i], triangles[i + 1], triangles[i + 2])
                 #    context.overlayCanvas.lines("#0f0", True, tri)
 
+            if self.settings["edgePoints"] and bone.visible:
                 polyPoints = self.getPolyPoints(bone)
                 if polyPoints:
                     context.overlayCanvas.lines("#ff0", True, polyPoints)
-
                     for i, p in enumerate(polyPoints):
                         color = (0, int(float(i) / len(polyPoints) * 255), 0)
                         if hoverPoint and hoverPoint[0].name == bone.name and hoverPoint[2] == i:
                             color = (255, 255, 0)
                         context.overlayCanvas.circle(color, p, 3)
-
 
             if self.settings["pivots"]:
                 if bone.parent:

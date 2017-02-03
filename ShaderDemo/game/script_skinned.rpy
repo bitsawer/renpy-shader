@@ -47,7 +47,8 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, a
                     size 15
 
                 textbutton "Wireframes" action ToggleDict(editorSettings, "wireframe")
-                textbutton "Images" action ToggleDict(editorSettings, "imageAreas")
+                textbutton "Edge points" action ToggleDict(editorSettings, "edgePoints")
+                textbutton "Image areas" action ToggleDict(editorSettings, "imageAreas")
                 textbutton "Bones" action ToggleDict(editorSettings, "pivots")
                 textbutton "Bone names" action ToggleDict(editorSettings, "names")
                 textbutton "Debug animate" action ToggleDict(editorSettings, "debugAnimate")
@@ -56,7 +57,7 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, a
                     size 15
 
                 textbutton "Rename bone" action [SetVariable("renameBoneFlag", True), RestartStatement()]
-                textbutton "Subdivide image" action [SetVariable("subdivideMesh", True), RestartStatement()]
+                textbutton "Subdivide mesh" action [SetVariable("subdivideMesh", True), RestartStatement()]
                 textbutton "Reset pose" action [SetVariable("resetPoseFlag", True), RestartStatement()]
 
                 text "File":
@@ -113,7 +114,8 @@ init python:
 
     editorSettings = {
         "wireframe": True,
-        "imageAreas": True,
+        "edgePoints": True,
+        "imageAreas": False,
         "pivots": True,
         "names": False,
         "debugAnimate": False,

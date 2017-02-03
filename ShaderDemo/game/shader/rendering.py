@@ -458,7 +458,7 @@ class SkinnedRenderer(BaseRenderer):
             #No image or mesh attached
             return
 
-        if not bone.visible and not bone.wireFrame:
+        if not bone.visible:
             #Nothing to draw
             return
 
@@ -475,9 +475,8 @@ class SkinnedRenderer(BaseRenderer):
         self.bindAttributeArray(self.shader, "inBoneWeights", mesh.boneWeights, 4)
         self.bindAttributeArray(self.shader, "inBoneIndices", mesh.boneIndices, 4)
 
-        if bone.visible:
-            self.shader.uniformf("wireFrame", 0)
-            gl.glDrawElements(gl.GL_TRIANGLES, len(mesh.indices), gl.GL_UNSIGNED_INT, mesh.indices)
+        self.shader.uniformf("wireFrame", 0)
+        gl.glDrawElements(gl.GL_TRIANGLES, len(mesh.indices), gl.GL_UNSIGNED_INT, mesh.indices)
 
         if bone.wireFrame:
             self.shader.uniformf("wireFrame", 1)
