@@ -109,6 +109,7 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, a
                 text "File":
                     size 15
 
+                textbutton "New animation" action Confirm("Create a new animation?", SetVariable("newAnimationFlag", True))
                 textbutton "Load animation" action SetVariable("loadAnimationFlag", True)
                 textbutton "Save animation" action SetVariable("saveAnimationFlag", True)
 
@@ -158,6 +159,7 @@ init python:
     renameBoneFlag = False
     resetPoseFlag = False
     showEasingsFlag = False
+    newAnimationFlag = False
     loadAnimationFlag = False
     saveAnimationFlag = False
 
@@ -235,6 +237,12 @@ init python:
         else:
             notify("No bone selected")
 
+    def newAnimation():
+        global animFile
+        animFile = ""
+        notify("New animation")
+        restartEditor()
+
     def askAnimation():
         return renpy.call_screen("fileListScreen")
 
@@ -260,7 +268,7 @@ init python:
 
     def editUpdate(context):
         global saveRig, subdivideMesh, renameBoneFlag, resetPoseFlag, showEasingsFlag, \
-            loadAnimationFlag, saveAnimationFlag, frameNumberLast
+            newAnimationFlag, loadAnimationFlag, saveAnimationFlag, frameNumberLast
 
         editor = skinnededitor.SkinnedEditor(context, editorSettings)
         editor.update()
@@ -292,6 +300,10 @@ init python:
         if showEasingsFlag:
             showEasingsFlag = False
             setActiveEasing(editor, animation)
+
+        if newAnimationFlag:
+            newAnimationFlag = False
+            newAnimation()
 
         if loadAnimationFlag:
             loadAnimationFlag = False
