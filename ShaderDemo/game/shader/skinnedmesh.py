@@ -24,16 +24,30 @@ class SkinnedMesh:
                 triangles.append((self.indices[i], self.indices[i + 1], self.indices[i + 2]))
         return triangles
 
-    def getTriangleAdjacency(self, tris):
+    def getIndexAdjacency(self, tris):
         adjacency = {}
         for i, tri in enumerate(tris):
             for i2, tri2 in enumerate(tris):
                 if i != i2:
                     for index in tri:
-                        if index in tri2: #TODO if contains two, not one shared indices...
-                            adj = adjacency.get(index, [])
-                            adj.append((tri2, i2))
-                            adjacency[index] = adj
+                       if index in tri2:
+                           adj = adjacency.get(index, [])
+                           adj.append((tri2, i2))
+                           adjacency[index] = adj
+        return adjacency
+
+    def getTriangleAdjacency(self, tris):
+        adjacency = {}
+        for i, tri in enumerate(tris):
+            for i2, tri2 in enumerate(tris):
+                if i != i2:
+                    a, b, c = tri
+                    for edge in ((a, b), (b, c), (c, a)):
+                        if edge[0] in tri2 and edge[1] in tri2:
+                            adj = adjacency.get(i, [])
+                            adj.append(i2)
+                            adjacency[i] = adj
+                            break
         return adjacency
 
     def getVertexCount(self):
@@ -64,10 +78,9 @@ class SkinnedMesh:
                     if geometry.pointInTriangle(bone.pivot, v1, v2, v3):
                         subivisions[(a, b, c)] = (a, b, c, verts, indices, i)
 
-                        for index in (a, b, c):
-                            for adj in adjacency.get(index, []):
-                                tri, x = adj
-                                subivisions[tri] = (tri[0], tri[1], tri[2], verts, indices, x)
+                        for triIndex in adjacency.get(i, []):
+                            n = tris[triIndex]
+                            subivisions[n] = (n[0], n[1], n[2], verts, indices, triIndex)
 
         for sub in subivisions.values():
             self.subdivideTriangle(*sub)
