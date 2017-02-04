@@ -24,11 +24,56 @@ class SkinnedMesh:
                 triangles.append((self.indices[i], self.indices[i + 1], self.indices[i + 2]))
         return triangles
 
+    def getTriangleAdjacency(self, tris):
+        adjacency = {}
+        for i, tri in enumerate(tris):
+            for i2, tri2 in enumerate(tris):
+                if i != i2:
+                    for index in tri:
+                        if index in tri2: #TODO if contains two, not one shared indices...
+                            adj = adjacency.get(index, [])
+                            adj.append((tri2, i2))
+                            adjacency[index] = adj
+        return adjacency
+
     def getVertexCount(self):
         return len(self.vertices) // 2
 
     def getVertex(self, index):
         return (self.vertices[index * 2], self.vertices[index * 2 + 1])
+
+    def subdivideAdaptive(self, transforms):
+        verts = self.vertices[:]
+        indices = self.indices[:]
+        tris = self.getTriangleIndices()
+        adjacency = self.getTriangleAdjacency(tris)
+
+        mapping = {}
+        for trans in transforms:
+            mapping[trans.bone.name] = trans
+
+        subivisions = {}
+
+        for trans in transforms:
+            bone = trans.bone
+            if bone.parent:
+                for i, (a, b, c) in enumerate(tris):
+                    v1 = self.getVertex(a)
+                    v2 = self.getVertex(b)
+                    v3 = self.getVertex(c)
+                    if geometry.pointInTriangle(bone.pivot, v1, v2, v3):
+                        subivisions[(a, b, c)] = (a, b, c, verts, indices, i)
+
+                        for index in (a, b, c):
+                            for adj in adjacency.get(index, []):
+                                tri, x = adj
+                                subivisions[tri] = (tri[0], tri[1], tri[2], verts, indices, x)
+
+        for sub in subivisions.values():
+            self.subdivideTriangle(*sub)
+
+        self.vertices = makeArray(gl.GLfloat, verts)
+        self.indices = makeArray(gl.GLuint, [x for x in indices if x is not None])
 
     def subdivide(self, maxSize):
         verts = self.vertices[:]

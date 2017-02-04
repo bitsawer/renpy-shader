@@ -319,12 +319,16 @@ class SkinnedRenderer(BaseRenderer):
             if bone.mesh:
                 bone.mesh.updateUvs(bone)
 
-    def updateMeshes(self):
-        for bone in self.bones.values():
-            if bone.image:
+    def updateMeshes(self, autosubdivide=False):
+        transforms = self.computeBoneTransforms()
+        for transform in transforms:
+            bone = transform.bone
+            if bone.image and bone.points:
                 bone.triangulatePoints()
                 bone.updateMeshFromTriangles()
                 bone.mesh.moveVertices(bone.pos)
+                if autosubdivide:
+                    bone.mesh.subdivideAdaptive(transforms)
 
     def updateBones(self):
         transforms = self.computeBoneTransforms()

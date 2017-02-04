@@ -221,7 +221,7 @@ class PoseMode:
                     point = self.editor.pickPoint(pos)
                     if point:
                         del point[0].points[point[2]]
-                        self.editor.updateMeshesAndBones()
+                        self.editor.updateBones()
                 return True
             if key == pygame.K_g and activeBone:
                 pass #TODO Grab
@@ -333,9 +333,10 @@ class SkinnedEditor:
         self.context.overlayCanvas.get_surface().blit(surface, pos)
 
     def subdivide(self, bone, minSize):
-        if bone.mesh:
-            bone.mesh.subdivide(minSize)
-            self.updateBones()
+        if bone.mesh and not self.settings["autoSubdivide"]:
+            #TODO Not really needed?
+            #bone.mesh.subdivide(minSize)
+            #self.updateBones()
             return True
         return False
 
@@ -390,11 +391,8 @@ class SkinnedEditor:
             self.updateBones()
 
     def updateBones(self):
+        self.context.renderer.updateMeshes(self.settings["autoSubdivide"])
         self.context.renderer.updateBones()
-
-    def updateMeshesAndBones(self):
-        self.context.renderer.updateMeshes()
-        self.updateBones()
 
     def setBoneZOrder(self, bone, newZ):
         delta = newZ - bone.zOrder
@@ -493,9 +491,7 @@ class SkinnedEditor:
         self.stopDrag()
 
     def stopDrag(self):
-        if self.get(DRAG_POINT):
-            self.updateMeshesAndBones()
-        elif self.get(DRAG_PIVOT):
+        if self.get(DRAG_POINT) or self.get(DRAG_PIVOT):
             self.updateBones()
 
         self.set(DRAG_POINT, None)

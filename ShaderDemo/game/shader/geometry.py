@@ -335,3 +335,12 @@ def shortenLineEnd(a, b, relative):
     x3 = x1 + dx
     y3 = y1 + dy
     return x3, y3
+
+def _triSign(p1, p2, p3):
+    return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
+
+def pointInTriangle(point, v1, v2, v3):
+    b1 = _triSign(point, v1, v2) < 0.0
+    b2 = _triSign(point, v2, v3) < 0.0
+    b3 = _triSign(point, v3, v1) < 0.0
+    return (b1 == b2) and (b2 == b3)

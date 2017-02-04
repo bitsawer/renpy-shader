@@ -37,6 +37,7 @@ class SkinningBone:
         self.image = None
         self.pos = (0, 0)
         self.pivot = (0, 0)
+        #self.translate = (0, 0) #TODO
         self.rotation = euclid.Vector3(0, 0, 0)
         self.scale = euclid.Vector3(1, 1, 1)
         self.zOrder = -1

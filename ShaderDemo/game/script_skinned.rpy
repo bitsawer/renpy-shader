@@ -51,7 +51,12 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, a
                 textbutton "Image areas" action ToggleDict(editorSettings, "imageAreas")
                 textbutton "Bones" action ToggleDict(editorSettings, "pivots")
                 textbutton "Bone names" action ToggleDict(editorSettings, "names")
+
+                text "Modes":
+                    size 15
+
                 textbutton "Debug animate" action ToggleDict(editorSettings, "debugAnimate")
+                textbutton "Autosubdivision" action ToggleDict(editorSettings, "autoSubdivide")
 
                 text "Operations":
                     size 15
@@ -63,9 +68,11 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, a
                 text "File":
                     size 15
 
+                #textbutton "Load rig" action SetVariable("loadRig", True)
                 textbutton "Reload" action Confirm("Are you sure you want to reload?", Jump("start_skinned"))
                 #textbutton "Save" action Confirm("Are you sure you want to save?", Function(editSave))
                 textbutton "Save rig" action SetVariable("saveRig", True)
+
 
     drag:
         drag_handle (0, 0, 1.0, 1.0)
@@ -119,6 +126,7 @@ init python:
         "pivots": True,
         "names": False,
         "debugAnimate": False,
+        "autoSubdivide": True,
     }
 
     saveRig = False
@@ -163,6 +171,10 @@ init python:
             rigFile = fileName
 
     def subdivideActiveMesh(editor):
+        if editorSettings["autoSubdivide"]:
+            notify("Disable auto subdivision first")
+            return
+
         active = editor.getActiveBone()
         if active and active.mesh:
             if editor.subdivide(active, 500):
