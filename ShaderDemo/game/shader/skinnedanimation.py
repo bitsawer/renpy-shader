@@ -118,12 +118,12 @@ class SkinnedAnimation:
                             key = self.frames[frameNumber].getBoneKey(bone.name)
                             copyKeyData(bone, key)
                         self.dirty = True
-                elif key == pygame.K_m:
+                elif key == pygame.K_o:
                     if bone:
                         data = self.getBoneData(bone.name)
                         data.repeat = not data.repeat
                         self.dirty = True
-                elif key == pygame.K_o:
+                elif key == pygame.K_p:
                     if bone:
                         data = self.getBoneData(bone.name)
                         data.reversed = not data.reversed
@@ -200,23 +200,21 @@ class SkinnedAnimation:
 
     def drawDebugBone(self, editor, bones, boneName, hasKeyframe):
         pos = editor.getBonePivotTransformed(bones[boneName])
-        size = skinnededitor.PIVOT_SIZE * 2 + 2
+        size = skinnededitor.PIVOT_SIZE * 2 + 1
         color = (255, 255, 0)
-        width = 1
         if hasKeyframe:
             color = (0, 255, 0)
 
-        points = [[pos.x - size, pos.y - size], [pos.x + size, pos.y], [pos.x - size, pos.y + size]]
-        offset = 5
-        if self.isReversed(boneName):
-            points = [[pos.x + size, pos.y - size], [pos.x - size, pos.y], [pos.x + size, pos.y + size]]
-            offset = -offset
-        editor.context.overlayCanvas.lines(color, True, points, width)
+        editor.context.overlayCanvas.circle(color, (pos.x, pos.y), size, 1)
 
+        offset = 3
         if self.isRepeating(boneName):
-            for p in points:
-                p[0] = p[0] + offset
-            editor.context.overlayCanvas.lines(color, True, points, width)
+            offset += 3
+            editor.context.overlayCanvas.circle((255, 255, 0), (pos.x, pos.y), size + 3, 1)
+
+        if self.isReversed(boneName):
+            points = [(pos.x - size - offset, pos.y + size), (pos.x - size - offset, pos.y - size)]
+            editor.context.overlayCanvas.lines((255, 255, 0), False, points, 2)
 
     def getBoneKeyFrames(self, name):
         results = []

@@ -19,7 +19,7 @@ screen easingScreen(oldEasing):
             for name in easing.EASINGS:
                 if name == oldEasing:
                     $ name = ">> " + name + " <<"
-                textbutton name xalign 0.5 action Return(name)
+                textbutton name xalign 0.5 action Return(name.replace(">> ", "").replace(" <<", ""))
 
 screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, args=None, xalign=0.5, yalign=0.5):
     modal True
