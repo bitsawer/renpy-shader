@@ -28,7 +28,7 @@ class SkinnedImage:
 
 
 class SkinningBone:
-    jsonIgnore = ["points", "triangles"]
+    jsonIgnore = []
 
     def __init__(self, name):
         self.name = name
@@ -43,11 +43,8 @@ class SkinningBone:
         self.zOrder = -1
         self.visible = True
         self.wireFrame = False
-
-        self.mesh = None
-
         self.points = []
-        self.triangles = []
+        self.mesh = None
 
     def getAllChildren(self, bones, results=None):
         if not results:
@@ -73,7 +70,7 @@ class SkinningBone:
         expanded = self.points #geometry.offsetPolygon(self.points, -1) #TODO 0 better, do nothing?
         shorten = 0.5
 
-        self.triangles = []
+        triangles = []
         for tri in delaunay.TriangleIterator(triangulation, True):
             a, b, c = tri.vertices
 
@@ -84,15 +81,16 @@ class SkinningBone:
                     inside += 1
 
             if inside >= 2:
-                self.triangles.append(((a[0], a[1]), (b[0], b[1]), (c[0], c[1])))
+                triangles.append(((a[0], a[1]), (b[0], b[1]), (c[0], c[1])))
+        return triangles
 
-    def updateMeshFromTriangles(self):
+    def updateMeshFromTriangles(self, triangles):
         MERGE_VERTICES = True
 
         duplicates = {}
         verts = []
         indices = []
-        for tri in self.triangles:
+        for tri in triangles:
             for v in tri:
                 #Consider vertices within one pixel identical
                 v = (int(round(v[0])), int(round(v[1])))
@@ -165,6 +163,7 @@ def loadFromFile(path):
         bone.zOrder = raw["zOrder"]
         bone.visible = raw["visible"]
         bone.wireFrame = raw["wireFrame"]
+        bone.points = [tuple(p) for p in raw["points"]]
 
         mesh = raw.get("mesh")
         if mesh:

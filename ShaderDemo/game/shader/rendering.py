@@ -324,8 +324,8 @@ class SkinnedRenderer(BaseRenderer):
         for transform in transforms:
             bone = transform.bone
             if bone.image and bone.points:
-                bone.triangulatePoints()
-                bone.updateMeshFromTriangles()
+                tris = bone.triangulatePoints()
+                bone.updateMeshFromTriangles(tris)
                 bone.mesh.moveVertices(bone.pos)
                 if autosubdivide:
                     bone.mesh.subdivideAdaptive(transforms)
