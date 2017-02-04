@@ -1,5 +1,7 @@
 
+import json
 import pygame
+
 import euclid
 import utils
 import skinnededitor
@@ -68,6 +70,8 @@ class BoneData:
         self.easing = DEFAULT_EASING
 
 class SkinnedAnimation:
+    jsonIgnore = ["dirty"]
+
     def __init__(self, name):
         self.name = name
         self.frames = [Frame()]
@@ -346,3 +350,73 @@ class SkinnedAnimation:
                     eased = easing.EASINGS[self.getEasing(bone.name)](weight)
                     key = interpolateKeyData(startKey, endKey, eased)
                     copyKeyData(key, bone)
+
+
+class JsonEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, (KeyFrame, Frame, BoneData, SkinnedAnimation)):
+            d = obj.__dict__.copy()
+            for ignore in getattr(obj, "jsonIgnore", []):
+                if ignore in d:
+                    del d[ignore]
+            return d
+        elif isinstance(obj, euclid.Vector3):
+            return (obj.x, obj.y, obj.z)
+        elif isinstance(obj, ctypes.Array):
+            return list(obj)
+        return json.JSONEncoder.default(self, obj)
+
+def checkJson(obj, data):
+    ignores = getattr(obj, "jsonIgnore", [])
+    for key in data:
+        if not key in obj.__dict__ and key not in ignores:
+            name = obj.__class__.__name__
+            raise RuntimeError("Key '%s' in JSON but not in object '%s'" % (key, name))
+
+VERSION = 1
+
+def saveAnimationToFile(path, animation):
+    data = {
+        "version": VERSION,
+        "animation": animation,
+    }
+    with open(path, "w") as f:
+        json.dump(data, f, indent=1, cls=JsonEncoder, separators=(",", ": "), sort_keys=True)
+
+def loadAnimationFromFile(path):
+    data = None
+    with open(path, "r") as f:
+        data = json.load(f)
+
+    if data["version"] != VERSION:
+        raise RuntimeError("Incompatible animation format version, should be %i" % VERSION)
+
+    data = data["animation"]
+    anim = SkinnedAnimation(data["name"])
+
+    anim.frames = []
+    for f in data["frames"]:
+        frame = Frame()
+        for name, key in f["keys"].items():
+            keyFrame = KeyFrame()
+            keyFrame.pivot = tuple(key["pivot"])
+            keyFrame.rotation = euclid.Vector3(*key["rotation"])
+            keyFrame.scale = euclid.Vector3(*key["scale"])
+            keyFrame.visible = key["visible"]
+            checkJson(keyFrame, key)
+            frame.keys[name] = keyFrame
+        checkJson(frame, f)
+        anim.frames.append(frame)
+
+    anim.boneData = {}
+    for name, entry in data["boneData"].items():
+        boneData = BoneData()
+        boneData.repeat = entry["repeat"]
+        boneData.reversed = entry["reversed"]
+        boneData.easing = entry["easing"]
+        checkJson(boneData, entry)
+        anim.boneData[name] = boneData
+
+    checkJson(anim, data)
+
+    return anim

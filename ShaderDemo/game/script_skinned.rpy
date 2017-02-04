@@ -86,12 +86,17 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, a
             vbox:
                 spacing 10
 
-                text "Animation: " + animation.name
+                text animation.name
 
                 text "Operations":
                     size 15
 
                 textbutton "Easing" action SetVariable("showEasingsFlag", True)
+
+                text "File":
+                    size 15
+
+                textbutton "Save animation" action SetVariable("saveAnimationFlag", True)
 
     frame:
         yalign 1.0
@@ -137,6 +142,7 @@ init python:
     renameBoneFlag = False
     resetPoseFlag = False
     showEasingsFlag = False
+    saveAnimationFlag = False
 
     frameNumber = 0
     frameNumberLast = -1
@@ -209,8 +215,17 @@ init python:
         else:
             notify("No bone selected")
 
+    def saveAnimation(animation):
+        fileName = userInput("Save animation as...", animation.name)
+        if fileName:
+            if not fileName.strip().lower().endswith(".anim"):
+                fileName = fileName + ".anim"
+            skinnedanimation.saveAnimationToFile(fileName, animation)
+            notify("Animation saved to '%s'" % fileName)
+
     def editUpdate(context):
-        global saveRig, subdivideMesh, renameBoneFlag, resetPoseFlag, showEasingsFlag, frameNumberLast
+        global saveRig, subdivideMesh, renameBoneFlag, resetPoseFlag, showEasingsFlag, \
+            saveAnimationFlag, frameNumberLast
 
         editor = skinnededitor.SkinnedEditor(context, editorSettings)
         editor.update()
@@ -243,6 +258,10 @@ init python:
             showEasingsFlag = False
             setActiveEasing(editor, animation)
 
+        if saveAnimationFlag:
+            saveAnimationFlag = False
+            saveAnimation(animation)
+
         if saveRig:
             saveRig = False
             saveRigFile(editor)
@@ -252,7 +271,8 @@ label start_skinned:
 label main_menu: #TODO For fast testing
     $ _controllerContextStore._clear()
 
-    $ animation = skinnedanimation.SkinnedAnimation("untitled")
+    #$ animation = skinnedanimation.SkinnedAnimation("untitled.anim")
+    $ animation = skinnedanimation.loadAnimationFromFile("untitled.anim")
 
     call screen skinnedScreen("doll", shader.PS_SKINNED, {"tex1": "amy influence"},
         update=editUpdate, args={"rigFile": rigFile}, _tag="amy", _layer="amy") #nopredict
