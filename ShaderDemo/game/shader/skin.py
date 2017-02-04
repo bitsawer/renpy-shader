@@ -123,10 +123,13 @@ class JsonEncoder(json.JSONEncoder):
             return list(obj)
         return json.JSONEncoder.default(self, obj)
 
-def saveToFile(bones, path):
+def saveToFile(context, bones, path):
+    size = context.renderer.getSize()
     data = {
         "version": VERSION,
-        "bones": bones
+        "bones": bones,
+        "width": size[0],
+        "height": size[1],
     }
 
     with open(path, "w") as f:

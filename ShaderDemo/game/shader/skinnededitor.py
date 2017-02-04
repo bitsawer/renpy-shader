@@ -290,7 +290,7 @@ class SkinnedEditor:
         self.visualizeBones()
 
     def saveSkeletonToFile(self, name):
-        skin.saveToFile(self.context.renderer.bones, name)
+        skin.saveToFile(self.context, self.context.renderer.bones, name)
 
     def get(self, key):
         return self.context.store.get(key)
