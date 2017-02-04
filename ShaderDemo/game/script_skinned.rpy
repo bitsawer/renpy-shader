@@ -21,6 +21,19 @@ screen easingScreen(oldEasing):
                     $ name = ">> " + name + " <<"
                 textbutton name xalign 0.5 action Return(name.replace(">> ", "").replace(" <<", ""))
 
+screen fileListScreen():
+    frame:
+        xalign 0.5
+        yalign 0.5
+        vbox:
+            spacing 5
+            text "Load file" xalign 0.5
+
+            for name in shader.utils.scanForFiles(".", "anim"):
+                textbutton name xalign 0.5 action Return(name)
+
+            textbutton "Cancel" xalign 0.5 action Return("")
+
 screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, args=None, xalign=0.5, yalign=0.5):
     modal True
     add ShaderDisplayable(shader.MODE_SKINNED, name, shader.VS_SKINNED, pixelShader, textures, uniforms, None, update, args):
@@ -96,6 +109,7 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, a
                 text "File":
                     size 15
 
+                textbutton "Load animation" action SetVariable("loadAnimationFlag", True)
                 textbutton "Save animation" action SetVariable("saveAnimationFlag", True)
 
     frame:
@@ -119,6 +133,7 @@ init python:
     from shader import skinnedanimation
     from shader import easing
 
+    #TODO Use renpy.clear_keymap_cache()
     #config.keymap["input_delete"] = []
     config.keymap["game_menu"].remove("mouseup_3")
     config.keymap["hide_windows"].remove("h")
@@ -136,12 +151,14 @@ init python:
 
     saveRig = False
     rigFile = "bones.rig"
+    animFile = ""
 
     subdivideMesh = False
 
     renameBoneFlag = False
     resetPoseFlag = False
     showEasingsFlag = False
+    loadAnimationFlag = False
     saveAnimationFlag = False
 
     frameNumber = 0
@@ -155,6 +172,9 @@ init python:
 
     def notify(text):
         renpy.notify(text)
+
+    def restartEditor():
+        renpy.jump("start_skinned")
 
     def changeFrameCount():
         global maxFrames, frameNumber
@@ -215,17 +235,32 @@ init python:
         else:
             notify("No bone selected")
 
+    def askAnimation():
+        return renpy.call_screen("fileListScreen")
+
+    def loadAnimation():
+        global animFile
+        result = renpy.invoke_in_new_context(askAnimation)
+        if result:
+            animFile = result
+            notify("Loaded: '%s'" % animFile)
+            restartEditor()
+
     def saveAnimation(animation):
+        global animFile
         fileName = userInput("Save animation as...", animation.name)
         if fileName:
             if not fileName.strip().lower().endswith(".anim"):
                 fileName = fileName + ".anim"
+            animation.name = fileName
             skinnedanimation.saveAnimationToFile(fileName, animation)
-            notify("Animation saved to '%s'" % fileName)
+            animFile = fileName
+            notify("Animation saved to '%s'" % animFile)
+            restartEditor()
 
     def editUpdate(context):
         global saveRig, subdivideMesh, renameBoneFlag, resetPoseFlag, showEasingsFlag, \
-            saveAnimationFlag, frameNumberLast
+            loadAnimationFlag, saveAnimationFlag, frameNumberLast
 
         editor = skinnededitor.SkinnedEditor(context, editorSettings)
         editor.update()
@@ -258,6 +293,10 @@ init python:
             showEasingsFlag = False
             setActiveEasing(editor, animation)
 
+        if loadAnimationFlag:
+            loadAnimationFlag = False
+            loadAnimation()
+
         if saveAnimationFlag:
             saveAnimationFlag = False
             saveAnimation(animation)
@@ -271,8 +310,7 @@ label start_skinned:
 label main_menu: #TODO For fast testing
     $ _controllerContextStore._clear()
 
-    #$ animation = skinnedanimation.SkinnedAnimation("untitled.anim")
-    $ animation = skinnedanimation.loadAnimationFromFile("untitled.anim")
+    $ animation = skinnedanimation.loadAnimationFromFile(animFile) if animFile else skinnedanimation.SkinnedAnimation("untitled.anim")
 
     call screen skinnedScreen("doll", shader.PS_SKINNED, {"tex1": "amy influence"},
         update=editUpdate, args={"rigFile": rigFile}, _tag="amy", _layer="amy") #nopredict

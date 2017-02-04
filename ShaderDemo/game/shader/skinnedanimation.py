@@ -393,6 +393,7 @@ def loadAnimationFromFile(path):
 
     data = data["animation"]
     anim = SkinnedAnimation(data["name"])
+    anim.dirty = True
 
     anim.frames = []
     for f in data["frames"]:

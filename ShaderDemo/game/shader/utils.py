@@ -1,4 +1,5 @@
 
+import os
 import math
 import ctypes
 import euclid
@@ -109,6 +110,14 @@ def getTexParameteriv(glTex, param):
     result = ctypes.c_int(0)
     gl.glGetTexLevelParameteriv(gl.GL_TEXTURE_2D, 0, param, ctypes.byref(result))
     return result.value
+
+def scanForFiles(path, extension):
+    results = []
+    for root, folders, files in os.walk(path):
+        for f in files:
+            if f.split(".")[-1].lower() == extension.lower():
+                results.append(os.path.join(root, f))
+    return results
 
 class Shader:
     def __init__(self, vsCode, psCode):
