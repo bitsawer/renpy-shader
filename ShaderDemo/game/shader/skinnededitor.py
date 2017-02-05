@@ -13,6 +13,8 @@ PICK_DISTANCE_PIVOT = PIVOT_SIZE * 2
 PICK_DISTANCE_CROP = 5
 
 PIVOT_COLOR = (255, 0, 0)
+BLOCKER_COLOR = (255, 128, 0)
+MESH_COLOR = (128, 255, 255)
 ACTIVE_COLOR = (0, 255, 0)
 HOVER_COLOR = (255, 255, 0)
 
@@ -142,7 +144,7 @@ class ExtrudeBone(Action):
 
         bone = skin.SkinningBone(newName)
         bone.pivot = editor.getBoneInverseTranslation(bones[self.bone.name], editor.mouse)
-        bone.zOrder = parent.zOrder + 1
+        bone.zOrder = parent.zOrder + 1 #TODO Get z from parents child with the largest one?
         bones[bone.name] = bone
 
         editor.connectBone(bone.name, parent.name)
@@ -237,6 +239,9 @@ class PoseMode:
                 else:
                     self.newEdit(ScaleEdit(self.editor, pos, activeBone, scaleAxes))
                 return True
+            if key == pygame.K_b and activeBone:
+                activeBone.blocker = not activeBone.blocker
+                self.editor.updateBones()
             if key == pygame.K_e and activeBone:
                 self.newEdit(ExtrudeBone(self.editor, pos, activeBone))
                 return True
@@ -651,7 +656,18 @@ class SkinnedEditor:
                         #TODO Line drawing hangs if passed same start and end?
                         context.overlayCanvas.line(PIVOT_COLOR, (pivot.x, pivot.y), (parentPos.x, parentPos.y))
 
-                context.overlayCanvas.circle(PIVOT_COLOR, (pivot.x, pivot.y), PIVOT_SIZE)
+                if bone.blocker:
+                    s = PIVOT_SIZE + 1
+                    color = BLOCKER_COLOR
+                    if bone.mesh:
+                        color = MESH_COLOR
+                    context.overlayCanvas.rect(color, (pivot.x - s, pivot.y - s, s * 2, s * 2))
+                else:
+                    color = PIVOT_COLOR
+                    if bone.mesh:
+                        color = MESH_COLOR
+                    context.overlayCanvas.circle(color, (pivot.x, pivot.y), PIVOT_SIZE)
+
                 if hoverPivotBone and bone.name == hoverPivotBone.name:
                     context.overlayCanvas.circle(HOVER_COLOR, (pivot.x, pivot.y), PIVOT_SIZE - 1)
                 if activeBone and bone.name == activeBone.name:

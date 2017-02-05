@@ -335,7 +335,7 @@ class SkinnedRenderer(BaseRenderer):
         for i, transform in enumerate(transforms):
             bone = transform.bone
             if bone.mesh:
-                bone.mesh.updateVertexWeights(i, transforms)
+                bone.mesh.updateVertexWeights(i, transforms, self.bones)
                 bone.mesh.sortVertices(transforms)
                 bone.mesh.updateUvs(bone)
 

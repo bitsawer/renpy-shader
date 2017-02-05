@@ -43,6 +43,7 @@ class SkinningBone:
         self.zOrder = -1
         self.visible = True
         self.wireFrame = False
+        self.blocker = False
         self.points = []
         self.mesh = None
 
@@ -55,6 +56,27 @@ class SkinningBone:
             results.append(child)
             child.getAllChildren(bones, results)
         return results
+
+    def getParents(self, bones):
+        parents = []
+        parent = self.parent
+        while parent:
+            bone = bones[parent]
+            parents.append(bone)
+            parent = bone.parent
+        return parents
+
+    def walkChildren(self, bones, func, args):
+        for name in self.children:
+            child = bones[name]
+            if func(child, *args):
+                child.walkChildren(bones, func, args)
+
+    def walkParents(self, bones, func, args):
+        if self.parent:
+            parent = bones[self.parent]
+            if func(parent, *args):
+                parent.walkParents(bones, func, args)
 
     def updatePoints(self, surface):
         points = geometry.findEdgePixelsOrdered(surface)
@@ -166,6 +188,7 @@ def loadFromFile(path):
         bone.zOrder = raw["zOrder"]
         bone.visible = raw["visible"]
         bone.wireFrame = raw["wireFrame"]
+        bone.blocker = raw["blocker"]
         bone.points = [tuple(p) for p in raw["points"]]
 
         mesh = raw.get("mesh")

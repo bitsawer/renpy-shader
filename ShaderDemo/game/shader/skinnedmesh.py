@@ -2,6 +2,7 @@
 import math
 from OpenGL import GL as gl
 
+import shader
 import geometry
 
 def makeArray(tp, values):
@@ -158,11 +159,13 @@ class SkinnedMesh:
             self.vertices[i] = self.vertices[i] + offset[0]
             self.vertices[i + 1] = self.vertices[i + 1] + offset[1]
 
-    def updateVertexWeights(self, index, transforms):
+    def updateVertexWeights(self, index, transforms, bones):
         mapping = {}
         for i, trans in enumerate(transforms):
             trans.index = i
             mapping[trans.bone.name] = trans
+
+        blockers = findBlockerNames(transforms[index].bone, bones)
 
         weights = []
         indices = []
@@ -170,7 +173,7 @@ class SkinnedMesh:
             x = self.vertices[i]
             y = self.vertices[i + 1]
 
-            nearby = findBoneInfluences((x, y), mapping)
+            nearby = findBoneInfluences((x, y), mapping, blockers)
             if len(nearby) > 0:
                 for x in range(4):
                     if x < len(nearby):
@@ -186,13 +189,37 @@ class SkinnedMesh:
         self.boneWeights = makeArray(gl.GLfloat, weights)
         self.boneIndices = makeArray(gl.GLfloat, indices)
 
-    def mergeDuplicateVertices(self):
-        pass
+def findBoneImageBone(bone, bones):
+    for parent in [bone] + bone.getParents(bones):
+        if parent.image:
+            return parent
+    return None
 
-    def findDeformingFaceIndices(self, transforms):
-        #TODO For subdivision, do it for faces that are close to bone pivots
-        pass
+def blockerFunc(bone, results):
+    if bone.blocker:
+        results.add(bone.name)
+        return False
+    return True
 
+def findBlockerNames(meshBone, bones):
+    blockers = set()
+    meshBone.walkChildren(bones, blockerFunc, (blockers,))
+
+    results = set()
+    for name in blockers:
+        blocker = bones[name]
+        imageBone = findBoneImageBone(blocker, bones)
+        children = blocker.getAllChildren(bones)
+        if imageBone.name != meshBone.name:
+            for child in children:
+                results.add(child.name)
+        else:
+            names = set([b.name for b in children])
+            for bone in bones.values():
+                if bone.name not in names:
+                    results.add(bone.name)
+
+    return results
 
 class BoneWeight:
     def __init__(self, distance, index, transform):
@@ -206,9 +233,9 @@ class BoneWeight:
 #can make weight calculation random and order-dependant.
 SHORTEN_LINE = 0.99
 
-def findBoneInfluences(vertex, transforms):
+def findBoneInfluences(vertex, transforms, blockers):
     distances = []
-    nearest = findNearestBone(vertex, transforms)
+    nearest = findNearestBone(vertex, transforms, blockers)
     if nearest:
         nearest.weight = 0.1
         distances.append(nearest)
@@ -223,13 +250,15 @@ def findBoneInfluences(vertex, transforms):
     distances.sort(key=lambda w: w.distance)
     return distances[:4]
 
-def findNearestBone(vertex, transforms):
+def findNearestBone(vertex, transforms, blockers):
     nearest = None
     minDistance = None
 
     for trans in transforms.values():
         if not trans.bone.parent or not transforms[trans.bone.parent].bone.parent:
             #Skip root bones
+            continue
+        if trans.bone.name in blockers:
             continue
 
         distance = pointToBoneDistance(vertex, trans.bone, transforms)

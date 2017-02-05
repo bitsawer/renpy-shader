@@ -6,7 +6,7 @@ image doll = LiveComposite(
     #(0, 0), "doll lforearm.png",
     #(0, 0), "doll larm.png",
     #(0, 0), "doll lhand.png",
-    #(0, 0), "doll hair.png",
+    (0, 0), "doll hair.png",
 )
 
 screen easingScreen(oldEasing):
@@ -68,6 +68,7 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, a
                 text "Modes":
                     size 15
 
+                #textbutton "Lock dragging" action ToggleDict(editorSettings, "yyy")
                 textbutton "Debug animate" action ToggleDict(editorSettings, "debugAnimate")
                 textbutton "Autosubdivision" action ToggleDict(editorSettings, "autoSubdivide")
 
@@ -323,6 +324,8 @@ label main_menu: #TODO For fast testing
     $ _controllerContextStore._clear()
 
     $ animation = skinnedanimation.loadAnimationFromFile(animFile) if animFile else skinnedanimation.SkinnedAnimation("untitled.anim")
+
+    #TODO Set maxFrames to loaded animation?
 
     call screen skinnedScreen("doll", shader.PS_SKINNED, {"tex1": "amy influence"},
         update=editUpdate, args={"rigFile": rigFile}, _tag="amy", _layer="amy") #nopredict
