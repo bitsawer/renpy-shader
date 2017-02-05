@@ -69,6 +69,7 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, a
                     size 15
 
                 #textbutton "Lock dragging" action ToggleDict(editorSettings, "yyy")
+                textbutton "Pause wind" action ToggleVariable("pauseTimeFlag", True, False)
                 textbutton "Debug animate" action ToggleDict(editorSettings, "debugAnimate")
                 textbutton "Autosubdivision" action ToggleDict(editorSettings, "autoSubdivide")
 
@@ -163,6 +164,7 @@ init python:
     newAnimationFlag = False
     loadAnimationFlag = False
     saveAnimationFlag = False
+    pauseTimeFlag = False
 
     frameNumber = 0
     frameNumberLast = -1
@@ -317,6 +319,10 @@ init python:
         if saveRig:
             saveRig = False
             saveRigFile(editor)
+
+        if pauseTimeFlag:
+            context.uniforms["shownTime"] = 1.0
+            context.uniforms["animationTime"] = 1.0
 
 
 label start_skinned:
