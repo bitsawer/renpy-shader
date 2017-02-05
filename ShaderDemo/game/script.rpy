@@ -119,8 +119,6 @@ label start:
     $ eyeTarget = (0, 0)
     $ mouthTarget = (0, 0)
 
-    jump start_skinned
-
     scene room
     show amy:
         default

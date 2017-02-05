@@ -297,16 +297,17 @@ void main()
 }
 """
 
-PS_SKINNED = """
+PS_SKINNED = LIB_NOISE + LIB_WIND + """
+
 varying vec2 varUv; //Texture coordinates
 
-uniform sampler2D tex0; //Texture bound to slot 0
-uniform sampler2D tex1;
 uniform float wireFrame;
+uniform float shownTime;
 
 void main()
 {
-    vec4 color = texture2D(tex0, varUv);
+    vec4 color = applyWind(varUv, shownTime);
+
     color.rgb *= 1.0 - wireFrame;
     color.a = color.a + wireFrame;
 

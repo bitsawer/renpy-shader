@@ -1,4 +1,5 @@
 
+import renpy
 import renpy.display
 import pygame_sdl2 as pygame
 import ctypes
@@ -293,15 +294,17 @@ class BoneTransform:
 
 
 class SkinnedRenderer(BaseRenderer):
+    BLACK_TEXTURE = "__black"
+
     def __init__(self):
         super(SkinnedRenderer, self).__init__()
         self.useOverlayCanvas = True
         self.shader = None
-        self.textureMap = TextureMap()
         self.skinTextures = TextureMap()
         self.size = None
         self.root = None
         self.bones = {}
+        self.blackTexture = None
 
     def init(self, image, vertexShader, pixeShader, args):
         self.shader = utils.Shader(vertexShader.replace("MAX_BONES", str(skin.MAX_BONES)), pixeShader)
@@ -318,6 +321,8 @@ class SkinnedRenderer(BaseRenderer):
         for bone in self.bones.values():
             if bone.mesh:
                 bone.mesh.updateUvs(bone)
+
+        self.loadInfluenceImages()
 
     def updateMeshes(self, autosubdivide=False):
         transforms = self.computeBoneTransforms()
@@ -349,9 +354,7 @@ class SkinnedRenderer(BaseRenderer):
                 self.root = bone
 
             if bone.image:
-                original = renpy.display.im.load_surface(bone.image.name)
-                crop = (bone.image.x, bone.image.y, bone.image.width, bone.image.height)
-                surface = self.cropSurface(original, crop)
+                surface = self.loadCroppedSurface(bone, bone.image.name)
                 self.skinTextures.setTexture(bone.image.name, surface)
 
     def loadLiveComposite(self, image):
@@ -392,15 +395,28 @@ class SkinnedRenderer(BaseRenderer):
         cropped.blit(surface, (0, 0), rect)
         return cropped
 
+    def loadCroppedSurface(self, bone, name):
+        surface = renpy.display.im.load_surface(renpy.exports.displayable(name))
+        crop = (bone.image.x, bone.image.y, bone.image.width, bone.image.height)
+        return self.cropSurface(surface, crop)
+
+    def loadInfluenceImages(self):
+        self.skinTextures.setTexture(self.BLACK_TEXTURE, "black.png")
+
+        for name, bone in self.bones.items():
+            if bone.image:
+                influence = self.getInfluenceName(bone.image.name)
+                if renpy.exports.has_image(influence, exact=True):
+                    surface = self.loadCroppedSurface(bone, influence)
+                    self.skinTextures.setTexture(influence, surface)
+
+    def getInfluenceName(self, name):
+        return name.split(".")[0] + " influence"
+
     def setTexture(self, sampler, image):
         pass
-        #self.textureMap.setTexture(sampler, image)
 
     def free(self):
-        if self.textureMap:
-            self.textureMap.free()
-            self.textureMap = None
-
         if self.skinTextures:
             self.skinTextures.free()
             self.skinTextures = None
@@ -427,8 +443,6 @@ class SkinnedRenderer(BaseRenderer):
         self.setUniforms(self.shader, context.uniforms)
         self.shader.uniformf("screenSize", *self.getSize())
 
-        #self.textureMap.bindTextures(self.shader)
-
         gl.glClearColor(*self.clearColor)
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
         gl.glDisable(gl.GL_DEPTH_TEST)
@@ -450,10 +464,7 @@ class SkinnedRenderer(BaseRenderer):
 
         gl.glActiveTexture(gl.GL_TEXTURE0)
 
-        #self.textureMap.unbindTextures()
-
         self.shader.unbind()
-
 
     def renderBoneTransform(self, transform, context):
         bone = transform.bone
@@ -468,10 +479,17 @@ class SkinnedRenderer(BaseRenderer):
             return
 
         tex = self.skinTextures.textures[bone.image.name]
+        texInfluence = self.skinTextures.textures.get(self.getInfluenceName(bone.image.name))
+        if not texInfluence:
+            texInfluence = self.skinTextures.textures[self.BLACK_TEXTURE]
 
         self.shader.uniformi(shader.TEX0, 0)
         gl.glActiveTexture(gl.GL_TEXTURE0 + 0)
         gl.glBindTexture(gl.GL_TEXTURE_2D, tex.glTexture)
+
+        self.shader.uniformi(shader.TEX1, 1)
+        gl.glActiveTexture(gl.GL_TEXTURE0 + 1)
+        gl.glBindTexture(gl.GL_TEXTURE_2D, texInfluence.glTexture)
 
         self.shader.uniformMatrix4f(shader.PROJECTION, self.getProjection())
 

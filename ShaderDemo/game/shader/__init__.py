@@ -13,6 +13,7 @@ VIEW_MATRIX = "viewMatrix"
 PROJ_MATRIX = "projMatrix"
 
 TEX0 = "tex0"
+TEX1 = "tex1"
 
 MODE_2D = "2d"
 MODE_3D = "3d"
