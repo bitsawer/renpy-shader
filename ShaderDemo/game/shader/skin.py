@@ -44,6 +44,7 @@ class SkinningBone:
         self.visible = True
         self.wireFrame = False
         self.blocker = False
+        self.tessellate = False
         self.points = []
         self.mesh = None
 
@@ -189,6 +190,7 @@ def loadFromFile(path):
         bone.visible = raw["visible"]
         bone.wireFrame = raw["wireFrame"]
         bone.blocker = raw["blocker"]
+        bone.tessellate = raw["tessellate"]
         bone.points = [tuple(p) for p in raw["points"]]
 
         mesh = raw.get("mesh")

@@ -71,7 +71,7 @@ class SkinnedMesh:
 
         for trans in transforms:
             bone = trans.bone
-            if bone.parent:
+            if bone.parent and bone.tessellate:
                 for i, (a, b, c) in enumerate(tris):
                     v1 = self.getVertex(a)
                     v2 = self.getVertex(b)

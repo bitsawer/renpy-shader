@@ -13,7 +13,6 @@ PICK_DISTANCE_PIVOT = PIVOT_SIZE * 2
 PICK_DISTANCE_CROP = 5
 
 PIVOT_COLOR = (255, 0, 0)
-BLOCKER_COLOR = (255, 128, 0)
 MESH_COLOR = (128, 255, 255)
 ACTIVE_COLOR = (0, 255, 0)
 HOVER_COLOR = (255, 255, 0)
@@ -241,6 +240,9 @@ class PoseMode:
                 return True
             if key == pygame.K_b and activeBone:
                 activeBone.blocker = not activeBone.blocker
+                self.editor.updateBones()
+            if key == pygame.K_t and activeBone:
+                activeBone.tessellate = not activeBone.tessellate
                 self.editor.updateBones()
             if key == pygame.K_e and activeBone:
                 self.newEdit(ExtrudeBone(self.editor, pos, activeBone))
@@ -608,7 +610,10 @@ class SkinnedEditor:
 
     def visualizeBones(self):
         context = self.context
+        canvas = context.overlayCanvas
         mouse = self.mouse
+        black = (0, 0, 0)
+        shadow = 1
         activeBone = self.getActiveBone()
 
         hoverPoint = None
@@ -633,7 +638,7 @@ class SkinnedEditor:
                 if not hoverPivotBone and hoverCropBone and bone.name == hoverCropBone.name:
                     self.drawText(hoverCropBone.name, "#fff", (mouse[0] + 20, mouse[1]))
                     areaColor = ACTIVE_COLOR
-                context.overlayCanvas.lines(areaColor, False, lines)
+                canvas.lines(areaColor, False, lines)
 
                 #triangles = self.getTriangles(bone)
                 #for i in range(0, len(triangles), 3):
@@ -643,12 +648,12 @@ class SkinnedEditor:
             if self.settings["edgePoints"] and bone.visible:
                 polyPoints = self.getPolyPoints(bone)
                 if polyPoints:
-                    context.overlayCanvas.lines("#ff0", True, polyPoints)
+                    canvas.lines("#ff0", True, polyPoints)
                     for i, p in enumerate(polyPoints):
                         color = (0, int(float(i) / len(polyPoints) * 255), 0)
                         if hoverPoint and hoverPoint[0].name == bone.name and hoverPoint[2] == i:
                             color = (255, 255, 0)
-                        context.overlayCanvas.circle(color, p, 3)
+                        canvas.circle(color, p, 3)
 
             if self.settings["pivots"]:
                 if bone.parent:
@@ -657,31 +662,39 @@ class SkinnedEditor:
                     parentPos = self.getBonePivotTransformed(parentBone)
                     if geometry.pointDistance((pivot.x, pivot.y), (parentPos.x, parentPos.y)) > 1:
                         #TODO Line drawing hangs if passed same start and end?
-                        context.overlayCanvas.line(PIVOT_COLOR, (pivot.x, pivot.y), (parentPos.x, parentPos.y))
+                        canvas.line(PIVOT_COLOR, (pivot.x, pivot.y), (parentPos.x, parentPos.y))
+
+                x = pivot.x
+                y = pivot.y
+                color = PIVOT_COLOR
+                if bone.mesh:
+                    color = MESH_COLOR
 
                 if bone.blocker:
                     s = PIVOT_SIZE + 1
-                    color = BLOCKER_COLOR
-                    if bone.mesh:
-                        color = MESH_COLOR
-                    context.overlayCanvas.rect(color, (pivot.x - s, pivot.y - s, s * 2, s * 2))
+                    canvas.rect(black, (x - s - shadow, y - s - shadow, (s + shadow) * 2 , (s + shadow) * 2))
+                    canvas.rect(color, (x - s, y - s, s * 2, s * 2))
+                elif bone.tessellate:
+                    s = PIVOT_SIZE + 3
+                    ty = y - 2
+                    canvas.polygon(black, [(x - s, ty + s), (x, ty - s), (x + s, ty + s)])
+                    s -= 2
+                    canvas.polygon(color, [(x - s, ty + s), (x, ty - s), (x + s, ty + s)])
                 else:
-                    color = PIVOT_COLOR
-                    if bone.mesh:
-                        color = MESH_COLOR
-                    context.overlayCanvas.circle(color, (pivot.x, pivot.y), PIVOT_SIZE)
+                    canvas.circle(black, (x, y), PIVOT_SIZE + shadow)
+                    canvas.circle(color, (x, y), PIVOT_SIZE)
 
                 if hoverPivotBone and bone.name == hoverPivotBone.name:
-                    context.overlayCanvas.circle(HOVER_COLOR, (pivot.x, pivot.y), PIVOT_SIZE - 1)
+                    canvas.circle(HOVER_COLOR, (x, y), PIVOT_SIZE - 1)
                 if activeBone and bone.name == activeBone.name:
-                    context.overlayCanvas.circle(ACTIVE_COLOR, (pivot.x, pivot.y), PIVOT_SIZE - 2)
+                    canvas.circle(ACTIVE_COLOR, (x, y), PIVOT_SIZE - 2)
 
                 textColor = "#fff"
                 if activeBone and bone.name == activeBone.name:
                     textColor = ACTIVE_COLOR
 
                 if self.settings["names"]:
-                    self.drawText(bone.name, textColor, (pivot.x + 15, pivot.y - 10))
+                    self.drawText(bone.name, textColor, (x + 15, y - 10))
 
         if hoverPivotBone:
             self.visualizeBoneProperties(hoverPivotBone, mouse)
