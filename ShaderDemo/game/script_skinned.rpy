@@ -68,8 +68,8 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, a
                 text "Modes":
                     size 15
 
-                #textbutton "Lock dragging" action ToggleDict(editorSettings, "yyy")
                 textbutton "Pause wind" action ToggleVariable("pauseTimeFlag", True, False)
+                textbutton "Disable dragging" action ToggleDict(editorSettings, "disableDrag")
                 textbutton "Debug animate" action ToggleDict(editorSettings, "debugAnimate")
                 textbutton "Autosubdivision" action ToggleDict(editorSettings, "autoSubdivide")
 
@@ -149,7 +149,8 @@ init python:
         "pivots": True,
         "names": False,
         "debugAnimate": False,
-        "autoSubdivide": True,
+        "autoSubdivide": False,
+        "disableDrag": False,
     }
 
     saveRig = False

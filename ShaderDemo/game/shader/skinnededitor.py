@@ -433,12 +433,14 @@ class SkinnedEditor:
         self.stopDrag()
 
         if event.button == 1:
+            canDrag = not self.settings["disableDrag"]
             bone = None
             if self.settings["pivots"]:
                 bone = self.pickPivot(pos)
                 if bone:
                     self.setActiveBone(bone)
-                    self.set(DRAG_PIVOT, (bone, self.getBoneInverseTranslation(bone, pos), bone.pivot))
+                    if canDrag:
+                        self.set(DRAG_PIVOT, (bone, self.getBoneInverseTranslation(bone, pos), bone.pivot))
                 else:
                     self.setActiveBone(None)
                     self.set(DRAG_PIVOT, None)
@@ -446,14 +448,15 @@ class SkinnedEditor:
             point = None
             if self.settings["edgePoints"] and not bone:
                 point = self.pickPoint(pos)
-                if point:
+                if point and canDrag:
                     self.set(DRAG_POINT, (point, pos))
 
             if self.settings["imageAreas"] and not bone and not point:
                 bone = self.pickCrop(pos)
                 if bone:
                     self.setActiveBone(bone)
-                    self.set(DRAG_POS, (bone, pos, bone.pos))
+                    if canDrag:
+                        self.set(DRAG_POS, (bone, pos, bone.pos))
                 else:
                     self.set(DRAG_POS, None)
         elif event.button == 4:
