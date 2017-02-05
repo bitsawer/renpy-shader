@@ -290,7 +290,6 @@ class SkinnedEditor:
         self.userInteracting = self.mode.isUserInteracting()
 
     def update(self):
-        #self.debugAnimate(self.settings["debugAnimate"])
         self.handleEvents()
         self.visualizeBones()
 
@@ -327,7 +326,8 @@ class SkinnedEditor:
         bones = context.renderer.bones
         for name, bone in bones.items():
             if animate and bone.parent:
-                bone.rotation.z = math.sin(context.time * 0.5)
+                strength = len(self.getBone(bone.parent).children)
+                bone.rotation.z = math.sin(context.time * 0.5) * min(0.5, strength / 10.0)
             else:
                 bone.rotation.z = 0.0
 

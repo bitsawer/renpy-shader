@@ -283,6 +283,9 @@ init python:
             frameNumberLast = frameNumber
             animation.apply(frameNumber, editor.getBones())
 
+        if editorSettings["debugAnimate"]:
+            editor.debugAnimate(True)
+
         if editorSettings["pivots"]:
             animation.drawDebugText(editor, frameNumber)
             animation.drawDebugKeyFrames(editor, frameNumber)
