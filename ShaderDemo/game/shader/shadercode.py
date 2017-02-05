@@ -84,17 +84,12 @@ float nestedNoise(vec2 p, float time) {
     float y = movingNoise(p + 100., time);
     return movingNoise(p + vec2(x, y), time);
 }
-
 """
 
-PS_WIND_2D = LIB_NOISE + """
-
-varying vec2 varUv;
+LIB_WIND = """
 
 uniform sampler2D tex0;
 uniform sampler2D tex1;
-uniform float shownTime;
-uniform float animationTime;
 
 uniform float mouseEnabled;
 uniform vec2 mousePos;
@@ -107,26 +102,23 @@ const float DISTANCE = 0.005;
 const float FLUIDNESS = 0.75;
 const float TURBULENCE = 15.0;
 
-void main()
+vec4 applyWind(vec2 uv, float time)
 {
-    float brightness = movingNoise(varUv * TURBULENCE, shownTime * 3.0);
-    //gl_FragColor = vec4(brightness, brightness, brightness, 1);
+    float brightness = movingNoise(uv * TURBULENCE, time * 3.0);
 
-    vec4 weights = texture2D(tex1, varUv);
+    vec4 weights = texture2D(tex1, uv);
 
     if (weights.g > 0.0) {
-        vec2 eyeCoords = varUv + (eyeShift * weights.g);
+        vec2 eyeCoords = uv + (eyeShift * weights.g);
         if (texture2D(tex1, eyeCoords).g > 0.0) {
-            gl_FragColor = texture2D(tex0, eyeCoords);
-            return;
+            return texture2D(tex0, eyeCoords);
         }
     }
 
     if (weights.b > 0.0) {
-        vec2 smileCoords = varUv + (mouthShift * weights.b);
+        vec2 smileCoords = uv + (mouthShift * weights.b);
         if (texture2D(tex1, smileCoords).b > 0.0) {
-            gl_FragColor = texture2D(tex0, smileCoords);
-            return;
+            return texture2D(tex0, smileCoords);
         }
     }
 
@@ -134,18 +126,31 @@ void main()
 
     if (mouseEnabled > 0.0) {
         //Use mouse position to set influence
-        influence = (1.0 - distance(mousePos, varUv) * 5.0) * 2.0;
+        influence = (1.0 - distance(mousePos, uv) * 5.0) * 2.0;
     }
 
     if (influence > 0.0) {
-        float modifier = sin(varUv.x + shownTime) / 2.0 + 1.5;
-        float xShift = sin((varUv.y * 20.0) * FLUIDNESS + (shownTime * WIND_SPEED)) * modifier * influence * DISTANCE;
-        float yShift = cos((varUv.x * 50.0) * FLUIDNESS + (shownTime * WIND_SPEED)) * influence * DISTANCE;
-        gl_FragColor = texture2D(tex0, varUv + vec2(xShift, yShift));
+        float modifier = sin(uv.x + time) / 2.0 + 1.5;
+        float xShift = sin((uv.y * 20.0) * FLUIDNESS + (time * WIND_SPEED)) * modifier * influence * DISTANCE;
+        float yShift = cos((uv.x * 50.0) * FLUIDNESS + (time * WIND_SPEED)) * influence * DISTANCE;
+        return texture2D(tex0, uv + vec2(xShift, yShift));
     }
     else {
-        gl_FragColor = texture2D(tex0, varUv);
+        return texture2D(tex0, uv);
     }
+}
+"""
+
+PS_WIND_2D = LIB_NOISE + LIB_WIND + """
+
+varying vec2 varUv;
+
+uniform float shownTime;
+uniform float animationTime;
+
+void main()
+{
+    gl_FragColor = applyWind(varUv, shownTime);
 }
 """
 
@@ -296,6 +301,7 @@ PS_SKINNED = """
 varying vec2 varUv; //Texture coordinates
 
 uniform sampler2D tex0; //Texture bound to slot 0
+uniform sampler2D tex1;
 uniform float wireFrame;
 
 void main()
