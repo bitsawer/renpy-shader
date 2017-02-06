@@ -276,21 +276,22 @@ class Renderer3D(BaseRenderer):
 
 class SkinningStack:
     def __init__(self):
-        self.boneStack = []
-        self.matrixStack = []
+        self.stack = []
 
-    def push(self, bone, m):
-        self.boneStack.append(bone)
-        self.matrixStack.append(m)
+    def push(self, *args):
+        self.stack.append(args)
+
+    def top(self):
+        return self.stack[-1]
 
     def pop(self):
-        self.boneStack.pop()
-        self.matrixStack.pop()
+        self.stack.pop()
 
 class BoneTransform:
-    def __init__(self, bone, matrix):
+    def __init__(self, bone, matrix, damping):
         self.bone = bone
         self.matrix = matrix
+        self.damping = damping
 
 class SkinnedFrameData:
     def __init__(self, time, transform):
@@ -460,7 +461,7 @@ class SkinnedRenderer(BaseRenderer):
         for i, transform in enumerate(transforms):
             boneMatrix = transform.matrix
 
-            overwrite = transform.bone.damping > 0.0
+            overwrite = transform.damping > 0.0
             if overwrite and self.oldFrameData.get(transform.bone.name):
                 overwrite = self.dampenBoneTransform(context, transform)
 
@@ -501,7 +502,7 @@ class SkinnedRenderer(BaseRenderer):
 
         deltaX = posOld.x - pos.x
         deltaY = posOld.y - pos.y
-        dampness = max(data.transform.bone.damping - (float(context.shownTime) - data.time), 0.0)
+        dampness = max(transform.damping - (float(context.shownTime) - data.time), 0.0)
 
         boneMatrix.m = deltaX
         boneMatrix.n = deltaY
@@ -558,7 +559,7 @@ class SkinnedRenderer(BaseRenderer):
     def computeBoneTransforms(self):
         transforms = []
         skinning = SkinningStack()
-        skinning.push(None, euclid.Matrix4())
+        skinning.push(None, euclid.Matrix4(), 0.0)
         self.computeBoneTransformRecursive(self.root, transforms, skinning)
         skinning.pop()
         transforms.sort(key=lambda t: t.bone.zOrder)
@@ -569,7 +570,7 @@ class SkinnedRenderer(BaseRenderer):
         return transforms
 
     def computeBoneTransformRecursive(self, bone, transforms, skinning):
-        transformParent = skinning.matrixStack[-1]
+        transformParent = skinning.top()[1]
         transform = euclid.Matrix4() * transformParent
 
         pivot = bone.pivot
@@ -590,9 +591,9 @@ class SkinnedRenderer(BaseRenderer):
 
         transform.translate(-xMove, -yMove, 0)
 
-        transforms.append(BoneTransform(bone, transform))
-
-        skinning.push(bone, transform)
+        damping = max(bone.damping, skinning.top()[2])
+        transforms.append(BoneTransform(bone, transform, damping))
+        skinning.push(bone, transform, damping)
 
         for childName in bone.children:
             self.computeBoneTransformRecursive(self.bones[childName], transforms, skinning)
