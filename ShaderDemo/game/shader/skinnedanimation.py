@@ -10,6 +10,7 @@ import easing
 class KeyFrame:
     def __init__(self):
         self.pivot = None
+        self.translation = None
         self.rotation = None
         self.scale = None
         #self.zOrder = None #TODO Can't animate this efficiently, breaks vertex sorting...
@@ -18,6 +19,7 @@ class KeyFrame:
 
 def copyKeyData(source, target):
     target.pivot = (source.pivot[0], source.pivot[1])
+    target.translation = euclid.Vector3(source.translation.x, source.translation.y, source.translation.z)
     target.rotation = euclid.Vector3(source.rotation.x, source.rotation.y, source.rotation.z)
     target.scale = euclid.Vector3(source.scale.x, source.scale.y, source.scale.z)
     #target.zOrder = source.zOrder
@@ -25,6 +27,8 @@ def copyKeyData(source, target):
 
 def keyDataChanged(a, b):
     if a.pivot != b.pivot:
+        return True
+    if a.translation != b.translation:
         return True
     if a.rotation != b.rotation:
         return True
@@ -39,6 +43,7 @@ def keyDataChanged(a, b):
 def interpolateKeyData(a, b, weight):
     key = KeyFrame()
     key.pivot = utils.interpolate2d(a.pivot, b.pivot, weight)
+    key.translation = euclid.Vector3(*utils.interpolate3d(a.translation, b.translation, weight))
     key.rotation = euclid.Vector3(*utils.interpolate3d(a.rotation, b.rotation, weight))
     key.scale = euclid.Vector3(*utils.interpolate3d(a.scale, b.scale, weight))
     #key.zOrder = a.zOrder
@@ -374,6 +379,7 @@ def loadAnimationFromFile(path):
         for name, key in f["keys"].items():
             keyFrame = KeyFrame()
             keyFrame.pivot = tuple(key["pivot"])
+            keyFrame.translation = euclid.Vector3(*key["translation"])
             keyFrame.rotation = euclid.Vector3(*key["rotation"])
             keyFrame.scale = euclid.Vector3(*key["scale"])
             keyFrame.visible = key["visible"]
