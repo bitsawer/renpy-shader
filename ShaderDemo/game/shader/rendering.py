@@ -352,11 +352,12 @@ class SkinnedRenderer(BaseRenderer):
                 self.skinTextures.setTexture(bone.image.name, surface)
 
     def loadLiveComposite(self, image):
-        self.root = skin.SkinningBone("root")
-        self.bones = {self.root.name: self.root}
-
         container = image.visit()[0]
         self.size = container.style.xmaximum, container.style.ymaximum
+
+        self.root = skin.SkinningBone("root")
+        self.root.pivot = (self.size[0] * 0.5, self.size[1] * 0.75)
+        self.bones = {self.root.name: self.root}
 
         for i, child in enumerate(container.children):
             placement = child.get_placement()
