@@ -142,7 +142,7 @@ class SkinnedAnimation:
 
         active = editor.getActiveBone()
         if active:
-            editor.drawText("Keys for bone '%s'" % active.name, (0, 255, 0), (x, y), align)
+            editor.drawText("Keyframes", color, (x, y), align)
             y += height
             for i, frame in enumerate(self.frames):
                 if active.name in frame.keys:

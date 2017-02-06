@@ -127,7 +127,7 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, a
 
             timer 1.0 / shader.config.fps repeat True action If(framePlay, SetVariable("frameNumber", (frameNumber + 1) % (maxFrames + 1)), NullAction())
 
-            bar value VariableValue("frameNumber", maxFrames)
+            bar value VariableValue("frameNumber", maxFrames - 1)
 
 
 init python:
@@ -289,7 +289,6 @@ init python:
         if editorSettings["pivots"]:
             animation.drawDebugText(editor, frameNumber)
             animation.drawDebugKeyFrames(editor, frameNumber)
-            animation.debugBake(editor)
 
         if subdivideMesh:
             subdivideMesh = False
