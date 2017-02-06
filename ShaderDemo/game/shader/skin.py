@@ -37,7 +37,7 @@ class SkinningBone:
         self.image = None
         self.pos = (0, 0)
         self.pivot = (0, 0)
-        #self.translate = (0, 0) #TODO
+        self.translation = euclid.Vector3(0, 0, 0)
         self.rotation = euclid.Vector3(0, 0, 0)
         self.scale = euclid.Vector3(1, 1, 1)
         self.zOrder = -1
@@ -185,6 +185,7 @@ def loadFromFile(path):
 
         bone.pos = raw["pos"]
         bone.pivot = raw["pivot"]
+        bone.translation = euclid.Vector3(*raw["translation"])
         bone.rotation = euclid.Vector3(*raw["rotation"])
         bone.scale = euclid.Vector3(*raw["scale"])
         bone.zOrder = raw["zOrder"]

@@ -567,6 +567,7 @@ class SkinnedRenderer(BaseRenderer):
         yMove = pivot[1]
 
         transform.translate(xMove, yMove, 0)
+        transform.translate(bone.translation.x, bone.translation.y, 0)
 
         rotation = bone.rotation
         if rotation.y != 0.0:

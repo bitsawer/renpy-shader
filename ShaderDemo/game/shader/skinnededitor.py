@@ -44,6 +44,36 @@ class Action:
     def draw(self, editor):
         pass
 
+class TranslationEdit(Action):
+    def __init__(self, editor, mouse, bone, attributes):
+        self.mouse = mouse
+        self.bone = bone
+        self.attributes = attributes
+        self.original = None
+
+    def start(self, editor):
+        self.original = euclid.Vector3(*self.bone.translation)
+
+    def cancel(self, editor):
+        self.bone.translation = self.original
+
+    def update(self, editor):
+        if "x" in self.attributes:
+            self.bone.translation.x = self.original.x + (editor.mouse[0] - self.mouse[0])
+        if "y" in self.attributes:
+            self.bone.translation.y = self.original.y + (editor.mouse[1] - self.mouse[1])
+
+    def draw(self, editor):
+        axes = []
+        angles = []
+        for axis in ["x", "y"]:
+            if axis in self.attributes:
+                axes.append(axis)
+                angles.append("%.0f" % getattr(self.bone.translation, axis))
+
+        pivot = editor.getBonePivotTransformed(self.bone)
+        editor.context.overlayCanvas.line("#0f0", (pivot.x, pivot.y), editor.mouse)
+        editor.drawText("T(%s): %s" % (", ".join(axes), ", ".join(angles)), "#fff", (editor.mouse[0] + 20, editor.mouse[1]))
 
 class ScaleEdit(Action):
     def __init__(self, editor, mouse, bone, attributes):
@@ -203,8 +233,12 @@ class PoseMode:
             activeBone = self.editor.getActiveBone()
 
             rotAxis = "z"
+            transAxes = ["x", "y"]
             scaleAxes = ["x", "y", "z"]
             if self.active and key in (pygame.K_x, pygame.K_y, pygame.K_z):
+                if isinstance(self.active, TranslationEdit):
+                    transAxes = [chr(key)]
+                    key = pygame.K_g
                 if isinstance(self.active, RotationEdit):
                     rotAxis = chr(key)
                     key = pygame.K_r
@@ -225,7 +259,11 @@ class PoseMode:
                         self.editor.updateBones()
                 return True
             if key == pygame.K_g and activeBone:
-                pass #TODO Grab
+                if alt:
+                    activeBone.translation = euclid.Vector3(0.0, 0.0, 0.0)
+                else:
+                    self.newEdit(TranslationEdit(self.editor, pos, activeBone, transAxes))
+                return True
             if key == pygame.K_r and activeBone:
                 if alt:
                     activeBone.rotation = euclid.Vector3(0.0, 0.0, 0.0)
