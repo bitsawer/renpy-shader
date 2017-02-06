@@ -273,20 +273,6 @@ class Renderer3D(BaseRenderer):
 
         self.shader.unbind()
 
-
-class SkinningStack:
-    def __init__(self):
-        self.stack = []
-
-    def push(self, *args):
-        self.stack.append(args)
-
-    def top(self):
-        return self.stack[-1]
-
-    def pop(self):
-        self.stack.pop()
-
 class BoneTransform:
     def __init__(self, bone, matrix, damping):
         self.bone = bone
@@ -558,19 +544,22 @@ class SkinnedRenderer(BaseRenderer):
 
     def computeBoneTransforms(self):
         transforms = []
-        skinning = SkinningStack()
-        skinning.push(None, euclid.Matrix4(), 0.0)
-        self.computeBoneTransformRecursive(self.root, transforms, skinning)
-        skinning.pop()
+        stack = []
+        stack.append((None, euclid.Matrix4(), 0.0))
+        self.computeBoneTransformRecursive(self.root, transforms, stack)
+        stack.pop()
         transforms.sort(key=lambda t: t.bone.zOrder)
+
+        if len(stack) != 0:
+            raise RuntimeError("Unbalanced stack size: %i" % len(stack))
 
         if len(transforms) > skin.MAX_BONES:
             raise RuntimeError("Too many bones, maximum is %i" % skin.MAX_BONES)
 
         return transforms
 
-    def computeBoneTransformRecursive(self, bone, transforms, skinning):
-        transformParent = skinning.top()[1]
+    def computeBoneTransformRecursive(self, bone, transforms, stack):
+        transformParent = stack[-1][1]
         transform = euclid.Matrix4() * transformParent
 
         pivot = bone.pivot
@@ -591,11 +580,11 @@ class SkinnedRenderer(BaseRenderer):
 
         transform.translate(-xMove, -yMove, 0)
 
-        damping = max(bone.damping, skinning.top()[2])
+        damping = max(bone.damping, stack[-1][2])
         transforms.append(BoneTransform(bone, transform, damping))
-        skinning.push(bone, transform, damping)
+        stack.append((bone, transform, damping))
 
         for childName in bone.children:
-            self.computeBoneTransformRecursive(self.bones[childName], transforms, skinning)
+            self.computeBoneTransformRecursive(self.bones[childName], transforms, stack)
 
-        skinning.pop()
+        stack.pop()
