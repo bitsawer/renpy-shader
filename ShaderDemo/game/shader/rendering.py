@@ -292,6 +292,10 @@ class BoneTransform:
         self.bone = bone
         self.matrix = matrix
 
+class SkinnedFrameData:
+    def __init__(self, time, transform):
+        self.time = time
+        self.transform = transform
 
 class SkinnedRenderer(BaseRenderer):
     BLACK_TEXTURE = "__black"
@@ -305,6 +309,7 @@ class SkinnedRenderer(BaseRenderer):
         self.root = None
         self.bones = {}
         self.blackTexture = None
+        self.oldFrameData = {}
 
     def init(self, image, vertexShader, pixeShader, args):
         self.shader = utils.Shader(vertexShader.replace("MAX_BONES", str(skin.MAX_BONES)), pixeShader)
@@ -336,6 +341,8 @@ class SkinnedRenderer(BaseRenderer):
                     bone.mesh.subdivideAdaptive(transforms)
 
     def updateBones(self):
+        self.oldFrameData = {}
+
         transforms = self.computeBoneTransforms()
         for i, transform in enumerate(transforms):
             bone = transform.bone
@@ -450,8 +457,16 @@ class SkinnedRenderer(BaseRenderer):
         transforms = self.computeBoneTransforms()
 
         boneMatrixArray = []
-        for transform in transforms:
+        for i, transform in enumerate(transforms):
             boneMatrix = transform.matrix
+
+            overwrite = transform.bone.damping > 0.0
+            if overwrite and self.oldFrameData.get(transform.bone.name):
+                overwrite = self.dampenBoneTransform(context, transform)
+
+            if overwrite:
+                self.oldFrameData[transform.bone.name] = SkinnedFrameData(context.shownTime, transform)
+
             boneMatrixArray.extend(utils.matrixToList(boneMatrix))
         self.shader.uniformMatrix4fArray("boneMatrices", boneMatrixArray)
 
@@ -465,6 +480,34 @@ class SkinnedRenderer(BaseRenderer):
         gl.glActiveTexture(gl.GL_TEXTURE0)
 
         self.shader.unbind()
+
+    def dampenBoneTransform(self, context, transform):
+        data = self.oldFrameData[transform.bone.name]
+        old = data.transform.matrix
+
+        #Abuse unused matrix locations
+        boneMatrix = transform.matrix
+        boneMatrix.m = 0
+        boneMatrix.n = 0
+        boneMatrix.o = 0
+        old.m = 0
+        old.n = 0
+        old.o = 0
+
+        pivot = transform.bone.pivot
+        v = euclid.Vector3(pivot[0], pivot[1], 0.0)
+        pos = boneMatrix.transform(v)
+        posOld = old.transform(v)
+
+        deltaX = posOld.x - pos.x
+        deltaY = posOld.y - pos.y
+        dampness = max(data.transform.bone.damping - (float(context.shownTime) - data.time), 0.0)
+
+        boneMatrix.m = deltaX
+        boneMatrix.n = deltaY
+        boneMatrix.o = dampness
+
+        return dampness <= 0.0
 
     def renderBoneTransform(self, transform, context):
         bone = transform.bone

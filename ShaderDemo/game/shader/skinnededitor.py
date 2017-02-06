@@ -74,7 +74,7 @@ class ScaleEdit(Action):
         for axis in ["x", "y", "z"]:
             if axis in self.values:
                 axes.append(axis)
-                angles.append("%.1f" % getattr(self.bone.scale, axis))
+                angles.append("%.2f" % getattr(self.bone.scale, axis))
 
         editor.context.overlayCanvas.line("#0f0", (self.pivot.x, self.pivot.y), editor.mouse)
         editor.drawText("S(%s): %s" % (", ".join(axes), ", ".join(angles)), "#fff", (editor.mouse[0] + 20, editor.mouse[1]))
@@ -243,6 +243,9 @@ class PoseMode:
                 self.editor.updateBones()
             if key == pygame.K_t and activeBone:
                 activeBone.tessellate = not activeBone.tessellate
+                self.editor.updateBones()
+            if key == pygame.K_d and activeBone:
+                activeBone.damping = 0.0 if activeBone.damping else 0.5
                 self.editor.updateBones()
             if key == pygame.K_e and activeBone:
                 self.newEdit(ExtrudeBone(self.editor, pos, activeBone))
@@ -660,9 +663,12 @@ class SkinnedEditor:
                     parentTrans = self.transformsMap[bone.parent]
                     parentBone = parentTrans.bone
                     parentPos = self.getBonePivotTransformed(parentBone)
+                    color = PIVOT_COLOR
+                    if parentBone.damping > 0.0:
+                        color = (0, 255, 255)
                     if geometry.pointDistance((pivot.x, pivot.y), (parentPos.x, parentPos.y)) > 1:
                         #TODO Line drawing hangs if passed same start and end?
-                        canvas.line(PIVOT_COLOR, (pivot.x, pivot.y), (parentPos.x, parentPos.y))
+                        canvas.line(color, (pivot.x, pivot.y), (parentPos.x, parentPos.y))
 
                 x = pivot.x
                 y = pivot.y

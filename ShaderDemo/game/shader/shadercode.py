@@ -290,9 +290,14 @@ void main()
         mat4 boneMatrix = boneMatrices[boneIndex.x];
         pos += (boneMatrix * vec4(inVertex, 0.0, 1.0) * boneWeights.x).xy;
 
+        //Apply damping
+        vec2 boneDelta = vec2(boneMatrix[0][3], boneMatrix[1][3]);
+        pos += (boneDelta * boneWeights.x) * boneMatrix[2][3];
+
         boneWeights = boneWeights.yzwx;
         boneIndex = boneIndex.yzwx;
     }
+
     gl_Position = projection * vec4(toScreen(pos.xy), 0.0, 1.0);
 }
 """
