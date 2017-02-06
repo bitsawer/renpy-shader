@@ -133,33 +133,6 @@ class SkinnedAnimation:
                         data.reversed = not data.reversed
                         self.dirty = True
 
-        self.cleanupDuplicateKeys(editor.getBones(), frameNumber)
-
-    def cleanupDuplicateKeys(self, bones, frameNumber):
-        for name, bone in bones.items():
-            keys = self.getBoneKeyFrames(name)
-            duplicates = set()
-            i = 0
-            while i < len(keys):
-                index = keys[i]
-                i2 = i + 1
-
-                while i2 < len(keys):
-                    index2 = keys[i2]
-                    if not keyDataChanged(self.frames[index].keys[name], self.frames[index2].keys[name]):
-                        if index == frameNumber:
-                            duplicates.add(index)
-                        elif index2 == frameNumber:
-                            duplicates.add(index2)
-                    else:
-                        break
-                    i2 += 1
-                i += 1
-
-            for index in duplicates:
-                if index > 0:
-                    del self.frames[index].keys[name]
-
     def drawDebugText(self, editor, frameNumber):
         height = 20
         color = (0, 255, 0)
