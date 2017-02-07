@@ -21,7 +21,7 @@ screen easingScreen(oldEasing):
                     $ name = ">> " + name + " <<"
                 textbutton name xalign 0.5 action Return(name.replace(">> ", "").replace(" <<", ""))
 
-screen fileListScreen():
+screen fileListScreen(fileExt):
     frame:
         xalign 0.5
         yalign 0.5
@@ -29,7 +29,7 @@ screen fileListScreen():
             spacing 5
             text "Load file" xalign 0.5
 
-            for name in shader.utils.scanForFiles(".", "anim"):
+            for name in shader.utils.scanForFiles(".", fileExt):
                 textbutton name xalign 0.5 action Return(name)
 
             textbutton "Cancel" xalign 0.5 action Return("")
@@ -51,7 +51,7 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, a
             ypadding 10
 
             vbox:
-                spacing 10
+                spacing 5
                 #xmaximum 150
                 #xminimum 150
                 text "Rig: " + name
@@ -76,16 +76,16 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, a
                 text "Operations":
                     size 15
 
-                textbutton "Rename bone" action [SetVariable("renameBoneFlag", True), RestartStatement()]
-                textbutton "Subdivide mesh" action [SetVariable("subdivideMesh", True), RestartStatement()]
-                textbutton "Reset pose" action [SetVariable("resetPoseFlag", True), RestartStatement()]
+                textbutton "Rename bone" action [SetVariable("renameBoneFlag", True), Jump("update_editor")]
+                textbutton "Subdivide mesh" action [SetVariable("subdivideMesh", True), Jump("update_editor")]
+                textbutton "Reset pose" action [SetVariable("resetPoseFlag", True), Jump("update_editor")]
 
                 text "File":
                     size 15
 
-                #textbutton "Load rig" action SetVariable("loadRig", True)
-                textbutton "Reload" action Confirm("Are you sure you want to reload?", Jump("start_skinned"))
+                textbutton "Reload" action Confirm("Are you sure you want to reload?", Jump("reset_editor"))
                 #textbutton "Save" action Confirm("Are you sure you want to save?", Function(editSave))
+                textbutton "Load rig" action Confirm("Are you sure you want to load another rig?", Jump("start_editor"))
                 textbutton "Save rig" action SetVariable("saveRig", True)
 
 
@@ -99,7 +99,7 @@ screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, a
             xpadding 10
             ypadding 10
             vbox:
-                spacing 10
+                spacing 5
 
                 text animation.name
 
@@ -153,12 +153,12 @@ init python:
         "disableDrag": False,
     }
 
-    saveRig = False
+    drawableName = ""
     rigFile = "bones.rig"
     animFile = ""
 
+    saveRig = False
     subdivideMesh = False
-
     renameBoneFlag = False
     resetPoseFlag = False
     showEasingsFlag = False
@@ -180,7 +180,7 @@ init python:
         renpy.notify(text)
 
     def restartEditor():
-        renpy.jump("start_skinned")
+        renpy.jump("reset_editor") #TODO Use update_editor...?
 
     def changeFrameCount():
         global maxFrames, frameNumber
@@ -248,7 +248,7 @@ init python:
         restartEditor()
 
     def askAnimation():
-        return renpy.call_screen("fileListScreen")
+        return renpy.call_screen("fileListScreen", "anim")
 
     def loadAnimation():
         global animFile
@@ -327,16 +327,22 @@ init python:
             context.uniforms["shownTime"] = 1.0
             context.uniforms["animationTime"] = 1.0
 
-
-label start_skinned:
 label main_menu: #TODO For fast testing
-    $ _controllerContextStore._clear()
+label start_editor:
+    call screen fileListScreen("rig")
+    $ rigFile = _return
+    $ drawableName = "doll"
+    #$ if not rigFile: drawableName = "??" #TODO ask for an image or live composite!
 
+label reset_editor:
+    $ _controllerContextStore._clear()
     $ animation = skinnedanimation.loadAnimationFromFile(animFile) if animFile else skinnedanimation.SkinnedAnimation("untitled.anim")
 
+label update_editor:
     #TODO Set maxFrames to loaded animation?
 
-    call screen skinnedScreen("doll", shader.PS_SKINNED, {"tex1": "amy influence"},
-        update=editUpdate, args={"rigFile": rigFile}, _tag="amy", _layer="amy") #nopredict
+    call screen skinnedScreen(drawableName, shader.PS_SKINNED, {},
+        update=editUpdate, args={"rigFile": rigFile, "persist": True}, _layer="master") #nopredict
 
-    "The End"
+    $ _controllerContextStore._clear()
+    return

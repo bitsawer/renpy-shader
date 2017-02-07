@@ -450,6 +450,7 @@ class SkinnedEditor:
 
     def resetPose(self):
         for bone in self.getBones().values():
+            bone.translation = euclid.Vector3(0.0, 0.0, 0.0)
             bone.scale = euclid.Vector3(1.0, 1.0, 1.0)
             bone.rotation = euclid.Vector3(0.0, 0.0, 0.0)
             bone.visible = True
@@ -691,7 +692,8 @@ class SkinnedEditor:
                 if polyPoints:
                     canvas.lines("#ff0", True, polyPoints)
                     for i, p in enumerate(polyPoints):
-                        color = (0, int(float(i) / len(polyPoints) * 255), 0)
+                        #color = (0, int(float(i) / len(polyPoints) * 255), 0)
+                        color = (0, 128, 0)
                         if hoverPoint and hoverPoint[0].name == bone.name and hoverPoint[2] == i:
                             color = (255, 255, 0)
                         canvas.circle(color, p, 3)

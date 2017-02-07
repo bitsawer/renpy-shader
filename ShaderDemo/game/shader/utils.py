@@ -117,6 +117,7 @@ def scanForFiles(path, extension):
         for f in files:
             if f.split(".")[-1].lower() == extension.lower():
                 results.append(os.path.join(root, f))
+    results.sort()
     return results
 
 class Shader:

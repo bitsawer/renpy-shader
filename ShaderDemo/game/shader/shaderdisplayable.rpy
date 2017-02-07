@@ -14,6 +14,7 @@ init python:
             self.contextStore = {}
             self.modeChangeCount = 0
             self.delayFree = False
+            self.persist = False
             self.updateModeChangeCount()
 
         def updateModeChangeCount(self):
@@ -63,7 +64,7 @@ init python:
             for tag, context in self.store.items():
                 if context.delayFree:
                     removal.append((tag, context))
-                elif not tag in tagged:
+                elif not tag in tagged and not context.persist:
                     #Not visible, free on next interaction
                     context.delayFree = True
 
@@ -120,6 +121,7 @@ init python:
         def setController(self, controller):
             context = self.getContext()
             context.freeController()
+            context.persist = self.args.get("persist")
             context.controller = controller
             context.createCalled = False
             if controller:
