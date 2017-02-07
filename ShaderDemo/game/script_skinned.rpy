@@ -21,15 +21,15 @@ screen easingScreen(oldEasing):
                     $ name = ">> " + name + " <<"
                 textbutton name xalign 0.5 action Return(name.replace(">> ", "").replace(" <<", ""))
 
-screen fileListScreen(fileExt):
+screen listScreen(title, items):
     frame:
         xalign 0.5
         yalign 0.5
         vbox:
             spacing 5
-            text "Load file" xalign 0.5
+            text title xalign 0.5
 
-            for name in shader.utils.scanForFiles(".", fileExt):
+            for name in items:
                 textbutton name xalign 0.5 action Return(name)
 
             textbutton "Cancel" xalign 0.5 action Return("")
@@ -170,7 +170,7 @@ init python:
     frameNumber = 0
     frameNumberLast = -1
     framePlay = False
-    maxFrames = 60 * 2
+    maxFrames = 1
 
     def userInput(prompt, *args, **kwargs):
         #TODO Exclude invalid characters...
@@ -248,7 +248,7 @@ init python:
         restartEditor()
 
     def askAnimation():
-        return renpy.call_screen("fileListScreen", "anim")
+        return renpy.call_screen("listScreen", "Animation", shader.utils.scanForFiles(".", "anim"))
 
     def loadAnimation():
         global animFile
@@ -329,18 +329,28 @@ init python:
 
 label main_menu: #TODO For fast testing
 label start_editor:
-    call screen fileListScreen("rig")
+    call screen listScreen("Load a rig", shader.utils.scanForFiles(".", "rig"))
     $ rigFile = _return
-    $ drawableName = "doll"
-    #$ if not rigFile: drawableName = "??" #TODO ask for an image or live composite!
+    $ animFile = ""
+
+    call screen listScreen("Select image", sorted(renpy.get_available_image_tags()))
+    $ drawableName = _return
+
+    if not rigFile or not drawableName:
+        return
 
 label reset_editor:
-    $ _controllerContextStore._clear()
-    $ animation = skinnedanimation.loadAnimationFromFile(animFile) if animFile else skinnedanimation.SkinnedAnimation("untitled.anim")
+    python:
+        _controllerContextStore._clear()
+        if animFile:
+            animation = skinnedanimation.loadAnimationFromFile(animFile)
+            maxFrames = len(animation.frames)
+        else:
+            animation = skinnedanimation.SkinnedAnimation("untitled.anim")
+            maxFrames = 60 * 2
+        frameNumber = min(frameNumber, maxFrames)
 
 label update_editor:
-    #TODO Set maxFrames to loaded animation?
-
     call screen skinnedScreen(drawableName, shader.PS_SKINNED, {},
         update=editUpdate, args={"rigFile": rigFile, "persist": True}, _layer="master") #nopredict
 

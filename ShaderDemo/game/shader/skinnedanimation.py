@@ -288,7 +288,7 @@ class SkinnedAnimation:
 
         #TODO modulo frame search?
         i = frameNumber
-        while i >= 0:
+        while i >= 0 and i < len(frames):
             if boneName in frames[i].keys:
                 start = i
                 break
