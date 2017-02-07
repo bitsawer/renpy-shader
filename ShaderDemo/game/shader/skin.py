@@ -1,10 +1,8 @@
 
-import math
 import ctypes
 import json
 from OpenGL import GL as gl
 
-import rendering
 import euclid
 import geometry
 import delaunay

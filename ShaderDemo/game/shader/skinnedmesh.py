@@ -1,8 +1,6 @@
 
-import math
 from OpenGL import GL as gl
 
-import shader
 import geometry
 
 def makeArray(tp, values):

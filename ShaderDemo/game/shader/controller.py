@@ -1,16 +1,8 @@
 
 import renpy
-import renpy.display
-import pygame_sdl2 as pygame
-import random
-import ctypes
-
 from OpenGL import GL as gl
 
 import shader
-import rendering
-import shadercode
-import utils
 
 class RenderContext(object):
     def __init__(self, renderer, w, h, time, shownTime, animationTime, uniforms, mousePos, events, store, overlayRender):
