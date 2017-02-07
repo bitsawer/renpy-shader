@@ -69,7 +69,6 @@ class TextureMap:
 class BaseRenderer(object):
     def __init__(self):
         self.useDepth = False
-        self.useOverlayCanvas = False
         self.clearColor = (0, 0, 0, 0)
 
     def setUniforms(self, shader, uniforms):
@@ -289,7 +288,6 @@ class SkinnedRenderer(BaseRenderer):
 
     def __init__(self):
         super(SkinnedRenderer, self).__init__()
-        self.useOverlayCanvas = True
         self.shader = None
         self.skinTextures = TextureMap()
         self.size = None

@@ -1,4 +1,5 @@
 
+import renpy
 import renpy.display
 import pygame_sdl2 as pygame
 import random
@@ -11,7 +12,7 @@ import shadercode
 import utils
 
 class RenderContext(object):
-    def __init__(self, renderer, w, h, time, shownTime, animationTime, uniforms, mousePos, events, store, overlayCanvas):
+    def __init__(self, renderer, w, h, time, shownTime, animationTime, uniforms, mousePos, events, store, overlayRender):
         self.renderer = renderer
         self.width = w
         self.height = h
@@ -23,7 +24,14 @@ class RenderContext(object):
         self.events = events
         self.store = store
         self.continueRendering = True
-        self.overlayCanvas = overlayCanvas
+        self.overlayRender = overlayRender
+        self.overlayCanvas = None
+
+    def createOverlayCanvas(self):
+        if self.overlayCanvas is not None:
+            return
+        self.overlayCanvas = self.overlayRender.canvas()
+        self.overlayCanvas.rect("#f00", (0, 0, self.width - 1, self.height - 1), 1)
 
 
 class RenderController(object):

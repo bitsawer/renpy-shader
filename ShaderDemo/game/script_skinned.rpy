@@ -290,6 +290,8 @@ init python:
         global saveRig, subdivideMesh, renameBoneFlag, resetPoseFlag, showEasingsFlag, \
             newAnimationFlag, loadAnimationFlag, saveAnimationFlag, frameNumberLast
 
+        context.createOverlayCanvas()
+
         editor = skinnededitor.SkinnedEditor(context, editorSettings)
         editor.update()
 

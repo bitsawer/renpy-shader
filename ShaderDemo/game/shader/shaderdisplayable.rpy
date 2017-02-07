@@ -197,16 +197,10 @@ init python:
                     if self.uniforms:
                         uniforms.update(self.uniforms)
 
-                    overlayCanvas = None
-                    if controller.renderer.useOverlayCanvas:
-                        overlayRender = renpy.Render(renderWidth, renderHeight)
-                        overlayCanvas = overlayRender.canvas()
-                        overlayCanvas.rect("#f00", (0, 0, renderWidth - 1, renderHeight - 1), 1)
-                        result.blit(overlayRender, (0, 0))
-
+                    overlayRender = renpy.Render(renderWidth, renderHeight)
                     renderContext = shader.RenderContext(controller.renderer,
                         renderWidth, renderHeight, time.clock(), st, at, uniforms,
-                        self.mousePos, self.events, context.contextStore, overlayCanvas)
+                        self.mousePos, self.events, context.contextStore, overlayRender)
 
                     self.events = []
 
@@ -216,6 +210,10 @@ init python:
 
                     if self.updateCallback:
                         self.updateCallback(renderContext)
+
+                    if renderContext.overlayCanvas:
+                        #Overlay canvas was created and used
+                        result.blit(overlayRender, (0, 0))
 
                     continueRendering = renderContext.continueRendering
 
