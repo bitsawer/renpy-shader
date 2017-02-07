@@ -359,7 +359,7 @@ label start_editor:
 
 label reset_editor:
     python:
-        _controllerContextStore._clear()
+        shader._controllerContextStore._clear()
         if animFile:
             animation = skinnedanimation.loadAnimationFromFile(animFile)
             maxFrames = len(animation.frames)
@@ -372,5 +372,5 @@ label update_editor:
     call screen skinnedScreen(drawableName, shader.PS_SKINNED, {},
         update=editUpdate, args={"rigFile": rigFile, "persist": True}, _layer="master") #nopredict
 
-    $ _controllerContextStore._clear()
+    $ shader._controllerContextStore._clear()
     return

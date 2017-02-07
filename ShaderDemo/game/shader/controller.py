@@ -7,6 +7,7 @@ import ctypes
 
 from OpenGL import GL as gl
 
+import shader
 import rendering
 import shadercode
 import utils
@@ -32,6 +33,81 @@ class RenderContext(object):
             return
         self.overlayCanvas = self.overlayRender.canvas()
         self.overlayCanvas.rect("#f00", (0, 0, self.width - 1, self.height - 1), 1)
+
+
+class ControllerContext:
+    def __init__(self):
+        self.controller = None
+        self.createCalled = False
+        self.contextStore = {}
+        self.modeChangeCount = 0
+        self.delayFree = False
+        self.persist = False
+        self.updateModeChangeCount()
+
+    def updateModeChangeCount(self):
+        self.modeChangeCount = shader.getModeChangeCount()
+
+    def freeController(self):
+        if self.controller and self.modeChangeCount == shader.getModeChangeCount():
+            self.controller.free()
+        self.controller = None
+
+
+class ControllerContextStore:
+    def __init__(self):
+        self.store = {}
+
+    def get(self, tag):
+        context = self.store.get(tag, None)
+        if not context:
+            context = ControllerContext()
+            self.store[tag] = context
+
+        #context.delayFree = False #Not really needed...
+
+        return context
+
+    def removeContext(self, tag):
+        if tag in self.store:
+            del self.store[tag]
+
+    def getAllShaderDisplayables(self, displayType):
+        displayables = []
+        for disp in renpy.exports.scene_lists().get_all_displayables():
+            try:
+                disp.visit_all(lambda x: displayables.append(x))
+            except AttributeError:
+                #TODO child is sometimes None somewhere, we could do this manually...
+                #Could renpy.showing(name, layer) work here?
+                pass
+        return [d for d in displayables if isinstance(d, displayType)]
+
+    def checkDisplayableVisibility(self, displayType):
+        tagged = {}
+        for d in self.getAllShaderDisplayables(displayType):
+            tagged[d.tag] = d
+
+        removal = []
+        for tag, context in self.store.items():
+            if context.delayFree:
+                removal.append((tag, context))
+            elif not tag in tagged and not context.persist:
+                #Not visible, free on next interaction
+                context.delayFree = True
+
+        for tag, context in removal:
+            context.freeController()
+            self.removeContext(tag)
+
+        shader.log("Controller count: %s" % len(self.store))
+
+    def _clear(self):
+        #Usually there is no need to call this in normal use
+        for tag, context in self.store.copy().items():
+            context.freeController()
+            self.removeContext(tag)
+        self.store.clear()
 
 
 class RenderController(object):

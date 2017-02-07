@@ -2,7 +2,7 @@
 import renpy
 
 import utils
-from controller import RenderController, RenderContext
+from controller import RenderController, RenderContext, ControllerContextStore
 from rendering import Renderer2D, Renderer3D, SkinnedRenderer
 from shadercode import *
 
@@ -48,6 +48,8 @@ def isSupported(verbose=False):
         log("Supported!")
 
     return True
+
+_controllerContextStore = ControllerContextStore()
 
 _coreSetMode = None
 _coreSetModeCounter = 0
