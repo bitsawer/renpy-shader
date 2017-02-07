@@ -196,7 +196,10 @@ init python:
         renpy.notify(text)
 
     def restartEditor():
-        renpy.jump("reset_editor") #TODO Use update_editor...?
+        renpy.jump("reset_editor")
+
+    def updateEditor():
+        renpy.jump("update_editor")
 
     def changeFrameCount():
         global maxFrames, frameNumber
@@ -284,7 +287,7 @@ init python:
             skinnedanimation.saveAnimationToFile(fileName, animation)
             animFile = fileName
             notify("Animation saved to '%s'" % animFile)
-            restartEditor()
+            updateEditor()
 
     def editUpdate(context):
         global saveRig, subdivideMesh, renameBoneFlag, resetPoseFlag, showEasingsFlag, \
@@ -358,8 +361,10 @@ label start_editor:
         return
 
 label reset_editor:
+    $ shader._controllerContextStore._clear()
+
+label update_editor:
     python:
-        shader._controllerContextStore._clear()
         if animFile:
             animation = skinnedanimation.loadAnimationFromFile(animFile)
             maxFrames = len(animation.frames)
@@ -368,7 +373,6 @@ label reset_editor:
             maxFrames = 60 * 2
         frameNumber = min(frameNumber, maxFrames)
 
-label update_editor:
     call screen skinnedScreen(drawableName, shader.PS_SKINNED, {},
         update=editUpdate, args={"rigFile": rigFile, "persist": True}, _layer="master") #nopredict
 
