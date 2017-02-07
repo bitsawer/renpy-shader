@@ -25,21 +25,37 @@ screen listScreen(title, items):
     frame:
         xalign 0.5
         yalign 0.5
+        xpadding 10
+        ypadding 10
+
         vbox:
             spacing 5
             text title xalign 0.5
 
-            for name in items:
-                textbutton name xalign 0.5 action Return(name)
+            vpgrid id "vp":
+                cols 1
+                spacing 10
+                mousewheel True
+                scrollbars "vertical"
+                xminimum 400
+                ymaximum config.screen_height - 300
 
-            textbutton "Cancel" xalign 0.5 action Return("")
+                for name in items:
+                    textbutton name action Return(name)
+
+            textbutton "(Cancel)" xalign 0.5 action Return("")
 
 screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, args=None, xalign=0.5, yalign=0.5):
     modal True
     add ShaderDisplayable(shader.MODE_SKINNED, name, shader.VS_SKINNED, pixelShader, textures, uniforms, None, update, args):
         xalign xalign
         yalign yalign
-        #rotate 45
+
+    if 0: #For debugging and comparison
+        add name:
+            xalign xalign
+            yalign yalign
+            alpha 0.5
 
     drag:
         drag_handle (0, 0, 1.0, 1.0)
@@ -333,7 +349,7 @@ label start_editor:
     $ rigFile = _return
     $ animFile = ""
 
-    call screen listScreen("Select image", sorted(renpy.get_available_image_tags()))
+    call screen listScreen("Select Image or LiveComposite", sorted(renpy.get_available_image_tags()))
     $ drawableName = _return
 
     if not rigFile and not drawableName:

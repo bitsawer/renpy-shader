@@ -390,8 +390,7 @@ class SkinnedRenderer(BaseRenderer):
         bone.pos = (x, y)
         bone.pivot = (bone.pos[0] + bone.image.width / 2.0, bone.pos[1] + bone.image.height / 2.0)
         bone.zOrder = zOrder
-        if bone.image:
-            bone.updatePoints(surface)
+        bone.updatePoints(surface)
 
         self.bones[bone.parent].children.append(boneName)
         self.bones[boneName] = bone
