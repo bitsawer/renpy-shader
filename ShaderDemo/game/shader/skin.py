@@ -19,13 +19,14 @@ def makeArray(tp, values):
 class SkinnedImage:
     jsonIgnore = []
 
-    def __init__(self, name, x, y, width, height):
+    def __init__(self, name, x, y, width, height, originalWidth, originalHeight):
         self.name = name
         self.x = x
         self.y = y
         self.width = width
         self.height = height
-
+        self.originalWidth = originalWidth
+        self.originalHeight = originalHeight
 
 class SkinningBone:
     jsonIgnore = []
@@ -173,7 +174,8 @@ def loadFromFile(path):
 
         image = raw.get("image")
         if image:
-            bone.image = SkinnedImage(image["name"], image["x"], image["y"], image["width"], image["height"])
+            bone.image = SkinnedImage(image["name"], image["x"], image["y"],
+                image["width"], image["height"], image["originalWidth"], image["originalHeight"])
 
         bone.pos = raw["pos"]
         bone.pivot = raw["pivot"]

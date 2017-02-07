@@ -378,6 +378,7 @@ class SkinnedRenderer(BaseRenderer):
         self.createImageBone(surface, name, name, (0, 0), 0)
 
     def createImageBone(self, surface, boneName, fileName, placement, zOrder):
+        originalWidth, originalHeight = surface.get_size()
         crop = surface.get_bounding_rect()
         crop.inflate_ip(10, 10) #TODO For testing
         surface = self.cropSurface(surface, crop)
@@ -386,7 +387,9 @@ class SkinnedRenderer(BaseRenderer):
 
         bone = skin.SkinningBone(boneName)
         bone.parent = self.root.name
-        bone.image = skin.SkinnedImage(fileName, crop[0], crop[1], surface.get_width(), surface.get_height())
+        bone.image = skin.SkinnedImage(fileName, crop[0], crop[1],
+            surface.get_width(), surface.get_height(),
+            originalWidth, originalHeight)
         bone.pos = (x, y)
         bone.pivot = (bone.pos[0] + bone.image.width / 2.0, bone.pos[1] + bone.image.height / 2.0)
         bone.zOrder = zOrder
@@ -408,9 +411,13 @@ class SkinnedRenderer(BaseRenderer):
         cropped.blit(surface, (0, 0), rect)
         return cropped
 
-    def loadCroppedSurface(self, bone, name):
+    def loadCroppedSurface(self, bone, name, resize=None):
         surface = renpy.display.im.load_surface(renpy.exports.displayable(name))
-        crop = (bone.image.x, bone.image.y, bone.image.width, bone.image.height)
+        image = bone.image
+        scale = 1
+        if resize:
+            scale = surface.get_width() / float(resize.originalWidth)
+        crop = tuple(int(round(x)) for x in (image.x * scale, image.y * scale, image.width * scale, image.height * scale))
         return self.cropSurface(surface, crop)
 
     def loadInfluenceImages(self):
@@ -420,7 +427,7 @@ class SkinnedRenderer(BaseRenderer):
             if bone.image:
                 influence = self.getInfluenceName(bone.image.name)
                 if renpy.exports.has_image(influence, exact=True):
-                    surface = self.loadCroppedSurface(bone, influence)
+                    surface = self.loadCroppedSurface(bone, influence, bone.image)
                     self.skinTextures.setTexture(influence, surface)
 
     def getInfluenceName(self, name):
