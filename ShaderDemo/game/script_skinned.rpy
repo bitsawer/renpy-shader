@@ -336,7 +336,7 @@ label start_editor:
     call screen listScreen("Select image", sorted(renpy.get_available_image_tags()))
     $ drawableName = _return
 
-    if not rigFile or not drawableName:
+    if not rigFile and not drawableName:
         return
 
 label reset_editor:

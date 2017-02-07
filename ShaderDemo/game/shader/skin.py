@@ -198,4 +198,4 @@ def loadFromFile(path):
 
         bones[bone.name] = bone
 
-    return bones
+    return bones, data

@@ -305,8 +305,11 @@ class SkinnedRenderer(BaseRenderer):
         if rig:
             self.loadJson(image, rig)
         else:
-            #Assume LiveComposite. Not that great, relies on specific RenPy implementation...
-            self.loadLiveComposite(image)
+            if self.isLiveComposite(image):
+                self.loadLiveComposite(image)
+            else:
+                self.loadNormalImage(image)
+
             self.updateMeshes()
             self.updateBones()
 
@@ -339,10 +342,9 @@ class SkinnedRenderer(BaseRenderer):
                 bone.mesh.updateUvs(bone)
 
     def loadJson(self, image, path):
-        container = image.visit()[0]
-        self.size = container.style.xmaximum, container.style.ymaximum
+        self.bones, data = skin.loadFromFile(path)
+        self.size = data["width"], data["height"]
 
-        self.bones = skin.loadFromFile(path)
         for name, bone in self.bones.items():
             if not bone.parent:
                 self.root = bone
@@ -351,39 +353,56 @@ class SkinnedRenderer(BaseRenderer):
                 surface = self.loadCroppedSurface(bone, bone.image.name)
                 self.skinTextures.setTexture(bone.image.name, surface)
 
+    def isLiveComposite(self, image):
+        #TODO There must be a better way to get this...
+        container = image.visit()[0]
+        return container.style.xmaximum and container.style.ymaximum
+
     def loadLiveComposite(self, image):
         container = image.visit()[0]
         self.size = container.style.xmaximum, container.style.ymaximum
-
-        self.root = skin.SkinningBone("root")
-        self.root.pivot = (self.size[0] * 0.5, self.size[1] * 0.75)
-        self.bones = {self.root.name: self.root}
+        self.root = self.createRootBone()
 
         for i, child in enumerate(container.children):
             placement = child.get_placement()
             base = child.children[0]
             boneName = base.filename.rsplit(".")[0]
+            surface = renpy.display.im.load_surface(base)
+            self.createImageBone(surface, boneName, base.filename, placement, i)
 
-            original = renpy.display.im.load_surface(base)
-            crop = original.get_bounding_rect()
-            crop.inflate_ip(10, 10) #TODO For testing
-            surface = self.cropSurface(original, crop)
-            x = placement[0] + crop[0]
-            y = placement[1] + crop[1]
+    def loadNormalImage(self, image):
+        surface = renpy.display.im.load_surface(image)
+        self.size = surface.get_size()
+        self.root = self.createRootBone()
+        name = " ".join(image.name)
+        self.createImageBone(surface, name, name, (0, 0), 0)
 
-            bone = skin.SkinningBone(boneName)
-            bone.parent = self.root.name
-            bone.image = skin.SkinnedImage(base.filename, crop[0], crop[1], surface.get_width(), surface.get_height())
-            bone.pos = (x, y)
-            bone.pivot = (bone.pos[0] + bone.image.width / 2.0, bone.pos[1] + bone.image.height / 2.0)
-            bone.zOrder = i
-            if bone.image:
-                bone.updatePoints(surface)
+    def createImageBone(self, surface, boneName, fileName, placement, zOrder):
+        crop = surface.get_bounding_rect()
+        crop.inflate_ip(10, 10) #TODO For testing
+        surface = self.cropSurface(surface, crop)
+        x = placement[0] + crop[0]
+        y = placement[1] + crop[1]
 
-            self.bones[bone.parent].children.append(boneName)
-            self.bones[boneName] = bone
+        bone = skin.SkinningBone(boneName)
+        bone.parent = self.root.name
+        bone.image = skin.SkinnedImage(fileName, crop[0], crop[1], surface.get_width(), surface.get_height())
+        bone.pos = (x, y)
+        bone.pivot = (bone.pos[0] + bone.image.width / 2.0, bone.pos[1] + bone.image.height / 2.0)
+        bone.zOrder = zOrder
+        if bone.image:
+            bone.updatePoints(surface)
 
-            self.skinTextures.setTexture(bone.image.name, surface)
+        self.bones[bone.parent].children.append(boneName)
+        self.bones[boneName] = bone
+
+        self.skinTextures.setTexture(bone.image.name, surface)
+
+    def createRootBone(self):
+        root = skin.SkinningBone("root")
+        root.pivot = (self.size[0] * 0.5, self.size[1] * 0.75)
+        self.bones = {root.name: root}
+        return root
 
     def cropSurface(self, surface, rect):
         cropped = pygame.Surface((rect[2], rect[3]), 0, surface)
