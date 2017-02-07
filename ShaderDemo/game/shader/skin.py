@@ -91,21 +91,13 @@ class SkinningBone:
         pointsSegments.add_polygon([self.points])
         triangulation = delaunay.triangulate(pointsSegments.points, pointsSegments.infos, pointsSegments.segments)
 
-        expanded = self.points #geometry.offsetPolygon(self.points, -1) #TODO 0 better, do nothing?
-        shorten = 0.5
-
         triangles = []
         for tri in delaunay.TriangleIterator(triangulation, True):
             a, b, c = tri.vertices
-
-            inside = 0
-            for line in [(a, b), (b, c), (c, a)]:
-                short1, short2 = geometry.shortenLine(line[0], line[1], shorten)
-                if geometry.insidePolygon(short1[0], short1[1], expanded) and geometry.insidePolygon(short2[0], short2[1], expanded):
-                    inside += 1
-
-            if inside >= 2:
+            centroid = geometry.triangleCentroid(a, b, c)
+            if geometry.insidePolygon(centroid[0], centroid[1], self.points):
                 triangles.append(((a[0], a[1]), (b[0], b[1]), (c[0], c[1])))
+
         return triangles
 
     def updateMeshFromTriangles(self, triangles):

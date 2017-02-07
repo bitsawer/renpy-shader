@@ -344,3 +344,8 @@ def pointInTriangle(point, v1, v2, v3):
     b2 = _triSign(point, v2, v3) < 0.0
     b3 = _triSign(point, v3, v1) < 0.0
     return (b1 == b2) and (b2 == b3)
+
+def triangleCentroid(v1, v2, v3):
+    centerX = (v1[0] + v2[0] + v3[0]) / 3.0
+    centerY = (v1[1] + v2[1] + v3[1]) / 3.0
+    return centerX, centerY
