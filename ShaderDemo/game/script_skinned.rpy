@@ -9,7 +9,7 @@ image doll = LiveComposite(
     (0, 0), "doll hair.png",
 )
 
-screen listScreen(title, items, current=None):
+screen listScreen(title, items, current=None, cancel=None):
     modal True
     frame:
         xalign 0.5
@@ -35,7 +35,7 @@ screen listScreen(title, items, current=None):
                     else:
                         textbutton name action Return(name)
 
-            textbutton "(Cancel)" xalign 0.5 action Return("")
+            textbutton (cancel if cancel else "Cancel") xalign 0.5 action Return("")
 
 screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, args=None, xalign=0.5, yalign=0.5):
     modal True
@@ -191,8 +191,8 @@ init python:
     def _askListInputContext(*args):
         return renpy.call_screen("listScreen", *args)
 
-    def askListInput(title, items, current=None):
-        return renpy.invoke_in_new_context(_askListInputContext, title, items, current)
+    def askListInput(title, items, current=None, cancel=None):
+        return renpy.invoke_in_new_context(_askListInputContext, title, items, current, cancel)
 
     def restartEditor():
         renpy.jump("reset_editor")
@@ -346,15 +346,15 @@ label main_menu: #TODO For fast testing
 label start_editor:
     $ clearKeymapForEditor()
 
-    call screen listScreen("Load a rig", shader.utils.scanForFiles(".", "rig"))
-    $ rigFile = _return
-    $ animFile = ""
-
     call screen listScreen("Select Image or LiveComposite", sorted(renpy.get_available_image_tags()))
     $ drawableName = _return
 
     if not drawableName:
         return
+
+    call screen listScreen("Load a rig", shader.utils.scanForFiles(".", "rig"), None, "Create a new rig")
+    $ rigFile = _return
+    $ animFile = ""
 
 label reset_editor:
     $ shader._controllerContextStore._clear()
