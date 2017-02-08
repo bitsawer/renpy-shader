@@ -144,12 +144,6 @@ init python:
     from shader import skinnedanimation
     from shader import easing
 
-    #TODO Use renpy.clear_keymap_cache()
-    #config.keymap["input_delete"] = []
-    config.keymap["game_menu"].remove("mouseup_3")
-    config.keymap["hide_windows"].remove("h")
-    config.keymap["screenshot"].remove("s")
-
     editorSettings = {
         "wireframe": True,
         "edgePoints": True,
@@ -179,6 +173,13 @@ init python:
     frameNumberLast = -1
     framePlay = False
     maxFrames = 1
+
+    def clearKeymapForEditor():
+        #Remove mappings that would conflict with our editor
+        config.keymap["game_menu"].remove("mouseup_3")
+        config.keymap["hide_windows"].remove("h")
+        config.keymap["screenshot"].remove("s")
+        renpy.clear_keymap_cache()
 
     def userInput(prompt, *args, **kwargs):
         #TODO Exclude invalid characters...
@@ -343,6 +344,8 @@ init python:
 
 label main_menu: #TODO For fast testing
 label start_editor:
+    $ clearKeymapForEditor()
+
     call screen listScreen("Load a rig", shader.utils.scanForFiles(".", "rig"))
     $ rigFile = _return
     $ animFile = ""
