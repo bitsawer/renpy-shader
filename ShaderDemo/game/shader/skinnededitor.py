@@ -159,6 +159,12 @@ class ExtrudeBone(Action):
                 return name
             index += 1
 
+    def findNextZOrder(self, bone, bones):
+        zOrder = bone.zOrder + 1
+        for name in bone.children:
+            zOrder = max(zOrder, bones[name].zOrder + 1)
+        return zOrder
+
     def cancel(self, editor):
         pass
 
@@ -173,7 +179,7 @@ class ExtrudeBone(Action):
 
         bone = skin.SkinningBone(newName)
         bone.pivot = editor.getBoneInverseTranslation(bones[self.bone.name], editor.mouse, False)
-        bone.zOrder = parent.zOrder + 1 #TODO Get z from parents child with the largest one?
+        bone.zOrder = self.findNextZOrder(parent, bones)
         bones[bone.name] = bone
 
         editor.connectBone(bone.name, parent.name)
