@@ -41,7 +41,7 @@ init python:
             textures = {"tex1" : influence}
         else:
             #No influence image for this image, so use all black zero influence image.
-            textures = {"tex1" : "black.png"}
+            textures = {"tex1" : shader.ZERO_INFLUENCE}
 
         #Hide the old one (if any) so animation times are reset. This might not be desirable in all cases.
         hide(image, layer=active)

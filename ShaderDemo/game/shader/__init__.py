@@ -19,6 +19,8 @@ MODE_2D = "2d"
 MODE_3D = "3d"
 MODE_SKINNED = "skinned"
 
+ZERO_INFLUENCE = "zeroinfluence.png"
+
 class config:
     enabled = True
     fps = 60

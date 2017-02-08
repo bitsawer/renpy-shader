@@ -419,7 +419,7 @@ class SkinnedRenderer(BaseRenderer):
         return self.cropSurface(surface, crop)
 
     def loadInfluenceImages(self):
-        self.skinTextures.setTexture(self.BLACK_TEXTURE, "black.png")
+        self.skinTextures.setTexture(self.BLACK_TEXTURE, shader.ZERO_INFLUENCE)
 
         for name, bone in self.bones.items():
             if bone.image:
