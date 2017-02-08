@@ -172,7 +172,7 @@ class ExtrudeBone(Action):
         newName =  self.findNextFreeBoneName(bones, " ".join(parts))
 
         bone = skin.SkinningBone(newName)
-        bone.pivot = editor.getBoneInverseTranslation(bones[self.bone.name], editor.mouse)
+        bone.pivot = editor.getBoneInverseTranslation(bones[self.bone.name], editor.mouse, False)
         bone.zOrder = parent.zOrder + 1 #TODO Get z from parents child with the largest one?
         bones[bone.name] = bone
 
@@ -525,10 +525,8 @@ class SkinnedEditor:
         dragPivot = self.get(DRAG_PIVOT)
         if dragPivot:
             bone, oldMouse, oldHead = dragPivot
-            #TODO Save the bone start transform, otherwise precision error accumulate while dragging...
             inverse = self.getBoneInverseTranslation(bone, pos)
             delta = (oldMouse[0] - inverse[0], oldMouse[1] - inverse[1])
-            pivot = bone.pivot
             bone.pivot = (oldHead[0] - delta[0], oldHead[1] - delta[1])
 
         dragPos = self.get(DRAG_POS)
@@ -626,8 +624,12 @@ class SkinnedEditor:
                     triangles.append((pos.x, pos.y))
         return triangles
 
-    def getBoneInverseTranslation(self, bone, translation):
-        inverse = self.transformsMap[bone.name].matrix.inverse()
+    def getBoneInverseTranslation(self, bone, translation, parentSpace=True):
+        source = bone
+        if parentSpace and bone.parent:
+            source = self.getBone(bone.parent)
+
+        inverse = self.transformsMap[source.name].matrix.inverse()
         result = inverse.transform(euclid.Vector3(translation[0], translation[1]))
         return (result.x, result.y)
 
