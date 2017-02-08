@@ -9,19 +9,8 @@ image doll = LiveComposite(
     (0, 0), "doll hair.png",
 )
 
-screen easingScreen(oldEasing):
-    frame:
-        xalign 0.5
-        yalign 0.5
-        vbox:
-            spacing 5
-            text "Set animation easing" xalign 0.5 yalign 0.3
-            for name in easing.EASINGS:
-                if name == oldEasing:
-                    $ name = ">> " + name + " <<"
-                textbutton name xalign 0.5 action Return(name.replace(">> ", "").replace(" <<", ""))
-
-screen listScreen(title, items):
+screen listScreen(title, items, current=None):
+    modal True
     frame:
         xalign 0.5
         yalign 0.5
@@ -41,7 +30,10 @@ screen listScreen(title, items):
                 ymaximum config.screen_height - 300
 
                 for name in items:
-                    textbutton name action Return(name)
+                    if current and name == current:
+                        textbutton name action Return(name) text_color "#080"
+                    else:
+                        textbutton name action Return(name)
 
             textbutton "(Cancel)" xalign 0.5 action Return("")
 
@@ -195,6 +187,12 @@ init python:
     def notify(text):
         renpy.notify(text)
 
+    def _askListInputContext(*args):
+        return renpy.call_screen("listScreen", *args)
+
+    def askListInput(title, items, current=None):
+        return renpy.invoke_in_new_context(_askListInputContext, title, items, current)
+
     def restartEditor():
         renpy.jump("reset_editor")
 
@@ -249,14 +247,12 @@ init python:
         else:
             notify("No bone selected")
 
-    def askEasing(oldEasing):
-        return renpy.call_screen("easingScreen", oldEasing)
-
     def setActiveEasing(editor, animation):
         active = editor.getActiveBone()
         if active:
-            result = renpy.invoke_in_new_context(askEasing, animation.getBoneData(active.name).easing)
-            animation.getBoneData(active.name).easing = result
+            result = askListInput("Bone easing", easing.getNames(), animation.getBoneData(active.name).easing)
+            if result:
+                animation.getBoneData(active.name).easing = result
         else:
             notify("No bone selected")
 
@@ -266,12 +262,9 @@ init python:
         notify("New animation")
         restartEditor()
 
-    def askAnimation():
-        return renpy.call_screen("listScreen", "Animation", shader.utils.scanForFiles(".", "anim"))
-
     def loadAnimation():
         global animFile
-        result = renpy.invoke_in_new_context(askAnimation)
+        result = askListInput("Animation", shader.utils.scanForFiles(".", "anim"))
         if result:
             animFile = result
             notify("Loaded: '%s'" % animFile)
@@ -357,7 +350,7 @@ label start_editor:
     call screen listScreen("Select Image or LiveComposite", sorted(renpy.get_available_image_tags()))
     $ drawableName = _return
 
-    if not rigFile and not drawableName:
+    if not drawableName:
         return
 
 label reset_editor:

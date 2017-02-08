@@ -4,51 +4,51 @@ import math
 def linear(pos):
     return pos
 
-def inQuad(pos):
+def quadIn(pos):
     return pow(pos, 2)
 
-def outQuad(pos):
+def quadOut(pos):
     return -(pow((pos - 1), 2) -1)
 
-def inOutQuad(pos):
+def quadInOut(pos):
     pos /= 0.5
     if pos < 1:
         return 0.5 * pow(pos, 2);
     pos -= 2
     return -0.5 * (pos * pos - 2);
 
-def inSine(pos):
+def sineIn(pos):
     return -math.cos(pos * (math.pi / 2)) + 1
 
-def outSine(pos):
+def sineOut(pos):
     return math.sin(pos * (math.pi / 2))
 
-def inOutSine(pos):
+def sineInOut(pos):
     return (-0.5 * (math.cos(math.pi * pos) - 1))
 
-def inCirc(pos):
+def circIn(pos):
     return -(math.sqrt(1 - (pos * pos)) - 1)
 
-def outCirc(pos):
+def circOut(pos):
     return math.sqrt(1 - pow(pos - 1, 2))
 
-def inOutCirc(pos):
+def circInOut(pos):
     pos /= 0.5
     if pos < 1:
         return -0.5 * (math.sqrt(1 - pos * pos) - 1)
     pos -= 2
     return 0.5 * (math.sqrt(1 - pos*pos) + 1)
 
-def inBack(pos):
+def backIn(pos):
     s = 1.70158
     return pos * pos * ((s + 1) * pos - s)
 
-def outBack(pos):
+def backOut(pos):
     s = 1.70158
     pos = pos - 1
     return pos * pos * ((s + 1) * pos + s) + 1
 
-def inOutBack(pos):
+def backInOut(pos):
     s = 1.70158 * 1.525
     pos /= 0.5
     if pos < 1:
@@ -89,30 +89,40 @@ def bounce(pos):
         pos -= 2.625 / 2.75
         return 7.5625 * (pos) * pos + 0.984375
 
-EASINGS = {
-    "linear": linear,
+EASINGS = [
+    ("linear", linear),
 
-    "inQuad": inQuad,
-    "outQuad": outQuad,
-    "inOutQuad": inOutQuad,
+    ("quadIn", quadIn),
+    ("quadOut", quadOut),
+    ("quadInOut", quadInOut),
 
-    "inSine": inSine,
-    "outSine": outSine,
-    "inOutSine": inOutSine,
+    ("sineIn", sineIn),
+    ("sineOut", sineOut),
+    ("sineInOut", sineInOut),
 
-    "inCirc": inCirc,
-    "outCirc": outCirc,
-    "inOutCirc": inOutCirc,
+    ("circIn", circIn),
+    ("circOut", circOut),
+    ("circInOut", circInOut),
 
-    "inBack": inBack,
-    "outBack": outBack,
-    "inOutBack": inOutBack,
+    ("backIn", backIn),
+    ("backOut", backOut),
+    ("backInOut", backInOut),
 
-    "swingFrom": swingFrom,
-    "swingTo": swingTo,
-    "swingFromTo": swingFromTo,
+    ("swingFrom", swingFrom),
+    ("swingTo", swingTo),
+    ("swingFromTo", swingFromTo),
 
-    "elastic": elastic,
-    "bounce": bounce,
-}
+    ("elastic", elastic),
+    ("bounce", bounce)
+]
+EASINGS.sort(key=lambda e: e[0])
 
+MAP = {}
+for name, func in EASINGS:
+    MAP[name] = func
+
+def getNames():
+    return [e[0] for e in EASINGS]
+
+def getEasing(name):
+    return MAP[name]

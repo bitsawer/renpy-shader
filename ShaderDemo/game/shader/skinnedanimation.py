@@ -7,9 +7,11 @@ import utils
 import skinnededitor
 import easing
 
+DEFAULT_EASING = "backOut"
+
 class KeyFrame:
     def __init__(self):
-        self.pivot = None
+        self.pivot = None #TODO Can affect weight calculation...
         self.translation = None
         self.rotation = None
         self.scale = None
@@ -65,8 +67,6 @@ class Frame:
             key = KeyFrame()
             self.keys[name] = key
         return key
-
-DEFAULT_EASING = "outBack"
 
 class BoneData:
     def __init__(self):
@@ -325,7 +325,7 @@ class SkinnedAnimation:
                     copyKeyData(startKey, bone)
                 else:
                     weight = float(frameNumber - start) / (end - start)
-                    eased = easing.EASINGS[self.getEasing(bone.name)](weight)
+                    eased = easing.getEasing(self.getEasing(bone.name))(weight)
                     key = interpolateKeyData(startKey, endKey, eased)
                     copyKeyData(key, bone)
 
