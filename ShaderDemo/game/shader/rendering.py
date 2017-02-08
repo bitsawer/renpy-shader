@@ -336,7 +336,7 @@ class SkinnedRenderer(BaseRenderer):
             bone = transform.bone
             if bone.mesh:
                 bone.mesh.updateVertexWeights(i, transforms, self.bones)
-                bone.mesh.sortVertices(transforms)
+                bone.mesh.sortTriangles(transforms)
                 bone.mesh.updateUvs(bone)
 
     def loadJson(self, image, path):
