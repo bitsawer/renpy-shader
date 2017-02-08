@@ -298,13 +298,16 @@ screen navigation():
         style_prefix "navigation"
 
         xpos gui.navigation_xpos
-        yalign 0.5
+        yalign 0.2
 
         spacing gui.navigation_spacing
 
         if main_menu:
 
-            textbutton _("Start") action Start()
+            textbutton _("Start Demo") action Start()
+            textbutton _("Start Rig Demo") action Start("start_rig_demo")
+            textbutton _("Start Rig Editor") action Start("start_editor")
+            null height 50
 
         else:
 

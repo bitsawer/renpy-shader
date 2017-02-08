@@ -37,7 +37,7 @@ screen listScreen(title, items, current=None, cancel=None):
 
             textbutton (cancel if cancel else "Cancel") xalign 0.5 action Return("")
 
-screen skinnedScreen(name, pixelShader, textures={}, uniforms={}, update=None, args=None, xalign=0.5, yalign=0.5):
+screen rigEditorScreen(name, pixelShader, textures={}, uniforms={}, update=None, args=None, xalign=0.5, yalign=0.5):
     modal True
     add ShaderDisplayable(shader.MODE_SKINNED, name, shader.VS_SKINNED, pixelShader, textures, uniforms, None, update, args):
         xalign xalign
@@ -285,7 +285,7 @@ init python:
             notify("Animation saved to '%s'" % animFile)
             updateEditor()
 
-    def editUpdate(context):
+    def rigEditorUpdate(context):
         global saveRig, subdivideMesh, renameBoneFlag, resetPoseFlag, showEasingsFlag, \
             newAnimationFlag, loadAnimationFlag, saveAnimationFlag, frameNumberLast
 
@@ -344,7 +344,7 @@ init python:
             context.uniforms["shownTime"] = 1.0
             context.uniforms["animationTime"] = 1.0
 
-label main_menu: #TODO For fast testing
+#label main_menu: #TODO For fast testing
 label start_editor:
     $ clearKeymapForEditor()
 
@@ -371,8 +371,8 @@ label update_editor:
             maxFrames = 60 * 2
         frameNumber = min(frameNumber, maxFrames)
 
-    call screen skinnedScreen(drawableName, shader.PS_SKINNED, {},
-        update=editUpdate, args={"rigFile": rigFile, "persist": True}, _layer="master") #nopredict
+    call screen rigEditorScreen(drawableName, shader.PS_SKINNED, {},
+        update=rigEditorUpdate, args={"rigFile": rigFile, "persist": True}, _layer="master") #nopredict
 
     $ shader._controllerContextStore._clear()
     return

@@ -27,7 +27,7 @@ class SkinnedImage:
         self.originalHeight = originalHeight
 
 class SkinningBone:
-    jsonIgnore = []
+    jsonIgnore = ["wireFrame"]
 
     def __init__(self, name):
         self.name = name
@@ -44,6 +44,7 @@ class SkinningBone:
         self.wireFrame = False
         self.blocker = False
         self.tessellate = False
+        #self.gridify = 0 #TODO Relative to image max dimension etc.?
         self.damping = 0.0
         self.points = []
         self.mesh = None
@@ -182,7 +183,6 @@ def loadFromFile(path):
         bone.scale = euclid.Vector3(*raw["scale"])
         bone.zOrder = raw["zOrder"]
         bone.visible = raw["visible"]
-        bone.wireFrame = raw["wireFrame"]
         bone.blocker = raw["blocker"]
         bone.tessellate = raw["tessellate"]
         bone.damping = raw["damping"]
