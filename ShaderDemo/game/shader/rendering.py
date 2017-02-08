@@ -512,7 +512,7 @@ class SkinnedRenderer(BaseRenderer):
 
         deltaX = posOld.x - pos.x
         deltaY = posOld.y - pos.y
-        dampness = max(transform.damping - (float(context.shownTime) - data.time), 0.0)
+        dampness = max(transform.damping - max(float(context.shownTime) - data.time, 0.0), 0.0)
 
         boneMatrix.m = deltaX
         boneMatrix.n = deltaY

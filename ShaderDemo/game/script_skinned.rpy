@@ -263,7 +263,7 @@ init python:
         global animFile
         animFile = ""
         notify("New animation")
-        restartEditor()
+        updateEditor()
 
     def loadAnimation():
         global animFile
@@ -271,7 +271,7 @@ init python:
         if result:
             animFile = result
             notify("Loaded: '%s'" % animFile)
-            restartEditor()
+            updateEditor()
 
     def saveAnimation(animation):
         global animFile
