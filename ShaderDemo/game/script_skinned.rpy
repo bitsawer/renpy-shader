@@ -176,9 +176,11 @@ init python:
 
     def clearKeymapForEditor():
         #Remove mappings that would conflict with our editor
-        config.keymap["game_menu"].remove("mouseup_3")
-        config.keymap["hide_windows"].remove("h")
-        config.keymap["screenshot"].remove("s")
+        shortcuts = ["mouseup_3", "h", "s"]
+        for key, values in config.keymap.items():
+            for name in shortcuts:
+                if name in values:
+                    values.remove(name)
         renpy.clear_keymap_cache()
 
     def userInput(prompt, *args, **kwargs):
