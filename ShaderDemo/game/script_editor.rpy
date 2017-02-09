@@ -366,17 +366,25 @@ init python:
             context.uniforms["shownTime"] = 1.0
             context.uniforms["animationTime"] = 1.0
 
+    def listImageTags():
+        ignores = ["black", "text", "vtext", shader.ZERO_INFLUENCE.split(".")[0]]
+        tags = renpy.get_available_image_tags()
+        for ignore in ignores:
+            if ignore in tags:
+                tags.remove(ignore)
+        return sorted(tags)
+
 #label main_menu: #TODO For fast testing
 label start_editor:
     $ clearKeymapForEditor()
 
-    call screen listScreen("Select Image or LiveComposite", sorted(renpy.get_available_image_tags()))
+    call screen listScreen("Image or LiveComposite to be rigged", listImageTags())
     $ drawableName = _return
 
     if not drawableName:
         return
 
-    call screen listScreen("Load a rig", scanForFileNames("rig"), None, "Create a new rig")
+    call screen listScreen("Load a rig for the image", scanForFileNames("rig"), None, "Create a new rig")
     $ rigFile = _return
     $ animFile = ""
 
