@@ -5,8 +5,9 @@ import euclid
 import utils
 
 class TrackInfo:
-    def __init__(self, name, repeat=False, cyclic=False, reverse=False, autoEnd=False, fps=30):
+    def __init__(self, name, repeat=False, cyclic=False, reverse=False, autoEnd=False, speed=1.0, fps=30):
         self.name = name
+        self.speed = speed
         self.fps = float(fps)
         self.repeat = repeat
         self.cyclic = cyclic
@@ -20,7 +21,7 @@ class Track:
         self.animation = skinnedanimation.loadAnimationFromFile(utils.findFile(info.name))
 
     def getFrameIndex(self, currentTime):
-        delta = currentTime - self.startTime
+        delta = (currentTime - self.startTime) * self.info.speed
         return int(round(delta * self.info.fps))
 
     def getFrameIndexClamped(self, currentTime):
@@ -83,6 +84,7 @@ class AnimationPlayer:
     def updateTrack(self, track):
         currentTime =  self.getTime()
         if track.info.autoEnd and track.isAtEnd(currentTime):
+            self.debugDraw(track, "(Autoend)")
             return
 
         if track.info.cyclic:
@@ -95,16 +97,16 @@ class AnimationPlayer:
         #TODO apply should return the changes. then mix them together
         track.animation.apply(frameIndex, self.context.renderer.getBones()) #TODO Bakes every time...
 
-        if self.debug:
-            self.debugDraw(track, frameIndex)
+        self.debugDraw(track, frameIndex)
 
     def debugDraw(self, track, frameIndex):
-        text = "%s (%s) Frame %i of %i at %i FPS" % (self.tag, track.info.name,
-            frameIndex, len(track.animation.frames) - 1, track.info.fps)
-        pos = (10, self.debugY)
-        color = (0, 0, 0)
-        utils.drawText(self.context.overlayCanvas, text, pos, color)
-        self.debugY += utils.FONT_SIZE
+        if self.debug:
+            text = "%s (%s) FPS: %i, Speed: %.1f, Frame %s / %i" % (self.tag, track.info.name,
+                track.info.fps, track.info.speed, frameIndex, len(track.animation.frames) - 1)
+            pos = (10, self.debugY)
+            color = (0, 0, 0)
+            utils.drawText(self.context.overlayCanvas, text, pos, color)
+            self.debugY += utils.FONT_SIZE
 
     def play(self, infos, rest=True):
         for info in infos:
