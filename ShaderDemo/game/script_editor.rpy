@@ -2,6 +2,16 @@
 #Rig editor. As a normal user you don't have to understand anything in this file,
 #but this can prove useful if you want to learn how the internals work.
 
+style edit_button is default
+style edit_button_text is button_text
+
+style edit_button:
+    properties gui.button_properties("quick_button")
+
+style edit_button_text:
+    properties gui.button_text_properties("quick_button")
+    size 20
+
 screen listScreen(title, items, current=None, cancel=None):
     modal True
     frame:
@@ -15,18 +25,20 @@ screen listScreen(title, items, current=None, cancel=None):
             text title xalign 0.5
 
             vpgrid id "vp":
+                style_prefix "edit"
                 cols 1
                 spacing 10
                 mousewheel True
                 scrollbars "vertical"
                 xminimum 400
-                ymaximum config.screen_height - 300
+                ymaximum config.screen_height - 200
 
                 for name in items:
                     if current and name == current:
                         textbutton name action Return(name) text_color "#080"
                     else:
                         textbutton name action Return(name)
+
 
             textbutton (cancel if cancel else "Cancel") xalign 0.5 action Return("")
 
@@ -52,6 +64,7 @@ screen rigEditorScreen(name, pixelShader, textures={}, uniforms={}, update=None,
             ypadding 10
 
             vbox:
+                style_prefix "edit"
                 spacing 5
                 #xmaximum 150
                 #xminimum 150
@@ -100,6 +113,7 @@ screen rigEditorScreen(name, pixelShader, textures={}, uniforms={}, update=None,
             xpadding 10
             ypadding 10
             vbox:
+                style_prefix "edit"
                 spacing 5
 
                 text animation.name
