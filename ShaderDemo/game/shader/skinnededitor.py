@@ -9,6 +9,7 @@ import pygame
 import euclid
 import skin
 import geometry
+import utils
 
 PIVOT_SIZE = 4
 PICK_DISTANCE_PIVOT = PIVOT_SIZE * 2
@@ -27,10 +28,6 @@ MOUSE = "mouse"
 MODE = "mode"
 
 SAVE_DIR = "rig"
-
-pygame.font.init()
-FONT_SIZE = 20
-FONT = pygame.font.Font(None, FONT_SIZE)
 
 def getSaveDir():
     target = os.path.join(renpy.config.gamedir, SAVE_DIR)
@@ -393,10 +390,7 @@ class SkinnedEditor:
                 bone.rotation.z = 0.0
 
     def drawText(self, text, color, pos, align=-1):
-        surface = FONT.render(text, True, color)
-        if align == 1:
-            pos = (pos[0] - surface.get_width(), pos[1])
-        self.context.overlayCanvas.get_surface().blit(surface, pos)
+        utils.drawText(self.context.overlayCanvas, text, pos, color, align)
 
     def subdivide(self, bone, minSize):
         if bone.mesh and not self.settings["autoSubdivide"]:
@@ -776,13 +770,13 @@ class SkinnedEditor:
         if bone.mesh:
             name += " (%i polygons, %i vertices)" % (len(bone.mesh.indices) // 3, len(bone.mesh.vertices) // 2)
         self.drawText(name, color, (x, y))
-        y += FONT_SIZE
+        y += utils.FONT_SIZE
 
         degrees = tuple([math.degrees(d) for d in (bone.rotation.x,  bone.rotation.y,  bone.rotation.z)])
         self.drawText("Rotation - x: %.1f, y: %.1f, z: %.1f" % degrees, color, (x, y))
-        y += FONT_SIZE
+        y += utils.FONT_SIZE
 
         self.drawText("Scale     - x: %.1f, y: %.1f, z: %.1f" % (bone.scale.x,  bone.scale.y,  bone.scale.z), color, (x, y))
-        y += FONT_SIZE
+        y += utils.FONT_SIZE
 
         self.drawText("Z-order  - %i" % bone.zOrder, color, (x, y))

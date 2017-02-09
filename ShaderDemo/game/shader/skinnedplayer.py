@@ -4,11 +4,10 @@ import skinnedanimation
 import euclid
 import utils
 
-FPS = 30.0
-
 class TrackInfo:
-    def __init__(self, name, repeat=False, cyclic=False, reverse=False, autoEnd=False):
+    def __init__(self, name, repeat=False, cyclic=False, reverse=False, autoEnd=False, fps=30):
         self.name = name
+        self.fps = float(fps)
         self.repeat = repeat
         self.cyclic = cyclic
         self.reverse = reverse
@@ -22,7 +21,7 @@ class Track:
 
     def getFrameIndex(self, currentTime):
         delta = currentTime - self.startTime
-        return int(round(delta * FPS))
+        return int(round(delta * self.info.fps))
 
     def getFrameIndexClamped(self, currentTime):
         index = self.getFrameIndex(currentTime)
@@ -53,11 +52,17 @@ class AnimationData:
         self.tracks = {}
 
 class AnimationPlayer:
-    def __init__(self, tag, context):
+    def __init__(self, tag, context, debug):
         self.context = context
+        self.debug = debug
+        self.tag = tag
+        self.debugY = 10
         fullTag = "animationPlayer-" + tag
         self.data = context.store.get(fullTag, AnimationData())
         context.store[fullTag] = self.data
+
+        if self.debug:
+            context.createOverlayCanvas()
 
     def getTime(self):
         return self.context.time
@@ -89,6 +94,17 @@ class AnimationPlayer:
 
         #TODO apply should return the changes. then mix them together
         track.animation.apply(frameIndex, self.context.renderer.getBones()) #TODO Bakes every time...
+
+        if self.debug:
+            self.debugDraw(track, frameIndex)
+
+    def debugDraw(self, track, frameIndex):
+        text = "%s (%s) Frame %i of %i at %i FPS" % (self.tag, track.info.name,
+            frameIndex, len(track.animation.frames) - 1, track.info.fps)
+        pos = (10, self.debugY)
+        color = (0, 0, 0)
+        utils.drawText(self.context.overlayCanvas, text, pos, color)
+        self.debugY += utils.FONT_SIZE
 
     def play(self, infos, rest=True):
         for info in infos:

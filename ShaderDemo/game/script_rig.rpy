@@ -4,6 +4,7 @@ init python:
     import shader
 
     doll = "doll" #Image name. Also we add the .rig extension to this to find the rig file.
+    debugAnimations = False #For debugging animation frames etc.
 
     ARM_BONE = "doll base 14" #Hardcoded bone name for the rig we will be using.
 
@@ -33,7 +34,7 @@ init python:
 
     def playAnimations(context):
         #Animate all active tracks.
-        player = shader.AnimationPlayer(doll, context)
+        player = shader.AnimationPlayer(doll, context, debugAnimations)
         player.play([TRACKS[name] for name in anims])
 
 
@@ -87,6 +88,8 @@ label rig_dev:
     #"You can access the editor from the main screen and create your own rigs and animations."
     "Alright, let's play a hand waving animation."
 
+    # Enable animation debug stats and start the animation.
+    $ debugAnimations = True
     $ anims.add(WAVE)
 
     "You can wave back if you want to. Just don't do it if there are any people around you."

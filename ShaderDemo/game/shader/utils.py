@@ -1,10 +1,26 @@
 
 import renpy
+import pygame
 import os
 import math
 import ctypes
 import euclid
 from OpenGL import GL as gl
+
+FONT_SIZE = 20
+FONT = None
+
+def drawText(canvas, text, pos, color, align=-1):
+    global FONT
+    if FONT is None:
+        pygame.font.init()
+        FONT = pygame.font.Font(None, FONT_SIZE)
+
+    surface = FONT.render(text, True, color)
+    if align == 1:
+        pos = (pos[0] - surface.get_width(), pos[1])
+    canvas.get_surface().blit(surface, pos)
+    return surface.get_size()
 
 def createTransform2d():
     eye = euclid.Vector3(0, 0, 1)
