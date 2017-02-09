@@ -53,10 +53,10 @@ class AnimationData:
         self.tracks = {}
 
 class AnimationPlayer:
-    def __init__(self, tag, context, debug):
+    def __init__(self, context, tag, debug=False):
         self.context = context
-        self.debug = debug
         self.tag = tag
+        self.debug = debug
         self.debugY = 10
         fullTag = "animationPlayer-" + tag
         self.data = context.store.get(fullTag, AnimationData())

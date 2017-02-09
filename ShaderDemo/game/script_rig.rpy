@@ -3,7 +3,9 @@ init python:
     import math
     import shader
 
-    doll = "doll" #Image name. Also we add the .rig extension to this to find the rig file.
+    doll = "doll" #Image name. We add the .rig extension to this to find the rig file associated with the image.
+
+    debugRig = False #For debugging rig bones etc.
     debugAnimations = False #For debugging animation frames etc.
 
     ARM_BONE = "doll base 14" #Hardcoded bone name for the rig we will be using.
@@ -25,24 +27,44 @@ init python:
             _tag=name, _layer="master")
 
     def visualizeRig(context):
-        context.createOverlayCanvas()
-        editor = shader.SkinnedEditor(context, editorSettings)
-        editor.update()
+        if debugRig:
+            context.createOverlayCanvas()
+            context.events = [] #A trick to prevent the user from interacting with the rig.
+            editor = shader.SkinnedEditor(context, editorSettings)
+            editor.update()
+
+        #Only show the wireframes in debug mode
+        for name, bone in context.renderer.getBones().items():
+            bone.wireFrame = debugRig
 
     def animateArm(context):
-        context.renderer.bones[ARM_BONE].rotation.z = math.sin(context.shownTime) + 0.5
+        bone = context.renderer.bones[ARM_BONE]
+        targetRotation = math.sin(context.time) + 0.5 #In radians, not in degrees.
+        bone.rotation.z = shader.utils.interpolate(bone.rotation.z, targetRotation, 0.1)
+        visualizeRig(context)
 
     def playAnimations(context):
         #Animate all active tracks.
-        player = shader.AnimationPlayer(doll, context, debugAnimations)
+        player = shader.AnimationPlayer(context, doll, debugAnimations)
         player.play([TRACKS[name] for name in anims])
+        visualizeRig(context)
 
 
+#The screen for showing rigged images. It is easier to use the rig() function to show this.
 screen rigScreen(name, pixelShader, textures={}, uniforms={}, update=None, args=None, xalign=0.5, yalign=1.0):
     add ShaderDisplayable(shader.MODE_SKINNED, name, shader.VS_SKINNED, pixelShader, textures, uniforms, None, update, args):
         xalign xalign
         yalign yalign
 
+screen animationDebugScreen():
+    frame:
+        xalign 1.0
+        yalign 0.0
+        xpadding 10
+        ypadding 10
+        vbox:
+            textbutton "Animation debug" action ToggleVariable("debugAnimations")
+            textbutton "Rig debug" action ToggleVariable("debugRig")
 
 label start_rig_demo:
 
@@ -54,34 +76,34 @@ label start_rig_demo:
 
     scene room
 
-    jump rig_dev
+    #jump rig_dev
 
     "This demo will show you how to use and animate rigged and skinned images."
     #TODO Link to docs and video.
 
     "First, let's show the image itself."
 
-    $ rig(doll)
+    $ rig(doll, update=visualizeRig)
     with dissolve
 
     "It looks like a normal image because it is not being animated. Let's visualize it a bit more."
 
-    $ rig(doll, update=visualizeRig)
+    $ debugRig = True
 
     "There. Looks quite a bit more complex than a normal, static image."
     "Currently, the character is not moving. There are many ways to animate it."
     "First, we can manually force the bones to move. As an example, let's rotate the arm."
 
     $ rig(doll, update=animateArm)
-    with dissolve
 
     "Now, the arm should be moving around."
     "Animating bones manually can be useful in many cases, but it can also be tedious and error-prone."
+    "We will hide the rig debug visualization for now. It can slow things down quite a bit."
 
-label rig_dev:
+#label rig_dev:
 
+    $ debugRig = False
     $ rig(doll, update=playAnimations)
-    with dissolve
 
     #"Let's stop the manual animation and change the way we animate the rig."
     #"Next, we use an animation that has been created and saved by using the rig editor."
@@ -92,6 +114,10 @@ label rig_dev:
     $ debugAnimations = True
     $ anims.add(WAVE)
 
+    # Allow the user to toggle animation debug stats on and off
+    show screen animationDebugScreen()
+
+    "The buttons at the top right can now be used to toggle debug visualization on and off."
     "You can wave back if you want to. Just don't do it if there are any people around you."
     "Next, we remove the wave animation from the active set and the character will return to the default pose."
 
