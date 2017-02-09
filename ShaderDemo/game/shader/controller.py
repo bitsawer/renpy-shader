@@ -83,7 +83,11 @@ class ControllerContextStore:
         removal = []
         for tag, context in self.store.items():
             if context.delayFree:
-                removal.append((tag, context))
+                if tag in tagged:
+                    #Went missing for one interaction, but now it is visible again.
+                    context.delayFree = False
+                else:
+                    removal.append((tag, context))
             elif not tag in tagged and not context.persist:
                 #Not visible, free on next interaction
                 context.delayFree = True
