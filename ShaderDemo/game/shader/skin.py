@@ -28,7 +28,7 @@ class SkinnedImage:
         self.originalHeight = originalHeight
 
 class SkinningBone:
-    jsonIgnore = ["wireFrame"]
+    jsonIgnore = ["wireFrame", "gridResolution"]
 
     def __init__(self, name):
         self.name = name
@@ -46,10 +46,11 @@ class SkinningBone:
         self.blocker = False
         self.tessellate = False
         self.transparency = 0.0
-        #self.gridify = 0 #TODO Relative to image max dimension etc.?
         self.damping = 0.0
         self.points = []
         self.mesh = None
+
+        self.gridResolution = 0 #TODO See what we can do with this...
 
     def getAllChildren(self, bones, results=None):
         if not results:
@@ -89,8 +90,14 @@ class SkinningBone:
         self.points = geometry.offsetPolygon(simplified, -5) #TODO Increase this once better weighting is in?
 
     def triangulatePoints(self):
+        points = self.points[:]
+        if self.gridResolution > 0:
+            gridResolution = self.gridResolution
+            verts, uvs, indices = geometry.createGrid((0, 0, self.image.width, self.image.height), gridResolution, gridResolution)
+            points.extend(verts)
+
         pointsSegments = delaunay.ToPointsAndSegments()
-        pointsSegments.add_polygon([self.points])
+        pointsSegments.add_polygon([points])
         triangulation = delaunay.triangulate(pointsSegments.points, pointsSegments.infos, pointsSegments.segments)
 
         triangles = []

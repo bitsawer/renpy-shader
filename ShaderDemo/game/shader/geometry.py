@@ -255,7 +255,7 @@ def insidePolygon(x, y, poly):
 def _interpolate(a, b, s):
     return a + s * (b - a)
 
-def createGrid(rect, convex, xCount, yCount):
+def createGrid(rect, xCount, yCount):
     vertices = []
     uvs = []
     indices = []
