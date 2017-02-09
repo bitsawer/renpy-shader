@@ -1,8 +1,10 @@
 
+import os
 import math
 import json
 import ctypes
 
+import renpy
 import pygame
 import euclid
 import skin
@@ -24,9 +26,19 @@ ACTIVE_BONE_NAME = "activeBoneName"
 MOUSE = "mouse"
 MODE = "mode"
 
+SAVE_DIR = "rig"
+
 pygame.font.init()
 FONT_SIZE = 20
 FONT = pygame.font.Font(None, FONT_SIZE)
+
+def getSaveDir():
+    target = os.path.join(renpy.config.gamedir, SAVE_DIR)
+    try:
+        os.makedirs(target)
+    except:
+        pass
+    return target
 
 class Action:
     def start(self, editor):

@@ -139,10 +139,11 @@ screen rigEditorScreen(name, pixelShader, textures={}, uniforms={}, update=None,
 
 
 init python:
+    import os
     import shader
     from shader import skinnededitor
     from shader import skinnedanimation
-    from shader import easing
+    from shader import easing, utils
 
     editorSettings = {
         "wireframe": True,
@@ -216,10 +217,9 @@ init python:
         global rigFile
         fileName = userInput("Save rig as...", rigFile)
         if fileName:
-            if not fileName.strip().lower().endswith(".rig"):
-                fileName = fileName + ".rig"
-            editor.saveSkeletonToFile(fileName)
-            notify("Rig saved to '%s'" % fileName)
+            fileName, path = getSavePath(fileName, ".rig")
+            editor.saveSkeletonToFile(path)
+            notify("Rig saved to '%s'" % path)
             rigFile = fileName
 
     def subdivideActiveMesh(editor):
@@ -267,22 +267,32 @@ init python:
 
     def loadAnimation():
         global animFile
-        result = askListInput("Animation", shader.utils.scanForFiles(".", "anim"))
+        result = askListInput("Animation", scanForFileNames("anim"))
         if result:
             animFile = result
             notify("Loaded: '%s'" % animFile)
             updateEditor()
 
+    def scanForFileNames(extension):
+        names = list(set([n.split("/")[-1] for n in shader.utils.scanForFiles(".", extension)]))
+        names.sort()
+        return names
+
+    def getSavePath(fileName, extension):
+        if not fileName.strip().lower().endswith(extension):
+            fileName = fileName + extension
+        directory = skinnededitor.getSaveDir()
+        return fileName, os.path.join(directory, fileName)
+
     def saveAnimation(animation):
         global animFile
         fileName = userInput("Save animation as...", animation.name)
         if fileName:
-            if not fileName.strip().lower().endswith(".anim"):
-                fileName = fileName + ".anim"
+            fileName, path = getSavePath(fileName, ".anim")
             animation.name = fileName
-            skinnedanimation.saveAnimationToFile(fileName, animation)
+            skinnedanimation.saveAnimationToFile(path, animation)
             animFile = fileName
-            notify("Animation saved to '%s'" % animFile)
+            notify("Animation saved to '%s'" % path)
             updateEditor()
 
     def rigEditorUpdate(context):
@@ -354,7 +364,7 @@ label start_editor:
     if not drawableName:
         return
 
-    call screen listScreen("Load a rig", shader.utils.scanForFiles(".", "rig"), None, "Create a new rig")
+    call screen listScreen("Load a rig", scanForFileNames("rig"), None, "Create a new rig")
     $ rigFile = _return
     $ animFile = ""
 
@@ -364,7 +374,7 @@ label reset_editor:
 label update_editor:
     python:
         if animFile:
-            animation = skinnedanimation.loadAnimationFromFile(animFile)
+            animation = skinnedanimation.loadAnimationFromFile(utils.findFile(animFile))
             maxFrames = len(animation.frames)
         else:
             animation = skinnedanimation.SkinnedAnimation("untitled.anim")
@@ -372,7 +382,7 @@ label update_editor:
         frameNumber = min(frameNumber, maxFrames)
 
     call screen rigEditorScreen(drawableName, shader.PS_SKINNED, {},
-        update=rigEditorUpdate, args={"rigFile": rigFile, "persist": True}, _layer="master") #nopredict
+        update=rigEditorUpdate, args={"rigFile": utils.findFile(rigFile), "persist": True}, _layer="master") #nopredict
 
     $ shader._controllerContextStore._clear()
     return
