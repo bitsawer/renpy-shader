@@ -10,14 +10,14 @@ screen shaderScreen3d(name, create=None, update=None, uniforms={}, pixelShader=s
 init python:
     import os
     import shader
-    from shader import euclid
+    from shader import euclid, utils
 
     TAG_ROOM = "room scene"
     TAG_CUBE = "cube"
 
     def create3dCube(context):
         renderer = context.renderer
-        renderer.loadModel(TAG_CUBE, os.path.join(renpy.config.gamedir, "mesh", "cube.obj"), {})
+        renderer.loadModel(TAG_CUBE, utils.findFile("cube.obj"), {})
 
     def update3dCube(context):
         cube = context.renderer.getModel(TAG_CUBE)
@@ -30,7 +30,7 @@ init python:
         #For example showing the screen and changing the window size etc. can trigger this.
         renderer = context.renderer
         textures = {shader.TEX0: "room baked.jpg"}
-        renderer.loadModel(TAG_ROOM, os.path.join(renpy.config.gamedir, "mesh", "room.obj"), textures)
+        renderer.loadModel(TAG_ROOM, utils.findFile("room.obj"), textures)
 
     def update3dRoomScene(context):
         #This function will be called when we need to update the scene for rendering.

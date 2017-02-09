@@ -11,7 +11,7 @@ def loadObj(filename):
     uvsOut = []
     flipX = shader.config.flipMeshX
 
-    for line in open(filename, "r"):
+    for line in utils.openFile(filename):
         values = line.split()
         if values[0] == "v":
             v = map(float, values[1:4])
