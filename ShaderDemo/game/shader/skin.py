@@ -45,6 +45,7 @@ class SkinningBone:
         self.wireFrame = False
         self.blocker = False
         self.tessellate = False
+        self.transparency = 0.0
         #self.gridify = 0 #TODO Relative to image max dimension etc.?
         self.damping = 0.0
         self.points = []
@@ -186,6 +187,7 @@ def loadFromFile(path):
         bone.visible = raw["visible"]
         bone.blocker = raw["blocker"]
         bone.tessellate = raw["tessellate"]
+        bone.transparency = raw["transparency"]
         bone.damping = raw["damping"]
         bone.points = [tuple(p) for p in raw["points"]]
 

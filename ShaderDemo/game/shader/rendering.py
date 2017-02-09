@@ -273,10 +273,11 @@ class Renderer3D(BaseRenderer):
         self.shader.unbind()
 
 class BoneTransform:
-    def __init__(self, bone, matrix, damping):
+    def __init__(self, bone, matrix, damping, transparency):
         self.bone = bone
         self.matrix = matrix
         self.damping = damping
+        self.transparency = transparency
 
 class SkinnedFrameData:
     def __init__(self, time, transform):
@@ -531,7 +532,7 @@ class SkinnedRenderer(BaseRenderer):
             #No image or mesh attached
             return
 
-        if not bone.visible:
+        if not bone.visible or transform.transparency >= 1.0:
             #Nothing to draw
             return
 
@@ -556,10 +557,12 @@ class SkinnedRenderer(BaseRenderer):
         self.bindAttributeArray(self.shader, "inBoneIndices", mesh.boneIndices, 4)
 
         self.shader.uniformf("wireFrame", 0)
+        self.shader.uniformf("boneAlpha", max(1.0 - transform.transparency, 0))
         gl.glDrawElements(gl.GL_TRIANGLES, len(mesh.indices), gl.GL_UNSIGNED_INT, mesh.indices)
 
         if bone.wireFrame:
             self.shader.uniformf("wireFrame", 1)
+            self.shader.uniformf("boneAlpha", 1.0)
             gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINE)
             gl.glDrawElements(gl.GL_TRIANGLES, len(mesh.indices), gl.GL_UNSIGNED_INT, mesh.indices)
             gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL)
@@ -572,7 +575,7 @@ class SkinnedRenderer(BaseRenderer):
     def computeBoneTransforms(self):
         transforms = []
         stack = []
-        stack.append((None, euclid.Matrix4(), 0.0))
+        stack.append((None, euclid.Matrix4(), 0.0, 0.0))
         self.computeBoneTransformRecursive(self.root, transforms, stack)
         stack.pop()
         transforms.sort(key=lambda t: t.bone.zOrder)
@@ -586,8 +589,9 @@ class SkinnedRenderer(BaseRenderer):
         return transforms
 
     def computeBoneTransformRecursive(self, bone, transforms, stack):
-        transformParent = stack[-1][1]
-        transform = euclid.Matrix4() * transformParent
+        parent, parentMatrix, parentDamping, parentTransparency = stack[-1]
+
+        transform = euclid.Matrix4() * parentMatrix
 
         pivot = bone.pivot
         xMove = pivot[0]
@@ -608,9 +612,10 @@ class SkinnedRenderer(BaseRenderer):
 
         transform.translate(-xMove, -yMove, 0)
 
-        damping = max(bone.damping, stack[-1][2])
-        transforms.append(BoneTransform(bone, transform, damping))
-        stack.append((bone, transform, damping))
+        damping = max(bone.damping, parentDamping)
+        transparency = max(bone.transparency, parentTransparency)
+        transforms.append(BoneTransform(bone, transform, damping, transparency))
+        stack.append((bone, transform, damping, transparency))
 
         for childName in bone.children:
             self.computeBoneTransformRecursive(self.bones[childName], transforms, stack)

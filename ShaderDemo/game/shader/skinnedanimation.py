@@ -17,13 +17,14 @@ class KeyFrame:
         self.scale = None
         #self.zOrder = None #TODO Can't animate this efficiently, breaks vertex sorting...
         self.visible = None
-        #self.alpha = 1.0 #TODO Add this
+        self.transparency = None
 
 def copyKeyData(source, target):
     target.translation = euclid.Vector3(source.translation.x, source.translation.y, source.translation.z)
     target.rotation = euclid.Vector3(source.rotation.x, source.rotation.y, source.rotation.z)
     target.scale = euclid.Vector3(source.scale.x, source.scale.y, source.scale.z)
     target.visible = source.visible
+    target.transparency = source.transparency
 
 def interpolateKeyData(a, b, weight):
     key = KeyFrame()
@@ -31,6 +32,7 @@ def interpolateKeyData(a, b, weight):
     key.rotation = euclid.Vector3(*utils.interpolate3d(a.rotation, b.rotation, weight))
     key.scale = euclid.Vector3(*utils.interpolate3d(a.scale, b.scale, weight))
     key.visible = a.visible
+    key.transparency = utils.interpolate(a.transparency, b.transparency, weight)
     return key
 
 class Frame:
@@ -325,8 +327,10 @@ class JsonEncoder(json.JSONEncoder):
             return list(obj)
         return json.JSONEncoder.default(self, obj)
 
+DEPRECATED = []
+
 def checkJson(obj, data):
-    ignores = getattr(obj, "jsonIgnore", [])
+    ignores = getattr(obj, "jsonIgnore", []) + DEPRECATED
     for key in data:
         if not key in obj.__dict__ and key not in ignores:
             name = obj.__class__.__name__
@@ -363,6 +367,7 @@ def loadAnimationFromFile(path):
             keyFrame.rotation = euclid.Vector3(*key["rotation"])
             keyFrame.scale = euclid.Vector3(*key["scale"])
             keyFrame.visible = key["visible"]
+            keyFrame.transparency = key["transparency"]
             checkJson(keyFrame, key)
             frame.keys[name] = keyFrame
         checkJson(frame, f)

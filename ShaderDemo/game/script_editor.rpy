@@ -85,6 +85,7 @@ screen rigEditorScreen(name, pixelShader, textures={}, uniforms={}, update=None,
                     size 15
 
                 textbutton "Rename bone" action [SetVariable("renameBoneFlag", True), Jump("update_editor")]
+                textbutton "Bone transparency" action [SetVariable("boneTransparencyFlag", True), Jump("update_editor_ui")]
                 textbutton "Subdivide mesh" action [SetVariable("subdivideMesh", True), Jump("update_editor")]
                 textbutton "Reset pose" action [SetVariable("resetPoseFlag", True), Jump("update_editor")]
 
@@ -169,6 +170,7 @@ init python:
     loadAnimationFlag = False
     saveAnimationFlag = False
     pauseTimeFlag = False
+    boneTransparencyFlag = False
 
     frameNumber = 0
     frameNumberLast = -1
@@ -250,6 +252,21 @@ init python:
         else:
             notify("No bone selected")
 
+    def setBoneAlpha(editor):
+        active = editor.getActiveBone()
+        if active:
+            try:
+                old = str(int(round(active.transparency * 100.0)))
+                transparency = float(userInput("Set transparency (0 to 100)", old, allow=list("1234567890")))
+                if transparency >= 0 and transparency <= 100:
+                    active.transparency = transparency / 100.0
+                else:
+                    notify("Value not in range")
+            except:
+                notify("Error")
+        else:
+            notify("No bone selected")
+
     def setActiveEasing(editor, animation):
         active = editor.getActiveBone()
         if active:
@@ -297,7 +314,8 @@ init python:
 
     def rigEditorUpdate(context):
         global saveRig, subdivideMesh, renameBoneFlag, resetPoseFlag, showEasingsFlag, \
-            newAnimationFlag, loadAnimationFlag, saveAnimationFlag, frameNumberLast
+            newAnimationFlag, loadAnimationFlag, saveAnimationFlag, frameNumberLast, \
+            boneTransparencyFlag
 
         context.createOverlayCanvas()
 
@@ -329,6 +347,10 @@ init python:
             resetPoseFlag = False
             editor.resetPose()
             notify("Pose reset")
+
+        if boneTransparencyFlag:
+            boneTransparencyFlag = False
+            setBoneAlpha(editor)
 
         if showEasingsFlag:
             showEasingsFlag = False
@@ -381,6 +403,7 @@ label update_editor:
             maxFrames = 60 * 2
         frameNumber = min(frameNumber, maxFrames)
 
+label update_editor_ui:
     call screen rigEditorScreen(drawableName, shader.PS_SKINNED, {},
         update=rigEditorUpdate, args={"rigFile": utils.findFile(rigFile), "persist": True}, _layer="master") #nopredict
 
