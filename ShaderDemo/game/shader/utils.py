@@ -1,4 +1,5 @@
 
+import renpy
 import os
 import math
 import ctypes
@@ -116,9 +117,23 @@ def scanForFiles(path, extension):
     for root, folders, files in os.walk(path):
         for f in files:
             if f.split(".")[-1].lower() == extension.lower():
-                results.append(os.path.join(root, f))
+                match = os.path.join(root, f).replace("\\", "/")
+                game = "/game/"
+                cut = match.lower().find(game)
+                if cut != -1:
+                    match = match[cut + len(game):]
+                results.append(match)
     results.sort()
     return results
+
+def findFile(name):
+    for f in renpy.exports.list_files():
+        if f.split("/")[-1] == name:
+            return f
+    return None
+
+def openFile(path):
+    return renpy.exports.file(path)
 
 class Shader:
     def __init__(self, vsCode, psCode):

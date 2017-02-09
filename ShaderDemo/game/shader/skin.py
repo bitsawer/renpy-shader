@@ -7,6 +7,7 @@ import euclid
 import geometry
 import delaunay
 import skinnedmesh
+import utils
 
 VERSION = 1
 MAX_BONES = 64
@@ -159,7 +160,7 @@ def _getArray(tp, obj, key):
 
 def loadFromFile(path):
     data = None
-    with open(path, "r") as f:
+    with utils.openFile(path) as f:
         data = json.load(f)
 
     if data["version"] != VERSION:

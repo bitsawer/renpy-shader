@@ -363,7 +363,7 @@ def saveAnimationToFile(path, animation):
 
 def loadAnimationFromFile(path):
     data = None
-    with open(path, "r") as f:
+    with utils.openFile(path) as f:
         data = json.load(f)
 
     if data["version"] != VERSION:

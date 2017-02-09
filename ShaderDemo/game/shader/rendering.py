@@ -296,6 +296,9 @@ class SkinnedRenderer(BaseRenderer):
         self.blackTexture = None
         self.oldFrameData = {}
 
+    def getBones(self):
+        return self.bones
+
     def init(self, image, vertexShader, pixeShader, args):
         self.shader = utils.Shader(vertexShader.replace("MAX_BONES", str(skin.MAX_BONES)), pixeShader)
 
