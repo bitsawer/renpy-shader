@@ -466,6 +466,7 @@ class SkinnedEditor:
             bone.scale = euclid.Vector3(1.0, 1.0, 1.0)
             bone.rotation = euclid.Vector3(0.0, 0.0, 0.0)
             bone.visible = True
+            bone.transparency = 0.0
 
     def handleEvents(self):
         self.mouse = self.get(MOUSE)
