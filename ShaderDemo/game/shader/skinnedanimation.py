@@ -11,7 +11,7 @@ DEFAULT_EASING = "backOut"
 
 class KeyFrame:
     def __init__(self):
-        self.pivot = None #TODO Can affect weight calculation...
+        #self.pivot = None #TODO Can affect weight calculations
         self.translation = None
         self.rotation = None
         self.scale = None
@@ -20,35 +20,16 @@ class KeyFrame:
         #self.alpha = 1.0 #TODO Add this
 
 def copyKeyData(source, target):
-    target.pivot = (source.pivot[0], source.pivot[1])
     target.translation = euclid.Vector3(source.translation.x, source.translation.y, source.translation.z)
     target.rotation = euclid.Vector3(source.rotation.x, source.rotation.y, source.rotation.z)
     target.scale = euclid.Vector3(source.scale.x, source.scale.y, source.scale.z)
-    #target.zOrder = source.zOrder
     target.visible = source.visible
-
-def keyDataChanged(a, b):
-    if a.pivot != b.pivot:
-        return True
-    if a.translation != b.translation:
-        return True
-    if a.rotation != b.rotation:
-        return True
-    if a.scale != b.scale:
-        return True
-    #if a.zOrder != b.zOrder:
-    #    return True
-    if a.visible != b.visible:
-        return True
-    return False
 
 def interpolateKeyData(a, b, weight):
     key = KeyFrame()
-    key.pivot = utils.interpolate2d(a.pivot, b.pivot, weight)
     key.translation = euclid.Vector3(*utils.interpolate3d(a.translation, b.translation, weight))
     key.rotation = euclid.Vector3(*utils.interpolate3d(a.rotation, b.rotation, weight))
     key.scale = euclid.Vector3(*utils.interpolate3d(a.scale, b.scale, weight))
-    #key.zOrder = a.zOrder
     key.visible = a.visible
     return key
 
@@ -378,7 +359,6 @@ def loadAnimationFromFile(path):
         frame = Frame()
         for name, key in f["keys"].items():
             keyFrame = KeyFrame()
-            keyFrame.pivot = tuple(key["pivot"])
             keyFrame.translation = euclid.Vector3(*key["translation"])
             keyFrame.rotation = euclid.Vector3(*key["rotation"])
             keyFrame.scale = euclid.Vector3(*key["scale"])
