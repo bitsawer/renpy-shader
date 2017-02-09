@@ -321,7 +321,7 @@ class SkinnedRenderer(BaseRenderer):
 
         self.loadInfluenceImages()
 
-    def updateMeshes(self, autosubdivide=False):
+    def updateMeshes(self, autoSubdivide=False, sizeSubdivide=0):
         transforms = self.computeBoneTransforms()
         for transform in transforms:
             bone = transform.bone
@@ -329,8 +329,10 @@ class SkinnedRenderer(BaseRenderer):
                 tris = bone.triangulatePoints()
                 bone.updateMeshFromTriangles(tris)
                 bone.mesh.moveVertices(bone.pos)
-                if autosubdivide:
+                if autoSubdivide:
                     bone.mesh.subdivideAdaptive(transforms)
+                if sizeSubdivide > 50:
+                    bone.mesh.subdivide(sizeSubdivide)
 
     def updateBones(self):
         self.oldFrameData = {}

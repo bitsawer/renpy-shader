@@ -72,14 +72,13 @@ screen rigEditorScreen(name, pixelShader, textures={}, uniforms={}, update=None,
                 textbutton "Pause wind" action ToggleVariable("pauseTimeFlag", True, False)
                 textbutton "Disable dragging" action ToggleDict(editorSettings, "disableDrag")
                 textbutton "Debug animate" action ToggleDict(editorSettings, "debugAnimate")
-                textbutton "Autotessellate" action ToggleDict(editorSettings, "autoSubdivide")
 
                 text "Operations":
                     size 15
 
                 textbutton "Rename bone" action [SetVariable("renameBoneFlag", True), Jump("update_editor")]
                 textbutton "Bone transparency" action [SetVariable("boneTransparencyFlag", True), Jump("update_editor_ui")]
-                textbutton "Subdivide mesh" action [SetVariable("subdivideMesh", True), Jump("update_editor")]
+                textbutton "Mesh tesselation" action [SetVariable("tesselationFlag", True), Jump("update_editor")]
                 textbutton "Reset pose" action [SetVariable("resetPoseFlag", True), Jump("update_editor")]
 
                 text "File":
@@ -146,8 +145,8 @@ init python:
         "pivots": True,
         "names": False,
         "debugAnimate": False,
-        "autoSubdivide": True,
         "disableDrag": False,
+        "tesselation": 0
     }
 
     drawableName = ""
@@ -155,7 +154,7 @@ init python:
     animFile = ""
 
     saveRig = False
-    subdivideMesh = False
+    tesselationFlag = False
     renameBoneFlag = False
     resetPoseFlag = False
     showEasingsFlag = False
@@ -182,6 +181,9 @@ init python:
     def userInput(prompt, *args, **kwargs):
         #TODO Exclude invalid characters...
         return renpy.invoke_in_new_context(renpy.input, prompt, *args, **kwargs)
+
+    def numberInput(text, old):
+        return userInput(text, old, allow=list("1234567890"))
 
     def notify(text):
         renpy.notify(text)
@@ -217,19 +219,14 @@ init python:
             notify("Rig saved to '%s'" % path)
             rigFile = fileName
 
-    def subdivideActiveMesh(editor):
-        if editorSettings["autoSubdivide"]:
-            notify("Disable auto subdivision first")
-            return
-
-        active = editor.getActiveBone()
-        if active and active.mesh:
-            if editor.subdivide(active, 500):
-                notify("Subdivision done")
-            else:
-                notify("Subdivision not possible")
-        else:
-            notify("No mesh bone selected")
+    def setTesselation(editor):
+        try:
+            size = int(numberInput("Minimum tesselation pixel size (0 to disable)", editorSettings["tesselation"]))
+            editorSettings["tesselation"] = size
+            editor.updateBones()
+            notify("Set tesselation to %i" % size)
+        except:
+            notify("Error")
 
     def renameActiveBone(editor, animation):
         active = editor.getActiveBone()
@@ -306,7 +303,7 @@ init python:
             updateEditor()
 
     def rigEditorUpdate(context):
-        global saveRig, subdivideMesh, renameBoneFlag, resetPoseFlag, showEasingsFlag, \
+        global saveRig, tesselationFlag, renameBoneFlag, resetPoseFlag, showEasingsFlag, \
             newAnimationFlag, loadAnimationFlag, saveAnimationFlag, frameNumberLast, \
             boneTransparencyFlag
 
@@ -328,9 +325,9 @@ init python:
             animation.drawDebugText(editor, frameNumber)
             animation.drawDebugKeyFrames(editor, frameNumber)
 
-        if subdivideMesh:
-            subdivideMesh = False
-            subdivideActiveMesh(editor)
+        if tesselationFlag:
+            tesselationFlag = False
+            setTesselation(editor)
 
         if renameBoneFlag:
             renameBoneFlag = False

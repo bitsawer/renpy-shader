@@ -451,7 +451,7 @@ class SkinnedEditor:
             self.updateBones()
 
     def updateBones(self):
-        self.context.renderer.updateMeshes(self.settings["autoSubdivide"])
+        self.context.renderer.updateMeshes(True, self.settings["tesselation"])
         self.context.renderer.updateBones()
 
     def setBoneZOrder(self, bone, newZ):
