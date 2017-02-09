@@ -1,18 +1,21 @@
 
 init python:
     import math
-    from shader import skinnededitor
-    from shader import skinnedplayer
+    import shader
 
-    ARM_BONE = "doll base 14"
+    doll = "doll" #Image name. Also we add the .rig extension to this to find the rig file.
+
+    ARM_BONE = "doll base 14" #Hardcoded bone name for the rig we will be using.
+
+    #Indirection to make sure animation track information is not stored by saving the game.
+    #Makes things easier to update after releasing the game. Note that if you
+    #rename, delete etc. animations make sure you still keep the entries for them
+    #in here if you want to support old save games.
     IDLE = "breath"
     WAVE = "wave"
-
-    #Indirection to make sure track information is not stored by saving the game.
-    #Makes updating things after releasing the game easier.
     TRACKS = {
-        IDLE: skinnedplayer.TrackInfo(IDLE),
-        WAVE: skinnedplayer.TrackInfo(WAVE),
+        IDLE: shader.TrackInfo("breath.anim"),
+        WAVE: shader.TrackInfo("wave.anim", repeat=True, cyclic=True, autoEnd=0),
     }
 
     def rig(name, update=None, xalign=0.5, yalign=1.0):
@@ -22,14 +25,15 @@ init python:
 
     def visualizeRig(context):
         context.createOverlayCanvas()
-        editor = skinnededitor.SkinnedEditor(context, editorSettings)
+        editor = shader.SkinnedEditor(context, editorSettings)
         editor.update()
 
     def animateArm(context):
         context.renderer.bones[ARM_BONE].rotation.z = math.sin(context.shownTime) + 0.5
 
     def playAnimations(context):
-        player = skinnedplayer.AnimationPlayer(context)
+        #Animate all active tracks.
+        player = shader.AnimationPlayer(doll, context)
         player.play([TRACKS[name] for name in anims])
 
 
@@ -42,6 +46,7 @@ screen rigScreen(name, pixelShader, textures={}, uniforms={}, update=None, args=
 label start_rig_demo:
 
     # Active animation set. The update function uses this to play animations contained in the set.
+    # If you use multiple rigs, each one should have its own set of active animations.
     $ anims = set()
 
     #TODO Add a toggle button to visualize skeleton
@@ -55,18 +60,18 @@ label start_rig_demo:
 
     "First, let's show the image itself."
 
-    $ rig("doll")
+    $ rig(doll)
     with dissolve
 
     "It looks like a normal image because it is not being animated. Let's visualize it a bit more."
 
-    $ rig("doll", update=visualizeRig)
+    $ rig(doll, update=visualizeRig)
 
     "There. Looks quite a bit more complex than a normal, static image."
     "Currently, the character is not moving. There are many ways to animate it."
     "First, we can manually force the bones to move. As an example, let's rotate the arm."
 
-    $ rig("doll", update=animateArm)
+    $ rig(doll, update=animateArm)
     with dissolve
 
     "Now, the arm should be moving around."
@@ -74,7 +79,7 @@ label start_rig_demo:
 
 label rig_dev:
 
-    $ rig("doll", update=playAnimations)
+    $ rig(doll, update=playAnimations)
     with dissolve
 
     #"Let's stop the manual animation and change the way we animate the rig."

@@ -7,26 +7,44 @@ import utils
 FPS = 30.0
 
 class TrackInfo:
-    def __init__(self, name, repeat=False):
+    def __init__(self, name, repeat=False, cyclic=False, reverse=False, autoEnd=False):
         self.name = name
         self.repeat = repeat
-        self.reverse = False
-        self.autoEnd = False
+        self.cyclic = cyclic
+        self.reverse = reverse
+        self.autoEnd = autoEnd
 
 class Track:
     def __init__(self, info, startTime):
         self.info = info
         self.startTime = startTime
-        self.animation = skinnedanimation.loadAnimationFromFile(utils.findFile(info.name + ".anim"))
+        self.animation = skinnedanimation.loadAnimationFromFile(utils.findFile(info.name))
 
     def getFrameIndex(self, currentTime):
         delta = currentTime - self.startTime
-        frames = self.animation.frames
-        frameCount = len(frames)
-        return min(frameCount - 1, int(round(delta * FPS)))
+        return int(round(delta * FPS))
+
+    def getFrameIndexClamped(self, currentTime):
+        index = self.getFrameIndex(currentTime)
+        frameCount = len(self.animation.frames)
+        return min(frameCount - 1, index)
+
+    def getFrameIndexRepeat(self, currentTime):
+        index = self.getFrameIndex(currentTime)
+        return index % len(self.animation.frames)
+
+    def getFrameIndexCyclic(self, currentTime):
+        index = self.getFrameIndex(currentTime)
+        frameCount = len(self.animation.frames)
+        reversing = (index // frameCount) % 2
+        realIndex = index % frameCount
+        if reversing:
+            return frameCount - realIndex
+        else:
+            return realIndex
 
     def isAtEnd(self, currentTime):
-        index = self.getFrameIndex(currentTime)
+        index = self.getFrameIndexClamped(currentTime)
         lastFrame = len(self.animation.frames) - 1
         return index >= lastFrame
 
@@ -35,10 +53,11 @@ class AnimationData:
         self.tracks = {}
 
 class AnimationPlayer:
-    def __init__(self, context):
+    def __init__(self, tag, context):
         self.context = context
-        self.data = context.store.get("animationPlayer", AnimationData())
-        context.store["animationPlayer"] = self.data
+        fullTag = "animationPlayer-" + tag
+        self.data = context.store.get(fullTag, AnimationData())
+        context.store[fullTag] = self.data
 
     def getTime(self):
         return self.context.time
@@ -57,7 +76,17 @@ class AnimationPlayer:
             self.updateTrack(track)
 
     def updateTrack(self, track):
-        frameIndex = track.getFrameIndex(self.getTime())
+        currentTime =  self.getTime()
+        if track.info.autoEnd and track.isAtEnd(currentTime):
+            return
+
+        if track.info.cyclic:
+            frameIndex = track.getFrameIndexCyclic(currentTime)
+        elif track.info.repeat:
+            frameIndex = track.getFrameIndexRepeat(currentTime)
+        else:
+            frameIndex = track.getFrameIndexClamped(currentTime)
+
         #TODO apply should return the changes. then mix them together
         track.animation.apply(frameIndex, self.context.renderer.getBones()) #TODO Bakes every time...
 
