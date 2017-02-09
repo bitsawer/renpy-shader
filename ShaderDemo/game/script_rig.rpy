@@ -16,7 +16,7 @@ init python:
     WAVE = "wave"
     TRACKS = {
         IDLE: shader.TrackInfo("breath.anim"),
-        WAVE: shader.TrackInfo("wave.anim", repeat=True, cyclic=True, autoEnd=False),
+        WAVE: shader.TrackInfo("wave.anim", repeat=False, cyclic=True, reverse=False, autoEnd=False),
     }
 
     def rig(name, update=None, xalign=0.5, yalign=1.0):

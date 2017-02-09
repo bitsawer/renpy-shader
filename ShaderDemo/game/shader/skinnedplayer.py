@@ -94,6 +94,9 @@ class AnimationPlayer:
         else:
             frameIndex = track.getFrameIndexClamped(currentTime)
 
+        if track.info.reverse:
+            frameIndex = (len(track.animation.frames) - 1) - frameIndex
+
         #TODO apply should return the changes. then mix them together
         track.animation.apply(frameIndex, self.context.renderer.getBones()) #TODO Bakes every time...
 
