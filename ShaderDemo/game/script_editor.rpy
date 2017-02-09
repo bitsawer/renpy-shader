@@ -1,13 +1,6 @@
 
-image doll = LiveComposite(
-    (800, 1000),
-    (0, 0), "doll base.png",
-    (249, 318), "doll skirt.png",
-    #(0, 0), "doll lforearm.png",
-    #(0, 0), "doll larm.png",
-    #(0, 0), "doll lhand.png",
-    (0, 0), "doll hair.png",
-)
+#Rig editor. As a normal user you don't have to understand anything in this file,
+#but this can prove useful if you want to learn how the internals work.
 
 screen listScreen(title, items, current=None, cancel=None):
     modal True

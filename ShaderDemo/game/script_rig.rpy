@@ -1,4 +1,16 @@
 
+#Our live composite that has also a .rig-file created for it. If the system can't show the rigged
+#image (too old hardware etc.) this will be used as a fallback.
+image doll = LiveComposite(
+    (800, 1000),
+    (0, 0), "doll base.png",
+    (249, 318), "doll skirt.png",
+    #(0, 0), "doll lforearm.png",
+    #(0, 0), "doll larm.png",
+    #(0, 0), "doll lhand.png",
+    (0, 0), "doll hair.png",
+)
+
 init python:
     import math
     import shader
