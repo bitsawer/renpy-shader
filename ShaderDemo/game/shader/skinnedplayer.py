@@ -21,15 +21,7 @@ class Track:
         self.startTime = startTime
         self.animation = skinnedanimation.loadAnimationFromFile(utils.findFile(info.name))
         if self.info.clip:
-            self.clipAnimation()
-
-    def clipAnimation(self):
-        i = len(self.animation.frames) - 1
-        while i > 0:
-            if len(self.animation.frames[i].keys) != 0:
-                break
-            i -= 1
-        self.animation.frames = self.animation.frames[:i + 1]
+            self.animation.clipEnd()
 
     def getFrameIndex(self, currentTime):
         delta = (currentTime - self.startTime) * self.info.speed

@@ -58,13 +58,14 @@ class BoneData:
         self.easing = DEFAULT_EASING
 
 class SkinnedAnimation:
-    jsonIgnore = ["dirty"]
+    jsonIgnore = ["dirty", "baked"]
 
     def __init__(self, name):
         self.name = name
         self.frames = [Frame()]
         self.boneData = {}
-        self.dirty = False
+        self.dirty = True
+        self.baked = None
 
     def isRepeating(self, name):
         data = self.boneData.get(name)
@@ -286,24 +287,26 @@ class SkinnedAnimation:
 
         return start, end
 
-    def debugBake(self, editor):
-        baked = self.bakeFrames()
-        x = 400
-        y = 10
-        for i, frame in enumerate(baked):
-            for name, key in frame.keys.items():
-                editor.drawText("Baked: %s - %s" % (i, name), (0, 0, 0), (x, y))
-                y += 20
+    def clipEnd(self):
+        i = len(self.frames) - 1
+        while i > 0:
+            if len(self.frames[i].keys) != 0:
+                break
+            i -= 1
+        self.frames = self.frames[:i + 1]
+        self.dirty = True
 
     def apply(self, frameNumber, bones):
+        if self.dirty or not self.baked:
+            self.baked = self.bakeFrames()
+
         self.dirty = False
 
-        baked = self.bakeFrames()
         for name, bone in bones.items():
-            start, end = self.findKeyFrameRange(baked, frameNumber, bone.name)
+            start, end = self.findKeyFrameRange(self.baked, frameNumber, bone.name)
             if start is not None and end is not None:
-                startKey = baked[start].keys[name]
-                endKey = baked[end].keys[name]
+                startKey = self.baked[start].keys[name]
+                endKey = self.baked[end].keys[name]
                 if startKey == endKey:
                     copyKeyData(startKey, bone)
                 else:
