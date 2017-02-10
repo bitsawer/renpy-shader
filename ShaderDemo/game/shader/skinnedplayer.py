@@ -42,7 +42,7 @@ class Track:
         reversing = (index // frameCount) % 2
         realIndex = index % frameCount
         if reversing:
-            return frameCount - realIndex
+            return (frameCount - 1) - realIndex
         else:
             return realIndex
 

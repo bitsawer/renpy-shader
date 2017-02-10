@@ -333,6 +333,17 @@ class SkinnedAnimation:
                         weight = float(frameNumber - start) / (end - start)
                         eased = easing.getEasing(self.getEasing(bone.name))(weight)
                         results[name] = interpolateKeyData(startKey, endKey, eased)
+                elif start is not None:
+                    key = KeyFrame()
+                    copyKeyData(frames[start].keys[name], key)
+                    results[name] = key
+                elif end is not None:
+                    key = KeyFrame()
+                    copyKeyData(frames[end].keys[name], key)
+                    results[name] = key
+                else:
+                    raise RuntimeError("Invalid animation frame: %s, %i of %i" % (self.name, frameNumber, len(frames)))
+
         return results
 
     def apply(self, keys, bones):
