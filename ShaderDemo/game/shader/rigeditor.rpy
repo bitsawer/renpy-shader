@@ -12,7 +12,7 @@ style edit_button_text:
     properties gui.button_text_properties("quick_button")
     size 20
 
-screen listScreen(title, items, current=None, cancel=None):
+screen editorListScreen(title, items, current=None, cancel=None):
     modal True
     frame:
         xalign 0.5
@@ -68,7 +68,7 @@ screen rigEditorScreen(name, pixelShader, textures={}, uniforms={}, update=None,
                 spacing 5
                 #xmaximum 150
                 #xminimum 150
-                text rigFile:
+                text editorRigFile:
                     size 15
                     color "ff0"
 
@@ -84,17 +84,17 @@ screen rigEditorScreen(name, pixelShader, textures={}, uniforms={}, update=None,
                 text "Modes":
                     size 15
 
-                textbutton "Pause wind" action ToggleVariable("pauseTimeFlag", True, False)
+                textbutton "Pause wind" action ToggleVariable("editorPauseTimeFlag", True, False)
                 textbutton "Disable dragging" action ToggleDict(editorSettings, "disableDrag")
                 textbutton "Debug animate" action ToggleDict(editorSettings, "debugAnimate")
 
                 text "Operations":
                     size 15
 
-                textbutton "Rename bone" action [SetVariable("renameBoneFlag", True), Jump("update_editor")]
-                textbutton "Bone transparency" action [SetVariable("boneTransparencyFlag", True), Jump("update_editor_ui")]
-                #textbutton "Mesh tesselation" action [SetVariable("tesselationFlag", True), Jump("update_editor")] TODO Use levels?
-                textbutton "Reset pose" action [SetVariable("resetPoseFlag", True), Jump("update_editor")]
+                textbutton "Rename bone" action [SetVariable("editorRenameBoneFlag", True), Jump("update_editor")]
+                textbutton "Bone transparency" action [SetVariable("editorBoneTransparencyFlag", True), Jump("update_editor_ui")]
+                #textbutton "Mesh tesselation" action [SetVariable("editorTesselationFlag", True), Jump("update_editor")] TODO Use levels?
+                textbutton "Reset pose" action [SetVariable("editorResetPoseFlag", True), Jump("update_editor")]
 
                 text "File":
                     size 15
@@ -102,7 +102,7 @@ screen rigEditorScreen(name, pixelShader, textures={}, uniforms={}, update=None,
                 textbutton "Reload" action Confirm("Are you sure you want to reload?", Jump("reset_editor"))
                 #textbutton "Save" action Confirm("Are you sure you want to save?", Function(editSave))
                 textbutton "Load rig" action Confirm("Are you sure you want to load another rig?", Jump("start_editor"))
-                textbutton "Save rig" action SetVariable("saveRig", True)
+                textbutton "Save rig" action SetVariable("editorSaveRigFlag", True)
 
 
     drag:
@@ -118,35 +118,35 @@ screen rigEditorScreen(name, pixelShader, textures={}, uniforms={}, update=None,
                 style_prefix "edit"
                 spacing 5
 
-                text animation.name:
+                text editorAnimation.name:
                     size 15
                     color "ff0"
 
                 text "Operations":
                     size 15
 
-                textbutton "Easing" action SetVariable("showEasingsFlag", True)
+                textbutton "Easing" action SetVariable("editorShowEasingsFlag", True)
 
                 text "File":
                     size 15
 
-                textbutton "New animation" action Confirm("Create a new animation?", SetVariable("newAnimationFlag", True))
-                textbutton "Load animation" action SetVariable("loadAnimationFlag", True)
-                textbutton "Save animation" action SetVariable("saveAnimationFlag", True)
+                textbutton "New animation" action Confirm("Create a new animation?", SetVariable("editorNewAnimationFlag", True))
+                textbutton "Load animation" action SetVariable("editorLoadAnimationFlag", True)
+                textbutton "Save animation" action SetVariable("editorSaveAnimationFlag", True)
 
     frame:
         yalign 1.0
         hbox:
             spacing 10
-            $ playText = "||" if framePlay else ">>"
-            textbutton "Frame: %i" % frameNumber yalign 0.5 xsize 150 action Function(changeFrameCount)
-            textbutton "<" yalign 0.5 keysym "j" action SetVariable("frameNumber", max(frameNumber - 1, 0))
-            textbutton playText yalign 0.5 xsize 50 keysym "k" action SetVariable("framePlay", not framePlay)
-            textbutton ">" yalign 0.5 keysym "l" action SetVariable("frameNumber", min(frameNumber + 1, maxFrames))
+            $ playText = "||" if editorPlayAnimation else ">>"
+            textbutton "Frame: %i" % editorFrameNumber yalign 0.5 xsize 150 action Function(changeFrameCount)
+            textbutton "<" yalign 0.5 keysym "j" action SetVariable("editorFrameNumber", max(editorFrameNumber - 1, 0))
+            textbutton playText yalign 0.5 xsize 50 keysym "k" action SetVariable("editorPlayAnimation", not editorPlayAnimation)
+            textbutton ">" yalign 0.5 keysym "l" action SetVariable("editorFrameNumber", min(editorFrameNumber + 1, editorMaxFrames))
 
-            timer 1.0 / shader.config.fps repeat True action If(framePlay, SetVariable("frameNumber", (frameNumber + 1) % (maxFrames + 1)), NullAction())
+            timer 1.0 / shader.config.fps repeat True action If(editorPlayAnimation, SetVariable("editorFrameNumber", (editorFrameNumber + 1) % (editorMaxFrames + 1)), NullAction())
 
-            bar value VariableValue("frameNumber", maxFrames)
+            bar value VariableValue("editorFrameNumber", editorMaxFrames)
 
 
 init python:
@@ -167,25 +167,26 @@ init python:
         "tesselation": 0
     }
 
-    drawableName = ""
-    rigFile = ""
-    animFile = ""
+    editorDrawableName = ""
+    editorRigFile = ""
+    editorAnimFile = ""
+    editorAnimation = None
 
-    saveRig = False
-    tesselationFlag = False
-    renameBoneFlag = False
-    resetPoseFlag = False
-    showEasingsFlag = False
-    newAnimationFlag = False
-    loadAnimationFlag = False
-    saveAnimationFlag = False
-    pauseTimeFlag = False
-    boneTransparencyFlag = False
+    editorSaveRigFlag = False
+    editorTesselationFlag = False
+    editorRenameBoneFlag = False
+    editorResetPoseFlag = False
+    editorShowEasingsFlag = False
+    editorNewAnimationFlag = False
+    editorLoadAnimationFlag = False
+    editorSaveAnimationFlag = False
+    editorPauseTimeFlag = False
+    editorBoneTransparencyFlag = False
 
-    frameNumber = 0
-    frameNumberLast = -1
-    framePlay = False
-    maxFrames = 1
+    editorFrameNumber = 0
+    editorFrameNumberLast = -1
+    editorPlayAnimation = False
+    editorMaxFrames = 1
 
     def clearKeymapForEditor():
         #Remove mappings that would conflict with our editor
@@ -207,7 +208,7 @@ init python:
         renpy.notify(text)
 
     def _askListInputContext(*args):
-        return renpy.call_screen("listScreen", *args)
+        return renpy.call_screen("editorListScreen", *args)
 
     def askListInput(title, items, current=None, cancel=None):
         return renpy.invoke_in_new_context(_askListInputContext, title, items, current, cancel)
@@ -219,23 +220,23 @@ init python:
         renpy.jump("update_editor")
 
     def changeFrameCount():
-        global maxFrames, frameNumber
+        global editorMaxFrames, editorFrameNumber
         try:
-            count = eval(userInput("Set animation end frame", str(maxFrames), allow=list("1234567890*/+-")))
+            count = eval(userInput("Set animation end frame", str(editorMaxFrames), allow=list("1234567890*/+-")))
             if count > 0 and count < 10000:
-                maxFrames = count
-                frameNumber = min(frameNumber, maxFrames)
+                editorMaxFrames = count
+                editorFrameNumber = min(editorFrameNumber, editorMaxFrames)
         except:
             pass
 
     def saveRigFile(editor):
-        global rigFile
-        fileName = userInput("Save rig as...", rigFile)
+        global editorRigFile
+        fileName = userInput("Save rig as...", editorRigFile)
         if fileName:
             fileName, path = getSavePath(fileName, ".rig")
             editor.saveSkeletonToFile(path)
             notify("Rig saved to '%s'" % path)
-            rigFile = fileName
+            editorRigFile = fileName
 
     def setTesselation(editor):
         try:
@@ -285,17 +286,17 @@ init python:
             notify("No bone selected")
 
     def newAnimation():
-        global animFile
-        animFile = ""
+        global editorAnimFile
+        editorAnimFile = ""
         notify("New animation")
         updateEditor()
 
     def loadAnimation():
-        global animFile
+        global editorAnimFile
         result = askListInput("Animation", scanForFileNames("anim"))
         if result:
-            animFile = result
-            notify("Loaded: '%s'" % animFile)
+            editorAnimFile = result
+            notify("Loaded: '%s'" % editorAnimFile)
             updateEditor()
 
     def scanForFileNames(extension):
@@ -310,8 +311,8 @@ init python:
         return fileName, os.path.join(directory, fileName)
 
     def saveAnimation(animation):
-        global animFile
-        rigBase = rigFile.rsplit(".", 1)[0]
+        global editorAnimFile
+        rigBase = editorRigFile.rsplit(".", 1)[0]
         name = animation.name
         if not name.startswith(rigBase):
             name = rigBase + " " + name
@@ -321,14 +322,14 @@ init python:
             fileName, path = getSavePath(fileName, ".anim")
             animation.name = fileName
             skinnedanimation.saveAnimationToFile(path, animation)
-            animFile = fileName
+            editorAnimFile = fileName
             notify("Animation saved to '%s'" % path)
             updateEditor()
 
     def rigEditorUpdate(context):
-        global saveRig, tesselationFlag, renameBoneFlag, resetPoseFlag, showEasingsFlag, \
-            newAnimationFlag, loadAnimationFlag, saveAnimationFlag, frameNumberLast, \
-            boneTransparencyFlag
+        global editorSaveRigFlag, editorTesselationFlag, editorRenameBoneFlag, editorResetPoseFlag, editorShowEasingsFlag, \
+            editorNewAnimationFlag, editorLoadAnimationFlag, editorSaveAnimationFlag, editorFrameNumberLast, \
+            editorBoneTransparencyFlag
 
         context.createOverlayCanvas()
 
@@ -336,58 +337,58 @@ init python:
         editor.update()
         editor.visualizeBones()
 
-        animation.setFrameCount(maxFrames + 1)
-        animation.update(frameNumber, editor)
-        if frameNumberLast != frameNumber or animation.dirty:
-            frameNumberLast = frameNumber
-            keys = animation.interpolate(frameNumber, editor.getBones())
-            animation.apply(keys, editor.getBones())
+        editorAnimation.setFrameCount(editorMaxFrames + 1)
+        editorAnimation.update(editorFrameNumber, editor)
+        if editorFrameNumberLast != editorFrameNumber or editorAnimation.dirty:
+            editorFrameNumberLast = editorFrameNumber
+            keys = editorAnimation.interpolate(editorFrameNumber, editor.getBones())
+            editorAnimation.apply(keys, editor.getBones())
 
         if editorSettings["debugAnimate"]:
             editor.debugAnimate(True)
 
         if editorSettings["pivots"]:
-            animation.drawDebugText(editor, frameNumber)
-            animation.drawDebugKeyFrames(editor, frameNumber)
+            editorAnimation.drawDebugText(editor, editorFrameNumber)
+            editorAnimation.drawDebugKeyFrames(editor, editorFrameNumber)
 
-        if tesselationFlag:
-            tesselationFlag = False
+        if editorTesselationFlag:
+            editorTesselationFlag = False
             setTesselation(editor)
 
-        if renameBoneFlag:
-            renameBoneFlag = False
-            renameActiveBone(editor, animation)
+        if editorRenameBoneFlag:
+            editorRenameBoneFlag = False
+            renameActiveBone(editor, editorAnimation)
 
-        if resetPoseFlag:
-            resetPoseFlag = False
+        if editorResetPoseFlag:
+            editorResetPoseFlag = False
             editor.resetPose()
             notify("Pose reset")
 
-        if boneTransparencyFlag:
-            boneTransparencyFlag = False
+        if editorBoneTransparencyFlag:
+            editorBoneTransparencyFlag = False
             setBoneAlpha(editor)
 
-        if showEasingsFlag:
-            showEasingsFlag = False
-            setActiveEasing(editor, animation)
+        if editorShowEasingsFlag:
+            editorShowEasingsFlag = False
+            setActiveEasing(editor, editorAnimation)
 
-        if newAnimationFlag:
-            newAnimationFlag = False
+        if editorNewAnimationFlag:
+            editorNewAnimationFlag = False
             newAnimation()
 
-        if loadAnimationFlag:
-            loadAnimationFlag = False
+        if editorLoadAnimationFlag:
+            editorLoadAnimationFlag = False
             loadAnimation()
 
-        if saveAnimationFlag:
-            saveAnimationFlag = False
-            saveAnimation(animation)
+        if editorSaveAnimationFlag:
+            editorSaveAnimationFlag = False
+            saveAnimation(editorAnimation)
 
-        if saveRig:
-            saveRig = False
+        if editorSaveRigFlag:
+            editorSaveRigFlag = False
             saveRigFile(editor)
 
-        if pauseTimeFlag:
+        if editorPauseTimeFlag:
             context.uniforms["shownTime"] = 1.0
             context.uniforms["animationTime"] = 1.0
 
@@ -407,32 +408,32 @@ label start_editor:
         if "quick_menu" in config.overlay_screens:
             config.overlay_screens.remove("quick_menu")
 
-    call screen listScreen("Select an Image or a LiveComposite", listImageTags())
-    $ drawableName = _return
+    call screen editorListScreen("Select an Image or a LiveComposite", listImageTags())
+    $ editorDrawableName = _return
 
-    if not drawableName:
+    if not editorDrawableName:
         return
 
-    call screen listScreen("Load a rig for the image", scanForFileNames("rig"), None, "Create a new rig")
-    $ rigFile = _return
-    $ animFile = ""
+    call screen editorListScreen("Load a rig for the image", scanForFileNames("rig"), None, "Create a new rig")
+    $ editorRigFile = _return
+    $ editorAnimFile = ""
 
 label reset_editor:
     $ shader._controllerContextStore._clear()
 
 label update_editor:
     python:
-        if animFile:
-            animation = skinnedanimation.loadAnimationFromFile(utils.findFile(animFile))
-            maxFrames = len(animation.frames)
+        if editorAnimFile:
+            editorAnimation = skinnedanimation.loadAnimationFromFile(utils.findFile(editorAnimFile))
+            editorMaxFrames = len(editorAnimation.frames)
         else:
-            animation = skinnedanimation.SkinnedAnimation("untitled.anim")
-            maxFrames = 60 * 2
-        frameNumber = min(frameNumber, maxFrames)
+            editorAnimation = skinnedanimation.SkinnedAnimation("untitled.anim")
+            editorMaxFrames = 60 * 2
+        editorFrameNumber = min(editorFrameNumber, editorMaxFrames)
 
 label update_editor_ui:
-    call screen rigEditorScreen(drawableName, shader.PS_SKINNED, {},
-        update=rigEditorUpdate, args={"rigFile": utils.findFile(rigFile), "persist": True}, _layer="master") #nopredict
+    call screen rigEditorScreen(editorDrawableName, shader.PS_SKINNED, {},
+        update=rigEditorUpdate, args={"rigFile": utils.findFile(editorRigFile), "persist": True}, _layer="master") #nopredict
 
     $ shader._controllerContextStore._clear()
     return
