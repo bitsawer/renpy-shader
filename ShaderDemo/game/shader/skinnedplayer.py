@@ -101,7 +101,9 @@ class AnimationPlayer:
             frameIndex = (len(track.animation.frames) - 1) - frameIndex
 
         #TODO apply should return the changes. then mix them together
-        track.animation.apply(frameIndex, self.context.renderer.getBones()) #TODO Bakes every time...
+        bones = self.context.renderer.getBones()
+        keys = track.animation.interpolate(frameIndex, bones)
+        track.animation.apply(keys, bones)
 
         self.debugDraw(track, frameIndex)
 

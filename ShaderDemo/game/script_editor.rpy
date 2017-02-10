@@ -340,7 +340,8 @@ init python:
         animation.update(frameNumber, editor)
         if frameNumberLast != frameNumber or animation.dirty:
             frameNumberLast = frameNumber
-            animation.apply(frameNumber, editor.getBones())
+            keys = animation.interpolate(frameNumber, editor.getBones())
+            animation.apply(keys, editor.getBones())
 
         if editorSettings["debugAnimate"]:
             editor.debugAnimate(True)

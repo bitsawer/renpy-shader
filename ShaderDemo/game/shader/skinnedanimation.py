@@ -297,11 +297,12 @@ class SkinnedAnimation:
         self.frames = self.frames[:i + 1]
         self.dirty = True
 
-    def apply(self, frameNumber, bones):
+    def interpolate(self, frameNumber, bones):
         if self.dirty or not self.baked:
             self.baked = self.bakeFrames()
         self.dirty = False
 
+        results = {}
         frames, keyBones = self.baked
         for name, bone in bones.items():
             if name in keyBones:
@@ -310,12 +311,19 @@ class SkinnedAnimation:
                     startKey = frames[start].keys[name]
                     endKey = frames[end].keys[name]
                     if startKey == endKey:
-                        copyKeyData(startKey, bone)
+                        key = KeyFrame()
+                        copyKeyData(startKey, key)
+                        results[name] = key
                     else:
                         weight = float(frameNumber - start) / (end - start)
                         eased = easing.getEasing(self.getEasing(bone.name))(weight)
-                        key = interpolateKeyData(startKey, endKey, eased)
-                        copyKeyData(key, bone)
+                        results[name] = interpolateKeyData(startKey, endKey, eased)
+        return results
+
+    def apply(self, keys, bones):
+        for name, key in keys.items():
+            if name in bones:
+                copyKeyData(key, bones[name])
 
 
 class JsonEncoder(json.JSONEncoder):
