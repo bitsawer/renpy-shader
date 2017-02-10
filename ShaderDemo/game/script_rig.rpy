@@ -28,9 +28,11 @@ init python:
     #in here if you want to support old save games.
     IDLE = "breath"
     WAVE = "wave"
+    HAND = "hand"
     TRACKS = {
         IDLE: shader.TrackInfo("breath.anim"),
         WAVE: shader.TrackInfo("wave.anim", repeat=False, cyclic=True, reverse=False, autoEnd=False),
+        HAND: shader.TrackInfo("doll handmove.anim", cyclic=True),
     }
 
     def visualizeRig(context):
@@ -131,7 +133,7 @@ label start_rig_demo:
 
     "Back to where we started from."
 
-    $ anims.update([IDLE, WAVE])
+    $ anims.update([IDLE, WAVE, HAND])
 
     #TODO Multiple animations
     #TODO Animations with code manipulation

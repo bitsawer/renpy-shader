@@ -81,14 +81,23 @@ class AnimationPlayer:
     def updateAnimations(self):
         tracks = list(self.data.tracks.values())
         tracks.sort(key=lambda t: t.info.name)
+
+        mix = {}
         for track in tracks:
-            self.updateTrack(track)
+            keys = self.updateTrack(track)
+            if keys:
+                for name, key in keys.items():
+                    d = mix.get(name, [])
+                    d.append((track, key))
+                    mix[name] = d
+
+        self.mixTrackKeys(mix)
 
     def updateTrack(self, track):
         currentTime =  self.getTime()
         if track.info.autoEnd and track.isAtEnd(currentTime):
             self.debugDraw(track, "(Autoend)")
-            return
+            return None
 
         if track.info.cyclic:
             frameIndex = track.getFrameIndexCyclic(currentTime)
@@ -100,12 +109,21 @@ class AnimationPlayer:
         if track.info.reverse:
             frameIndex = (len(track.animation.frames) - 1) - frameIndex
 
-        #TODO apply should return the changes. then mix them together
-        bones = self.context.renderer.getBones()
-        keys = track.animation.interpolate(frameIndex, bones)
-        track.animation.apply(keys, bones)
+        keys = track.animation.interpolate(frameIndex, self.context.renderer.getBones())
 
         self.debugDraw(track, frameIndex)
+
+        return keys
+
+    def mixTrackKeys(self, mix):
+        bones = self.context.renderer.getBones()
+        for name, bone in bones.items():
+            data = mix.get(name)
+            if data:
+                #weights = [len(data) for d in data]
+                keys = [d[1] for d in data]
+                mixed = skinnedanimation.mixKeyDatas(keys)
+                skinnedanimation.copyKeyData(mixed, bone)
 
     def debugDraw(self, track, frameIndex):
         if self.debug:

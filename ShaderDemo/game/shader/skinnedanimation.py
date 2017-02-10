@@ -35,6 +35,21 @@ def interpolateKeyData(a, b, weight):
     key.transparency = utils.interpolate(a.transparency, b.transparency, weight)
     return key
 
+def mixKeyDatas(keys):
+    result = KeyFrame()
+    result.translation = euclid.Vector3(0, 0, 0)
+    result.rotation = euclid.Vector3(0, 0, 0)
+    result.scale = euclid.Vector3(1, 1, 1)
+    result.visible = False
+    result.transparency = 0.0
+    for key in keys:
+        result.translation = result.translation + key.translation
+        result.rotation = result.rotation + key.rotation
+        result.scale = result.scale + euclid.Vector3(key.scale.x - 1, key.scale.y - 1, key.scale.z - 1)
+        result.visible = result.visible and key.visible
+        result.transparency = result.transparency + key.transparency
+    return result
+
 class Frame:
     def __init__(self):
         self.keys = {}
