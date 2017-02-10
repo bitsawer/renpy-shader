@@ -5,13 +5,14 @@ import euclid
 import utils
 
 class TrackInfo:
-    def __init__(self, name, repeat=False, cyclic=False, reverse=False, autoEnd=False, clip=False, speed=1.0, fps=30):
+    def __init__(self, name, repeat=False, cyclic=False, reverse=False, autoEnd=False, clip=False, weight=1.0, speed=1.0, fps=30):
         self.name = name
         self.repeat = repeat
         self.cyclic = cyclic
         self.reverse = reverse
         self.autoEnd = autoEnd
         self.clip = clip
+        self.weight = weight
         self.speed = speed
         self.fps = float(fps)
 
@@ -120,9 +121,9 @@ class AnimationPlayer:
         for name, bone in bones.items():
             data = mix.get(name)
             if data:
-                #weights = [len(data) for d in data]
+                weights = [d[0].info.weight for d in data]
                 keys = [d[1] for d in data]
-                mixed = skinnedanimation.mixKeyDatas(keys)
+                mixed = skinnedanimation.mixKeys(keys, weights)
                 skinnedanimation.copyKeyData(mixed, bone)
 
     def debugDraw(self, track, frameIndex):
