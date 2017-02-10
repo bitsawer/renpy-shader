@@ -68,7 +68,9 @@ screen rigEditorScreen(name, pixelShader, textures={}, uniforms={}, update=None,
                 spacing 5
                 #xmaximum 150
                 #xminimum 150
-                text "Rig: " + name
+                text rigFile:
+                    size 15
+                    color "ff0"
 
                 text "Visual":
                     size 15
@@ -91,7 +93,7 @@ screen rigEditorScreen(name, pixelShader, textures={}, uniforms={}, update=None,
 
                 textbutton "Rename bone" action [SetVariable("renameBoneFlag", True), Jump("update_editor")]
                 textbutton "Bone transparency" action [SetVariable("boneTransparencyFlag", True), Jump("update_editor_ui")]
-                textbutton "Mesh tesselation" action [SetVariable("tesselationFlag", True), Jump("update_editor")]
+                #textbutton "Mesh tesselation" action [SetVariable("tesselationFlag", True), Jump("update_editor")] TODO Use levels?
                 textbutton "Reset pose" action [SetVariable("resetPoseFlag", True), Jump("update_editor")]
 
                 text "File":
@@ -116,7 +118,9 @@ screen rigEditorScreen(name, pixelShader, textures={}, uniforms={}, update=None,
                 style_prefix "edit"
                 spacing 5
 
-                text animation.name
+                text animation.name:
+                    size 15
+                    color "ff0"
 
                 text "Operations":
                     size 15
@@ -164,7 +168,7 @@ init python:
     }
 
     drawableName = ""
-    rigFile = "bones.rig"
+    rigFile = ""
     animFile = ""
 
     saveRig = False
@@ -295,7 +299,7 @@ init python:
             updateEditor()
 
     def scanForFileNames(extension):
-        names = list(set([n.split("/")[-1] for n in shader.utils.scanForFiles(".", extension)]))
+        names = list(set([n.split("/")[-1] for n in shader.utils.scanForFiles(extension)]))
         names.sort()
         return names
 
@@ -307,7 +311,12 @@ init python:
 
     def saveAnimation(animation):
         global animFile
-        fileName = userInput("Save animation as...", animation.name)
+        rigBase = rigFile.rsplit(".", 1)[0]
+        name = animation.name
+        if not name.startswith(rigBase):
+            name = rigBase + " " + name
+
+        fileName = userInput("Save animation as...", name)
         if fileName:
             fileName, path = getSavePath(fileName, ".anim")
             animation.name = fileName
@@ -390,9 +399,13 @@ init python:
 
 #label main_menu: #TODO For fast testing
 label start_editor:
-    $ clearKeymapForEditor()
+    python:
+        clearKeymapForEditor()
+        #Removes the quick menu permanently...
+        if "quick_menu" in config.overlay_screens:
+            config.overlay_screens.remove("quick_menu")
 
-    call screen listScreen("Image or LiveComposite to be rigged", listImageTags())
+    call screen listScreen("Select an Image or a LiveComposite", listImageTags())
     $ drawableName = _return
 
     if not drawableName:

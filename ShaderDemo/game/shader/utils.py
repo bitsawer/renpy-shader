@@ -128,22 +128,32 @@ def getTexParameteriv(glTex, param):
     gl.glGetTexLevelParameteriv(gl.GL_TEXTURE_2D, 0, param, ctypes.byref(result))
     return result.value
 
-def scanForFiles(path, extension):
+def listFiles():
     results = []
-    for root, folders, files in os.walk(path):
+    for root, dirs, files in os.walk(renpy.config.gamedir):
+        dirs[:] = [d for d in dirs if not d[0] == "."] #Ignore dot directories
         for f in files:
-            if f.split(".")[-1].lower() == extension.lower():
-                match = os.path.join(root, f).replace("\\", "/")
-                game = "/game/"
-                cut = match.lower().find(game)
-                if cut != -1:
-                    match = match[cut + len(game):]
-                results.append(match)
+            match = os.path.join(root, f).replace("\\", "/")
+            results.append(match)
+    results.sort()
+    return results
+
+def scanForFiles(extension):
+    results = []
+    for f in listFiles():
+        if f.split(".")[-1].lower() == extension.lower():
+            results.append(f)
     results.sort()
     return results
 
 def findFile(name):
+    #First try fast and bundle supporting listing
     for f in renpy.exports.list_files():
+        if f.split("/")[-1] == name:
+            return f
+
+    #Scan all game directories
+    for f in listFiles():
         if f.split("/")[-1] == name:
             return f
     return None
