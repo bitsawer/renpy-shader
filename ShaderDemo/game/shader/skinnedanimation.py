@@ -194,7 +194,7 @@ class SkinnedAnimation:
         for frame in self.frames:
             for name in frame.keys:
                 bones.add(name)
-        return list(bones)
+        return bones
 
     def renameBone(self, oldName, newName):
         for frame in self.frames:
@@ -231,7 +231,8 @@ class SkinnedAnimation:
         for frame in self.frames:
             baked.append(frame.copy())
 
-        for name in self.getKeyBones():
+        keyBones = self.getKeyBones()
+        for name in keyBones:
             boneFrames = self.getBoneKeyFrames(name)
 
             if len(boneFrames) > 1 and self.isReversed(name):
@@ -264,7 +265,7 @@ class SkinnedAnimation:
                     if end is not None:
                         copyKeyData(self.frames[end].keys[name], baked[len(baked) - 1].getBoneKey(name))
 
-        return baked
+        return baked, keyBones
 
     def findKeyFrameRange(self, frames, frameNumber, boneName):
         start = None
@@ -299,21 +300,22 @@ class SkinnedAnimation:
     def apply(self, frameNumber, bones):
         if self.dirty or not self.baked:
             self.baked = self.bakeFrames()
-
         self.dirty = False
 
+        frames, keyBones = self.baked
         for name, bone in bones.items():
-            start, end = self.findKeyFrameRange(self.baked, frameNumber, bone.name)
-            if start is not None and end is not None:
-                startKey = self.baked[start].keys[name]
-                endKey = self.baked[end].keys[name]
-                if startKey == endKey:
-                    copyKeyData(startKey, bone)
-                else:
-                    weight = float(frameNumber - start) / (end - start)
-                    eased = easing.getEasing(self.getEasing(bone.name))(weight)
-                    key = interpolateKeyData(startKey, endKey, eased)
-                    copyKeyData(key, bone)
+            if name in keyBones:
+                start, end = self.findKeyFrameRange(frames, frameNumber, bone.name)
+                if start is not None and end is not None:
+                    startKey = frames[start].keys[name]
+                    endKey = frames[end].keys[name]
+                    if startKey == endKey:
+                        copyKeyData(startKey, bone)
+                    else:
+                        weight = float(frameNumber - start) / (end - start)
+                        eased = easing.getEasing(self.getEasing(bone.name))(weight)
+                        key = interpolateKeyData(startKey, endKey, eased)
+                        copyKeyData(key, bone)
 
 
 class JsonEncoder(json.JSONEncoder):
