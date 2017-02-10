@@ -334,6 +334,7 @@ init python:
 
         editor = skinnededitor.SkinnedEditor(context, editorSettings)
         editor.update()
+        editor.visualizeBones()
 
         animation.setFrameCount(maxFrames + 1)
         animation.update(frameNumber, editor)

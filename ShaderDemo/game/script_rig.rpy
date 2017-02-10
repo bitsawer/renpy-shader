@@ -41,9 +41,8 @@ init python:
     def visualizeRig(context):
         if debugRig:
             context.createOverlayCanvas()
-            context.events = [] #A trick to prevent the user from interacting with the rig.
             editor = shader.SkinnedEditor(context, editorSettings)
-            editor.update()
+            editor.visualizeBones()
 
         #Only show the wireframes in debug mode
         for name, bone in context.renderer.getBones().items():
