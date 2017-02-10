@@ -146,7 +146,7 @@ screen rigEditorScreen(name, pixelShader, textures={}, uniforms={}, update=None,
 
             timer 1.0 / shader.config.fps repeat True action If(framePlay, SetVariable("frameNumber", (frameNumber + 1) % (maxFrames + 1)), NullAction())
 
-            bar value VariableValue("frameNumber", maxFrames - 1)
+            bar value VariableValue("frameNumber", maxFrames)
 
 
 init python:
@@ -221,7 +221,7 @@ init python:
     def changeFrameCount():
         global maxFrames, frameNumber
         try:
-            count = eval(userInput("Set animation frame count", str(maxFrames), allow=list("1234567890*/+-")))
+            count = eval(userInput("Set animation end frame", str(maxFrames), allow=list("1234567890*/+-")))
             if count > 0 and count < 10000:
                 maxFrames = count
                 frameNumber = min(frameNumber, maxFrames)
