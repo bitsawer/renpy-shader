@@ -33,11 +33,6 @@ init python:
         WAVE: shader.TrackInfo("wave.anim", repeat=False, cyclic=True, reverse=False, autoEnd=False),
     }
 
-    def rig(name, update=None, xalign=0.5, yalign=1.0):
-        renpy.show_screen("rigScreen", name, shader.PS_SKINNED,
-            update=update, args={"rigFile": shader.utils.findFile(name + ".rig")}, xalign=xalign, yalign=yalign,
-            _tag=name, _layer="master")
-
     def visualizeRig(context):
         if debugRig:
             context.createOverlayCanvas()
@@ -61,7 +56,7 @@ init python:
         visualizeRig(context)
 
 
-#The screen for showing rigged images. It is easier to use the rig() function to show this.
+#The screen for showing rigged images. It is usually best to use the rig() function which will show this.
 screen rigScreen(name, pixelShader, textures={}, uniforms={}, update=None, args=None, xalign=0.5, yalign=1.0):
     add ShaderDisplayable(shader.MODE_SKINNED, name, shader.VS_SKINNED, pixelShader, textures, uniforms, None, update, args):
         xalign xalign

@@ -29,6 +29,23 @@ init python:
             renpy.with_statement(fade)
             return CallChain
 
+    def rig(image, update=None, xalign=0.5, yalign=1.0, layer=None):
+        rigFile = image + ".rig"
+        path = shader.utils.findFile(rigFile)
+        if not path:
+            raise RuntimeError("No .rig-file '%s' found for image '%s'" % (rigFile, image))
+
+        base = image.split(" ")[0] #For example "amy dress smile" would turn into "amy"
+        active = findLayer(image, layer)
+
+        hide(image, layer=active)
+
+        renpy.show_screen("rigScreen", image, shader.PS_SKINNED,
+            update=update, args={"rigFile": path}, xalign=xalign, yalign=yalign,
+            _tag=base, _layer=active)
+        renpy.show_layer_at([], layer=active) #Stop any animations
+        return CallChain
+
     def show(image, pixelShader=shader.PS_WIND_2D, uniforms={}, update=None, xalign=0.5, yalign=0.1, layer=None):
         #TODO use **kwargs and pass them to show_screen...
         base = image.split(" ")[0] #For example "amy dress smile" would turn into "amy"
