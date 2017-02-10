@@ -5,20 +5,31 @@ import euclid
 import utils
 
 class TrackInfo:
-    def __init__(self, name, repeat=False, cyclic=False, reverse=False, autoEnd=False, speed=1.0, fps=30):
+    def __init__(self, name, repeat=False, cyclic=False, reverse=False, autoEnd=False, clip=False, speed=1.0, fps=30):
         self.name = name
-        self.speed = speed
-        self.fps = float(fps)
         self.repeat = repeat
         self.cyclic = cyclic
         self.reverse = reverse
         self.autoEnd = autoEnd
+        self.clip = clip
+        self.speed = speed
+        self.fps = float(fps)
 
 class Track:
     def __init__(self, info, startTime):
         self.info = info
         self.startTime = startTime
         self.animation = skinnedanimation.loadAnimationFromFile(utils.findFile(info.name))
+        if self.info.clip:
+            self.clipAnimation()
+
+    def clipAnimation(self):
+        i = len(self.animation.frames) - 1
+        while i > 0:
+            if len(self.animation.frames[i].keys) != 0:
+                break
+            i -= 1
+        self.animation.frames = self.animation.frames[:i + 1]
 
     def getFrameIndex(self, currentTime):
         delta = (currentTime - self.startTime) * self.info.speed
