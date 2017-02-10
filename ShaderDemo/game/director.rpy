@@ -5,10 +5,13 @@ init python:
     def findLayer(image, layer):
         if layer:
             return layer
-        base = image.split(" ")[0]
+        base = getImageBase(image)
         if base in config.layers:
             return base
         return "master"
+
+    def getImageBase(image):
+        return image.split(" ")[0] #For example "amy dress smile" would turn into "amy"
 
     #Helper utilities for making showing and managing shader displayables easier.
     #This assumes a certain convention for naming your character sprites.
@@ -35,20 +38,17 @@ init python:
         if not path:
             raise RuntimeError("No .rig-file '%s' found for image '%s'" % (rigFile, image))
 
-        base = image.split(" ")[0] #For example "amy dress smile" would turn into "amy"
         active = findLayer(image, layer)
-
         hide(image, layer=active)
 
         renpy.show_screen("rigScreen", image, shader.PS_SKINNED,
             update=update, args={"rigFile": path}, xalign=xalign, yalign=yalign,
-            _tag=base, _layer=active)
+            _tag=getImageBase(image), _layer=active)
         renpy.show_layer_at([], layer=active) #Stop any animations
         return CallChain
 
     def show(image, pixelShader=shader.PS_WIND_2D, uniforms={}, update=None, xalign=0.5, yalign=0.1, layer=None):
         #TODO use **kwargs and pass them to show_screen...
-        base = image.split(" ")[0] #For example "amy dress smile" would turn into "amy"
         active = findLayer(image, layer)
 
         textures = None
@@ -65,13 +65,12 @@ init python:
 
         renpy.show_screen("shaderScreen", image, pixelShader, textures,
             uniforms=uniforms, update=update, xalign=xalign, yalign=yalign,
-            _tag=base, _layer=active)
+            _tag=getImageBase(image), _layer=active)
         renpy.show_layer_at([], layer=active) #Stop any animations
         return CallChain
 
     def hide(image, layer=None):
-        base = image.split(" ")[0]
-        renpy.hide_screen(base, layer=findLayer(image, layer))
+        renpy.hide_screen(getImageBase(image), layer=findLayer(image, layer))
         return CallChain
 
     def warp(image, xalign=0.5, yalign=0.1, layer=None):
