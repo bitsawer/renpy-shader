@@ -139,7 +139,6 @@ class SkinnedAnimation:
                         self.dirty = True
 
     def drawDebugText(self, editor, frameNumber):
-        height = 20
         color = skinnededitor.HEADER_COLOR
         align = 1
         x = editor.context.renderer.getSize()[0] - 10
@@ -147,12 +146,10 @@ class SkinnedAnimation:
 
         active = editor.getActiveBone()
         if active:
-            editor.drawText("Keyframes", color, (x, y), align)
-            y += height
+            y += editor.drawText("Keyframes", color, (x, y), align)[1]
             for i, frame in enumerate(self.frames):
                 if active.name in frame.keys:
-                    editor.drawText("%i" % i, (0, 0, 0), (x, y), align)
-                    y += height
+                    y += editor.drawText("%i" % i, (0, 0, 0), (x, y), align)[1]
         else:
             for i, frame in enumerate(self.frames):
                 if frame.keys: # i > 0 and
@@ -160,11 +157,9 @@ class SkinnedAnimation:
                     if i == frameNumber:
                         frameColor = skinnededitor.ACTIVE_COLOR
 
-                    editor.drawText("Frame %i" % i, frameColor, (x, y), align)
-                    y += height
+                    y += editor.drawText("Frame %i" % i, frameColor, (x, y), align)[1]
                     for name, key in frame.keys.items():
-                        editor.drawText("%s" % name, (0, 0, 0), (x, y), align)
-                        y += height
+                        y += editor.drawText("%s" % name, (0, 0, 0), (x, y), align)[1]
 
     def drawDebugKeyFrames(self, editor, frameNumber):
         keyframes = set()

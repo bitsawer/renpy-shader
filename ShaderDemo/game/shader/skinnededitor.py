@@ -391,7 +391,7 @@ class SkinnedEditor:
                 bone.rotation.z = 0.0
 
     def drawText(self, text, color, pos, align=-1):
-        utils.drawText(self.context.overlayCanvas, text, pos, color, align)
+        return utils.drawText(self.context.overlayCanvas, text, pos, color, align)
 
     def subdivide(self, bone, minSize):
         if bone.mesh and not self.settings["autoSubdivide"]:
@@ -771,17 +771,13 @@ class SkinnedEditor:
         name = bone.name
         if bone.mesh:
             name += " (%i polygons, %i vertices)" % (len(bone.mesh.indices) // 3, len(bone.mesh.vertices) // 2)
-        self.drawText(name, HEADER_COLOR, (x, y))
-        y += utils.FONT_SIZE
+        y += self.drawText(name, HEADER_COLOR, (x, y))[1]
 
-        self.drawText("Translation: (%.1f, %.1f)" % (bone.translation.x,  bone.translation.y), color, (x, y))
-        y += utils.FONT_SIZE
+        y += self.drawText("Translation: (%.1f, %.1f)" % (bone.translation.x,  bone.translation.y), color, (x, y))[1]
 
         degrees = tuple([math.degrees(d) for d in (bone.rotation.x,  bone.rotation.y,  bone.rotation.z)])
-        self.drawText("Rotation:      (%.1f, %.1f, %.1f)" % degrees, color, (x, y))
-        y += utils.FONT_SIZE
+        y += self.drawText("Rotation:      (%.1f, %.1f, %.1f)" % degrees, color, (x, y))[1]
 
-        self.drawText("Scale:          (%.1f, %.1f, %.1f)" % (bone.scale.x,  bone.scale.y,  bone.scale.z), color, (x, y))
-        y += utils.FONT_SIZE
+        y += self.drawText("Scale:          (%.1f, %.1f, %.1f)" % (bone.scale.x,  bone.scale.y,  bone.scale.z), color, (x, y))[1]
 
         self.drawText("Z-order:       %i" % bone.zOrder, color, (x, y))

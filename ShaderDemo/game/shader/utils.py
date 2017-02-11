@@ -10,13 +10,13 @@ from OpenGL import GL as gl
 FONT_SIZE = 18
 FONT = None
 
-def drawText(canvas, text, pos, color, align=-1):
+def drawText(canvas, text, pos, color, align=-1, background=(128, 128, 128)):
     global FONT
     if FONT is None:
         pygame.font.init()
         FONT = pygame.font.Font(None, FONT_SIZE)
 
-    surface = FONT.render(text, True, color)
+    surface = FONT.render(text, True, color, background)
     if align == 1:
         pos = (pos[0] - surface.get_width(), pos[1])
     canvas.get_surface().blit(surface, pos)
