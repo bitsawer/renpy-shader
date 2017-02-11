@@ -298,7 +298,7 @@ screen navigation():
         style_prefix "navigation"
 
         xpos gui.navigation_xpos
-        yalign 0.2
+        yalign 0.3
 
         spacing gui.navigation_spacing
 
@@ -308,6 +308,7 @@ screen navigation():
             textbutton _("Start Rig Demo") action Start("start_rig_demo")
             if renpy.config.developer:
                 textbutton _("Start Rig Editor") action Start("start_editor")
+                textbutton _("Reset window") action Function(renpy.reset_physical_size)
             null height 50
 
         else:

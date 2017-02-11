@@ -12,6 +12,8 @@ style edit_button_text:
     properties gui.button_text_properties("quick_button")
     size 20
 
+image editorBackground = LiveTile("editorbackground.png")
+
 screen editorListScreen(title, items, current=None, cancel=None):
     modal True
     frame:
@@ -417,10 +419,21 @@ label start_editor:
         if "quick_menu" in config.overlay_screens:
             config.overlay_screens.remove("quick_menu")
 
+    scene
+    show editorBackground
+
     call screen editorListScreen("Select an Image or a LiveComposite", listImageTags())
     $ editorDrawableName = _return
     if not editorDrawableName:
         return
+
+    python:
+        renpy.show(editorDrawableName)
+        bounds = renpy.get_image_bounds(editorDrawableName)
+        config.screen_width = max(bounds[2] + 500, 1280)
+        config.screen_height = max(bounds[3] + 150, 720)
+        renpy.hide(editorDrawableName)
+        renpy.reset_physical_size()
 
     call screen editorListScreen("Load a rig for the image", scanForFileNames("rig"), None, "Create a new rig")
     $ editorRigFile = _return
