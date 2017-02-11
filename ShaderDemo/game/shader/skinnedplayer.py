@@ -5,7 +5,8 @@ import euclid
 import utils
 
 class TrackInfo:
-    def __init__(self, name, repeat=False, cyclic=False, reverse=False, autoEnd=False, clip=False, weight=1.0, speed=1.0, fps=30):
+    def __init__(self, name, repeat=False, cyclic=False, reverse=False, autoEnd=False,
+            clip=False, weight=1.0, speed=1.0, fps=30, easingOverride=None):
         self.name = name
         self.repeat = repeat
         self.cyclic = cyclic
@@ -15,6 +16,7 @@ class TrackInfo:
         self.weight = weight
         self.speed = speed
         self.fps = float(fps)
+        self.easingOverride = easingOverride
 
 class Track:
     def __init__(self, info, startTime):
@@ -120,7 +122,7 @@ class AnimationPlayer:
         if track.info.reverse:
             frameIndex = (len(track.animation.frames) - 1) - frameIndex
 
-        keys = track.animation.interpolate(frameIndex, self.context.renderer.getBones())
+        keys = track.animation.interpolate(frameIndex, self.context.renderer.getBones(), track.info.easingOverride)
 
         self.debugDraw(track, frameIndex)
 
@@ -140,8 +142,8 @@ class AnimationPlayer:
         if self.debug:
             self.context.createOverlayCanvas()
             #TODO Also tell how many keys reference missing bones
-            text = "%s (%s) FPS: %i, Speed: %.1f, Frame %s / %i" % (self.tag, track.info.name,
-                track.info.fps, track.info.speed, frameIndex, len(track.animation.frames) - 1)
+            text = "%s (%s) Speed: %.1f, Frame %s / %i" % (self.tag, track.info.name,
+                track.info.speed, frameIndex, len(track.animation.frames) - 1)
             pos = (10, self.debugY)
             color = (0, 0, 0)
             utils.drawText(self.context.overlayCanvas, text, pos, color)

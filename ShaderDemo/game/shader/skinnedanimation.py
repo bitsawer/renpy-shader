@@ -7,7 +7,7 @@ import utils
 import skinnededitor
 import easing
 
-DEFAULT_EASING = "backOut"
+DEFAULT_EASING = "backInOut"
 
 class KeyFrame:
     def __init__(self):
@@ -313,7 +313,7 @@ class SkinnedAnimation:
         self.dirty = True
         return len(self.frames)
 
-    def interpolate(self, frameNumber, bones):
+    def interpolate(self, frameNumber, bones, easingOverride=None):
         if self.dirty or not self.baked:
             self.baked = self.bakeFrames()
         self.dirty = False
@@ -332,7 +332,10 @@ class SkinnedAnimation:
                         results[name] = key
                     else:
                         weight = float(frameNumber - start) / (end - start)
-                        eased = easing.getEasing(self.getEasing(bone.name))(weight)
+                        boneEasing = easingOverride
+                        if not boneEasing:
+                            boneEasing = self.getEasing(bone.name)
+                        eased = easing.getEasing(boneEasing)(weight)
                         results[name] = interpolateKeyData(startKey, endKey, eased)
                 elif start is not None:
                     key = KeyFrame()

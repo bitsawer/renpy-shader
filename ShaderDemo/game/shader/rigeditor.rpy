@@ -215,11 +215,11 @@ init python:
 
     editorPlayTrack = False
     editorTrackSettings = {
-        "repeat": True,
-        "cyclic": False,
+        "repeat": False,
+        "cyclic": True,
         "reverse": False,
         "autoEnd": False,
-        "clip": False,
+        "clip": True,
     }
 
     def clearKeymapForEditor():
@@ -384,7 +384,7 @@ init python:
         editorAnimation.update(editorFrameNumber, editor)
 
         if editorPlayTrack:
-            player = shader.AnimationPlayer(context, "editorPlayer", editorWasReset)
+            player = shader.AnimationPlayer(context, "Player", editorWasReset)
             player.setDebug(editorShowFrameInfo)
             player.play([shader.TrackInfo(editorAnimation.name, **editorTrackSettings)])
             editorWasReset = False
