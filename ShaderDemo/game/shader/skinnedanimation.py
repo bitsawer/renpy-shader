@@ -140,7 +140,7 @@ class SkinnedAnimation:
 
     def drawDebugText(self, editor, frameNumber):
         height = 20
-        color = (0, 255, 0)
+        color = skinnededitor.HEADER_COLOR
         align = 1
         x = editor.context.renderer.getSize()[0] - 10
         y = 10
@@ -156,7 +156,11 @@ class SkinnedAnimation:
         else:
             for i, frame in enumerate(self.frames):
                 if frame.keys: # i > 0 and
-                    editor.drawText("Frame %i" % i, color, (x, y), align)
+                    frameColor = color
+                    if i == frameNumber:
+                        frameColor = skinnededitor.ACTIVE_COLOR
+
+                    editor.drawText("Frame %i" % i, frameColor, (x, y), align)
                     y += height
                     for name, key in frame.keys.items():
                         editor.drawText("%s" % name, (0, 0, 0), (x, y), align)

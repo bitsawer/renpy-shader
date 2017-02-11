@@ -7,7 +7,7 @@ import ctypes
 import euclid
 from OpenGL import GL as gl
 
-FONT_SIZE = 20
+FONT_SIZE = 18
 FONT = None
 
 def drawText(canvas, text, pos, color, align=-1):

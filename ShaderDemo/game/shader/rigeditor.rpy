@@ -143,9 +143,9 @@ screen editorMainScreen(name, pixelShader, textures={}, uniforms={}, update=None
             spacing 10
             $ playText = "||" if editorPlayAnimation else ">>"
             textbutton "Frame: %i" % editorFrameNumber yalign 0.5 xsize 150 action Function(changeFrameCount)
-            textbutton "<" yalign 0.5 keysym "j" action SetVariable("editorFrameNumber", max(editorFrameNumber - 1, 0))
+            textbutton "<" yalign 0.5 keysym "j" action SetVariable("editorFrameNumber", (editorMaxFrames -1 if editorFrameNumber - 1 < 0 else editorFrameNumber - 1))
             textbutton playText yalign 0.5 xsize 50 keysym "k" action SetVariable("editorPlayAnimation", not editorPlayAnimation)
-            textbutton ">" yalign 0.5 keysym "l" action SetVariable("editorFrameNumber", min(editorFrameNumber + 1, editorMaxFrames - 1))
+            textbutton ">" yalign 0.5 keysym "l" action SetVariable("editorFrameNumber", (editorFrameNumber + 1) % editorMaxFrames)
 
             timer 1.0 / shader.config.fps repeat True action If(editorPlayAnimation, SetVariable("editorFrameNumber", (editorFrameNumber + 1) % editorMaxFrames), NullAction())
 
@@ -195,7 +195,7 @@ init python:
 
     def clearKeymapForEditor():
         #Remove mappings that would conflict with our editor
-        shortcuts = ["mouseup_3", "h", "s"]
+        shortcuts = ["mouseup_3", "mousedown_4", "mousedown_5", "h", "s"]
         for key, values in config.keymap.items():
             for name in shortcuts:
                 if name in values:

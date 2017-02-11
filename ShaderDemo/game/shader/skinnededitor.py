@@ -20,6 +20,7 @@ PIVOT_COLOR = (200, 0, 0)
 MESH_COLOR = (128, 255, 255)
 ACTIVE_COLOR = (0, 255, 0)
 HOVER_COLOR = (255, 255, 0)
+HEADER_COLOR = (200, 200, 0)
 
 DRAG_POINT = "dragPoint"
 DRAG_PIVOT = "dragPivot"
@@ -655,10 +656,6 @@ class SkinnedEditor:
         pivot = bone.pivot
         return euclid.Vector3(pivot[0],  pivot[1], 0)
 
-    def getBonePos(self, bone):
-        pos = bone.pos
-        return euclid.Vector3(pos[0],  pos[1], 0)
-
     def getTransformsDict(self):
         mapping = {}
         for trans in self.transforms:
@@ -681,13 +678,13 @@ class SkinnedEditor:
             hoverPivotBone = self.pickPivot(mouse)
             hoverCropBone = self.pickCrop(mouse)
 
+        cached = []
+
         for trans in reversed(self.transforms):
             bone = trans.bone
-            #bone.wireFrame = ((activeBone and bone.name == activeBone.name) or not activeBone) and self.settings["wireframe"]
             bone.wireFrame = self.settings["wireframe"]
-
-            pos = self.getBonePos(bone)
             pivot = self.getBonePivotTransformed(bone)
+            cached.append((trans, pivot))
 
             if self.settings["imageAreas"] and bone.image and bone.visible:
                 areaColor = (255, 255, 0)
@@ -713,17 +710,21 @@ class SkinnedEditor:
                             color = (255, 255, 0)
                         canvas.circle(color, p, 3)
 
-            if self.settings["pivots"]:
-                if bone.parent:
-                    parentTrans = self.transformsMap[bone.parent]
-                    parentBone = parentTrans.bone
-                    parentPos = self.getBonePivotTransformed(parentBone)
-                    color = PIVOT_COLOR
-                    if parentBone.damping > 0.0:
-                        color = (0, 255, 255)
-                    if geometry.pointDistance((pivot.x, pivot.y), (parentPos.x, parentPos.y)) > 1:
-                        #TODO Line drawing hangs if passed same start and end?
-                        canvas.line(color, (pivot.x, pivot.y), (parentPos.x, parentPos.y), LINE_WIDTH)
+            if self.settings["pivots"] and bone.parent:
+                parentTrans = self.transformsMap[bone.parent]
+                parentBone = parentTrans.bone
+                parentPos = self.getBonePivotTransformed(parentBone)
+                color = PIVOT_COLOR
+                if parentBone.damping > 0.0:
+                    color = (0, 255, 255)
+                if geometry.pointDistance((pivot.x, pivot.y), (parentPos.x, parentPos.y)) > 1:
+                    #TODO Line drawing hangs if passed same start and end?
+                    canvas.line(color, (pivot.x, pivot.y), (parentPos.x, parentPos.y), LINE_WIDTH)
+
+
+        if self.settings["pivots"]:
+            for trans, pivot in cached:
+                bone = trans.bone
 
                 x = pivot.x
                 y = pivot.y
@@ -756,8 +757,9 @@ class SkinnedEditor:
                 if self.settings["names"]:
                     self.drawText(bone.name, textColor, (x + 15, y - 10))
 
-        if hoverPivotBone:
-            self.visualizeBoneProperties(hoverPivotBone, mouse)
+        propBone = activeBone or hoverPivotBone
+        if propBone:
+            self.visualizeBoneProperties(propBone, mouse)
 
         self.mode.draw()
 
@@ -769,14 +771,17 @@ class SkinnedEditor:
         name = bone.name
         if bone.mesh:
             name += " (%i polygons, %i vertices)" % (len(bone.mesh.indices) // 3, len(bone.mesh.vertices) // 2)
-        self.drawText(name, color, (x, y))
+        self.drawText(name, HEADER_COLOR, (x, y))
+        y += utils.FONT_SIZE
+
+        self.drawText("Translation: (%.1f, %.1f)" % (bone.translation.x,  bone.translation.y), color, (x, y))
         y += utils.FONT_SIZE
 
         degrees = tuple([math.degrees(d) for d in (bone.rotation.x,  bone.rotation.y,  bone.rotation.z)])
-        self.drawText("Rotation - x: %.1f, y: %.1f, z: %.1f" % degrees, color, (x, y))
+        self.drawText("Rotation:      (%.1f, %.1f, %.1f)" % degrees, color, (x, y))
         y += utils.FONT_SIZE
 
-        self.drawText("Scale     - x: %.1f, y: %.1f, z: %.1f" % (bone.scale.x,  bone.scale.y,  bone.scale.z), color, (x, y))
+        self.drawText("Scale:          (%.1f, %.1f, %.1f)" % (bone.scale.x,  bone.scale.y,  bone.scale.z), color, (x, y))
         y += utils.FONT_SIZE
 
-        self.drawText("Z-order  - %i" % bone.zOrder, color, (x, y))
+        self.drawText("Z-order:       %i" % bone.zOrder, color, (x, y))
