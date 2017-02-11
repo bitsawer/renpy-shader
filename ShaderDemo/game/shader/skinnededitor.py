@@ -11,11 +11,12 @@ import skin
 import geometry
 import utils
 
+LINE_WIDTH = 2
 PIVOT_SIZE = 4
 PICK_DISTANCE_PIVOT = PIVOT_SIZE * 2
 PICK_DISTANCE_CROP = 5
 
-PIVOT_COLOR = (255, 0, 0)
+PIVOT_COLOR = (200, 0, 0)
 MESH_COLOR = (128, 255, 255)
 ACTIVE_COLOR = (0, 255, 0)
 HOVER_COLOR = (255, 255, 0)
@@ -694,7 +695,7 @@ class SkinnedEditor:
                 if not hoverPivotBone and hoverCropBone and bone.name == hoverCropBone.name:
                     self.drawText(hoverCropBone.name, "#fff", (mouse[0] + 20, mouse[1]))
                     areaColor = ACTIVE_COLOR
-                canvas.lines(areaColor, False, lines)
+                canvas.lines(areaColor, False, lines, LINE_WIDTH)
 
                 #triangles = self.getTriangles(bone)
                 #for i in range(0, len(triangles), 3):
@@ -722,13 +723,17 @@ class SkinnedEditor:
                         color = (0, 255, 255)
                     if geometry.pointDistance((pivot.x, pivot.y), (parentPos.x, parentPos.y)) > 1:
                         #TODO Line drawing hangs if passed same start and end?
-                        canvas.line(color, (pivot.x, pivot.y), (parentPos.x, parentPos.y))
+                        canvas.line(color, (pivot.x, pivot.y), (parentPos.x, parentPos.y), LINE_WIDTH)
 
                 x = pivot.x
                 y = pivot.y
                 color = PIVOT_COLOR
                 if bone.mesh:
                     color = MESH_COLOR
+                if hoverPivotBone and bone.name == hoverPivotBone.name:
+                    color = HOVER_COLOR
+                if activeBone and bone.name == activeBone.name:
+                    color = ACTIVE_COLOR
 
                 if bone.blocker:
                     s = PIVOT_SIZE + 1
@@ -743,11 +748,6 @@ class SkinnedEditor:
                 else:
                     canvas.circle(black, (x, y), PIVOT_SIZE + shadow)
                     canvas.circle(color, (x, y), PIVOT_SIZE)
-
-                if hoverPivotBone and bone.name == hoverPivotBone.name:
-                    canvas.circle(HOVER_COLOR, (x, y), PIVOT_SIZE - 1)
-                if activeBone and bone.name == activeBone.name:
-                    canvas.circle(ACTIVE_COLOR, (x, y), PIVOT_SIZE - 2)
 
                 textColor = "#fff"
                 if activeBone and bone.name == activeBone.name:
