@@ -9,7 +9,7 @@ init offset = -2
 ## Calling gui.init resets the styles to sensible default values, and sets the
 ## width and height of the game.
 init python:
-    gui.init(1280, 720 + 400)
+    gui.init(1280, 720)
 
 
 
@@ -40,7 +40,7 @@ define gui.hover_color = '#c1e0ff'
 define gui.selected_color = '#ffffff'
 
 ## The color used for a text button when it cannot be selected.
-define gui.insensitive_color = '#5555557f'
+define gui.insensitive_color = '#888'
 
 ## Colors used for the portions of bars that are not filled in. These are not
 ## used directly, but are used when re-generating bar image files.
