@@ -306,7 +306,8 @@ screen navigation():
 
             textbutton _("Start Demo") action Start()
             textbutton _("Start Rig Demo") action Start("start_rig_demo")
-            textbutton _("Start Rig Editor") action Start("start_editor")
+            if renpy.config.developer:
+                textbutton _("Start Rig Editor") action Start("start_editor")
             null height 50
 
         else:

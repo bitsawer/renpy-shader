@@ -15,6 +15,7 @@ style edit_button_text:
 screen editorListScreen(title, items, current=None, cancel=None):
     modal True
     frame:
+        $ listWidth = 500
         xalign 0.5
         yalign 0.5
         xpadding 10
@@ -30,19 +31,18 @@ screen editorListScreen(title, items, current=None, cancel=None):
                 spacing 10
                 mousewheel True
                 scrollbars "vertical"
-                xminimum 400
+                xminimum listWidth
                 ymaximum config.screen_height - 200
 
                 for name in items:
                     if current and name == current:
-                        textbutton name action Return(name) text_color "#080"
+                        textbutton name action Return(name) xsize listWidth text_color "#080"
                     else:
-                        textbutton name action Return(name)
-
+                        textbutton name action Return(name) xsize listWidth
 
             textbutton (cancel if cancel else "Cancel") xalign 0.5 action Return("")
 
-screen rigEditorScreen(name, pixelShader, textures={}, uniforms={}, update=None, args=None, xalign=0.5, yalign=0.5):
+screen editorMainScreen(name, pixelShader, textures={}, uniforms={}, update=None, args=None, xalign=0.5, yalign=0.5):
     modal True
     add ShaderDisplayable(shader.MODE_SKINNED, name, shader.VS_SKINNED, pixelShader, textures, uniforms, None, update, args):
         xalign xalign
@@ -71,6 +71,9 @@ screen rigEditorScreen(name, pixelShader, textures={}, uniforms={}, update=None,
                 text editorRigFile:
                     size 15
                     color "ff0"
+
+                text "{a=https://github.com/bitsawer/renpy-shader/doc/rigeditor.md}(Help){/a}":
+                    size 15
 
                 text "Visual":
                     size 15
@@ -142,11 +145,11 @@ screen rigEditorScreen(name, pixelShader, textures={}, uniforms={}, update=None,
             textbutton "Frame: %i" % editorFrameNumber yalign 0.5 xsize 150 action Function(changeFrameCount)
             textbutton "<" yalign 0.5 keysym "j" action SetVariable("editorFrameNumber", max(editorFrameNumber - 1, 0))
             textbutton playText yalign 0.5 xsize 50 keysym "k" action SetVariable("editorPlayAnimation", not editorPlayAnimation)
-            textbutton ">" yalign 0.5 keysym "l" action SetVariable("editorFrameNumber", min(editorFrameNumber + 1, editorMaxFrames))
+            textbutton ">" yalign 0.5 keysym "l" action SetVariable("editorFrameNumber", min(editorFrameNumber + 1, editorMaxFrames - 1))
 
-            timer 1.0 / shader.config.fps repeat True action If(editorPlayAnimation, SetVariable("editorFrameNumber", (editorFrameNumber + 1) % (editorMaxFrames + 1)), NullAction())
+            timer 1.0 / shader.config.fps repeat True action If(editorPlayAnimation, SetVariable("editorFrameNumber", (editorFrameNumber + 1) % editorMaxFrames), NullAction())
 
-            bar value VariableValue("editorFrameNumber", editorMaxFrames)
+            bar value VariableValue("editorFrameNumber", editorMaxFrames - 1)
 
 
 init python:
@@ -166,6 +169,8 @@ init python:
         "disableDrag": False,
         "tesselation": 0
     }
+    editorDebugSettings = editorSettings.copy()
+    editorDebugSettings.update({"edgePoints": False})
 
     editorDrawableName = ""
     editorRigFile = ""
@@ -231,7 +236,11 @@ init python:
 
     def saveRigFile(editor):
         global editorRigFile
-        fileName = userInput("Save rig as...", editorRigFile)
+        name = editorRigFile
+        if not name:
+            name = editorDrawableName + ".rig"
+
+        fileName = userInput("Save rig as...", name)
         if fileName:
             fileName, path = getSavePath(fileName, ".rig")
             editor.saveSkeletonToFile(path)
@@ -337,7 +346,7 @@ init python:
         editor.update()
         editor.visualizeBones()
 
-        editorAnimation.setFrameCount(editorMaxFrames + 1)
+        editorAnimation.setFrameCount(editorMaxFrames)
         editorAnimation.update(editorFrameNumber, editor)
         if editorFrameNumberLast != editorFrameNumber or editorAnimation.dirty:
             editorFrameNumberLast = editorFrameNumber
@@ -410,7 +419,6 @@ label start_editor:
 
     call screen editorListScreen("Select an Image or a LiveComposite", listImageTags())
     $ editorDrawableName = _return
-
     if not editorDrawableName:
         return
 
@@ -432,7 +440,7 @@ label update_editor:
         editorFrameNumber = min(editorFrameNumber, editorMaxFrames)
 
 label update_editor_ui:
-    call screen rigEditorScreen(editorDrawableName, shader.PS_SKINNED, {},
+    call screen editorMainScreen(editorDrawableName, shader.PS_SKINNED, {},
         update=rigEditorUpdate, args={"rigFile": utils.findFile(editorRigFile), "persist": True}, _layer="master") #nopredict
 
     $ shader._controllerContextStore._clear()

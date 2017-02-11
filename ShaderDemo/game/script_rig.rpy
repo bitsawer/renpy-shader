@@ -38,7 +38,7 @@ init python:
     def visualizeRig(context):
         if debugRig:
             context.createOverlayCanvas()
-            editor = shader.SkinnedEditor(context, editorSettings)
+            editor = shader.SkinnedEditor(context, editorDebugSettings)
             editor.visualizeBones()
 
         #Only show the wireframes in debug mode
@@ -52,7 +52,7 @@ init python:
         visualizeRig(context)
 
     def playAnimations(context):
-        #Animate all active tracks.
+        #Animate all active tracks. Look up the track infos using the animation names.
         player = shader.AnimationPlayer(context, doll, debugAnimations)
         player.play([TRACKS[name] for name in anims])
         visualizeRig(context)
@@ -132,8 +132,13 @@ label start_rig_demo:
     $ anims.remove(WAVE)
 
     "Back to where we started from."
+    #TODO Automatic mixing, two animations affect the same bone.
 
     $ anims.update([IDLE, WAVE, HAND])
+
+    "Now we will remove all animations and allow the rig to return to the rest position."
+
+    $ anims.clear()
 
     #TODO Multiple animations
     #TODO Animations with code manipulation
