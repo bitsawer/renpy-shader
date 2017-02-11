@@ -138,6 +138,17 @@ screen editorMainScreen(name, pixelShader, textures={}, uniforms={}, update=None
                 textbutton "Easing" action SetVariable("editorShowEasingsFlag", True)
                 textbutton "Clip end" action Function(clipAnimation)
 
+                if shader.utils.findFile(editorAnimation.name):
+                    text "Track info":
+                        size 15
+
+                    textbutton ("Stop" if editorPlayTrack else "Play") action ToggleVariable("editorPlayTrack")
+                    textbutton "Repeat" action [ToggleDict(editorTrackSettings, "repeat"), Jump("update_editor_ui")]
+                    textbutton "Cyclic" action [ToggleDict(editorTrackSettings, "cyclic"), Jump("update_editor_ui")]
+                    textbutton "Reverse" action [ToggleDict(editorTrackSettings, "reverse"), Jump("update_editor_ui")]
+                    textbutton "Auto end" action [ToggleDict(editorTrackSettings, "autoEnd"), Jump("update_editor_ui")]
+                    textbutton "Clip" action [ToggleDict(editorTrackSettings, "clip"), Jump("update_editor_ui")]
+
                 text "File":
                     size 15
 
@@ -163,8 +174,7 @@ screen editorMainScreen(name, pixelShader, textures={}, uniforms={}, update=None
 init python:
     import os
     import shader
-    from shader import skinnededitor
-    from shader import skinnedanimation
+    from shader import skinnededitor, skinnedanimation, skinnedplayer
     from shader import easing, utils
 
     editorSettings = {
@@ -184,6 +194,7 @@ init python:
     editorRigFile = ""
     editorAnimFile = ""
     editorAnimation = None
+    editorWasReset = True
 
     editorSaveRigFlag = False
     editorTesselationFlag = False
@@ -201,6 +212,15 @@ init python:
     editorFrameNumberLast = -1
     editorPlayAnimation = False
     editorMaxFrames = 1
+
+    editorPlayTrack = False
+    editorTrackSettings = {
+        "repeat": True,
+        "cyclic": False,
+        "reverse": False,
+        "autoEnd": False,
+        "clip": False,
+    }
 
     def clearKeymapForEditor():
         #Remove mappings that would conflict with our editor
@@ -352,7 +372,7 @@ init python:
     def rigEditorUpdate(context):
         global editorSaveRigFlag, editorTesselationFlag, editorRenameBoneFlag, editorResetPoseFlag, editorShowEasingsFlag, \
             editorNewAnimationFlag, editorLoadAnimationFlag, editorSaveAnimationFlag, editorFrameNumberLast, \
-            editorBoneTransparencyFlag
+            editorBoneTransparencyFlag, editorWasReset
 
         context.createOverlayCanvas()
 
@@ -362,7 +382,13 @@ init python:
 
         editorAnimation.setFrameCount(editorMaxFrames)
         editorAnimation.update(editorFrameNumber, editor)
-        if editorFrameNumberLast != editorFrameNumber or editorAnimation.dirty:
+
+        if editorPlayTrack:
+            player = shader.AnimationPlayer(context, "editorPlayer", editorWasReset)
+            player.setDebug(editorShowFrameInfo)
+            player.play([shader.TrackInfo(editorAnimation.name, **editorTrackSettings)])
+            editorWasReset = False
+        elif editorFrameNumberLast != editorFrameNumber or editorAnimation.dirty:
             editorFrameNumberLast = editorFrameNumber
             keys = editorAnimation.interpolate(editorFrameNumber, editor.getBones())
             editorAnimation.apply(keys, editor.getBones())
@@ -466,6 +492,7 @@ label update_editor:
         editorFrameNumber = min(editorFrameNumber, editorMaxFrames)
 
 label update_editor_ui:
+    $ editorWasReset = True
     call screen editorMainScreen(editorDrawableName, shader.PS_SKINNED, {},
         update=rigEditorUpdate, args={"rigFile": utils.findFile(editorRigFile), "persist": True}, _layer="master") #nopredict
 

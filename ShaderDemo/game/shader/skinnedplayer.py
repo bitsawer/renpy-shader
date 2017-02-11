@@ -57,17 +57,21 @@ class AnimationData:
         self.tracks = {}
 
 class AnimationPlayer:
-    def __init__(self, context, tag, debug=False):
+    def __init__(self, context, tag, reset=False):
         self.context = context
         self.tag = tag
-        self.debug = debug
+        self.debug = False
         self.debugY = 10
+
         fullTag = "animationPlayer-" + tag
-        self.data = context.store.get(fullTag, AnimationData())
+        if reset:
+            self.data = AnimationData()
+        else:
+            self.data = context.store.get(fullTag, AnimationData())
         context.store[fullTag] = self.data
 
-        if self.debug:
-            context.createOverlayCanvas()
+    def setDebug(self, debug):
+        self.debug = debug
 
     def getTime(self):
         return self.context.time
@@ -134,6 +138,7 @@ class AnimationPlayer:
 
     def debugDraw(self, track, frameIndex):
         if self.debug:
+            self.context.createOverlayCanvas()
             #TODO Also tell how many keys reference missing bones
             text = "%s (%s) FPS: %i, Speed: %.1f, Frame %s / %i" % (self.tag, track.info.name,
                 track.info.fps, track.info.speed, frameIndex, len(track.animation.frames) - 1)

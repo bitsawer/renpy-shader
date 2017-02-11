@@ -11,6 +11,14 @@ image doll = LiveComposite(
     (0, 0), "doll hair.png",
 )
 
+image doll2 = LiveComposite(
+    (700, 700),
+    (0, 0), "doll/base.png",
+    (0, 0), "doll/shirt.png",
+    (0, 0), "doll/skirt.png",
+    (0, 0), "doll/hair.png",
+)
+
 init python:
     import math
     import shader
@@ -36,6 +44,7 @@ init python:
     }
 
     def visualizeRig(context):
+        #Draw some useful debug visualizations
         if debugRig:
             context.createOverlayCanvas()
             editor = shader.SkinnedEditor(context, editorDebugSettings)
@@ -53,7 +62,8 @@ init python:
 
     def playAnimations(context):
         #Animate all active tracks. Look up the track infos using the animation names.
-        player = shader.AnimationPlayer(context, doll, debugAnimations)
+        player = shader.AnimationPlayer(context, doll)
+        player.setDebug(debugAnimations) #Enable visual debug help
         player.play([TRACKS[name] for name in anims])
         visualizeRig(context)
 
