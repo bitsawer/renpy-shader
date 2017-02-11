@@ -757,9 +757,9 @@ class SkinnedEditor:
                 if self.settings["names"]:
                     self.drawText(bone.name, textColor, (x + 15, y - 10))
 
-        propBone = activeBone or hoverPivotBone
-        if propBone:
-            self.visualizeBoneProperties(propBone, mouse)
+            propBone = activeBone or hoverPivotBone
+            if propBone:
+                self.visualizeBoneProperties(propBone, mouse)
 
         self.mode.draw()
 

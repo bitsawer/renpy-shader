@@ -311,6 +311,7 @@ class SkinnedAnimation:
             i -= 1
         self.frames = self.frames[:i + 1]
         self.dirty = True
+        return len(self.frames)
 
     def interpolate(self, frameNumber, bones):
         if self.dirty or not self.baked:

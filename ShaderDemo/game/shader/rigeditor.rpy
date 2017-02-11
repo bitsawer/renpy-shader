@@ -77,7 +77,7 @@ screen editorMainScreen(name, pixelShader, textures={}, uniforms={}, update=None
                 text "{a=https://github.com/bitsawer/renpy-shader/doc/rigeditor.md}(Help){/a}":
                     size 15
 
-                text "Visual":
+                text "UI":
                     size 15
 
                 textbutton "Wireframes" action ToggleDict(editorSettings, "wireframe")
@@ -127,10 +127,16 @@ screen editorMainScreen(name, pixelShader, textures={}, uniforms={}, update=None
                     size 15
                     color "ff0"
 
+                text "UI":
+                    size 15
+
+                textbutton "Frame info" action ToggleVariable("editorShowFrameInfo")
+
                 text "Operations":
                     size 15
 
                 textbutton "Easing" action SetVariable("editorShowEasingsFlag", True)
+                textbutton "Clip end" action Function(clipAnimation)
 
                 text "File":
                     size 15
@@ -190,6 +196,7 @@ init python:
     editorPauseTimeFlag = False
     editorBoneTransparencyFlag = False
 
+    editorShowFrameInfo = True
     editorFrameNumber = 0
     editorFrameNumberLast = -1
     editorPlayAnimation = False
@@ -232,7 +239,7 @@ init python:
             count = eval(userInput("Set animation end frame", str(editorMaxFrames), allow=list("1234567890*/+-")))
             if count > 0 and count < 10000:
                 editorMaxFrames = count
-                editorFrameNumber = min(editorFrameNumber, editorMaxFrames)
+                editorFrameNumber = min(editorFrameNumber, editorMaxFrames - 1)
         except:
             pass
 
@@ -337,6 +344,11 @@ init python:
             notify("Animation saved to '%s'" % path)
             updateEditor()
 
+    def clipAnimation():
+        global editorMaxFrames, editorFrameNumber
+        editorMaxFrames = editorAnimation.clipEnd()
+        editorFrameNumber = min(editorFrameNumber, editorMaxFrames - 1)
+
     def rigEditorUpdate(context):
         global editorSaveRigFlag, editorTesselationFlag, editorRenameBoneFlag, editorResetPoseFlag, editorShowEasingsFlag, \
             editorNewAnimationFlag, editorLoadAnimationFlag, editorSaveAnimationFlag, editorFrameNumberLast, \
@@ -359,8 +371,9 @@ init python:
             editor.debugAnimate(True)
 
         if editorSettings["pivots"]:
-            editorAnimation.drawDebugText(editor, editorFrameNumber)
             editorAnimation.drawDebugKeyFrames(editor, editorFrameNumber)
+            if editorShowFrameInfo:
+                editorAnimation.drawDebugText(editor, editorFrameNumber)
 
         if editorTesselationFlag:
             editorTesselationFlag = False

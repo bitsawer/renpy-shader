@@ -72,6 +72,12 @@ class AnimationPlayer:
     def getTime(self):
         return self.context.time
 
+    def getTrackInfo(self, name):
+        track = self.data.tracks.get(name)
+        if track:
+            return track.info
+        return None
+
     def startAnimation(self, info):
         track = Track(info, self.getTime())
         self.data.tracks[info.name] = track
@@ -128,6 +134,7 @@ class AnimationPlayer:
 
     def debugDraw(self, track, frameIndex):
         if self.debug:
+            #TODO Also tell how many keys reference missing bones
             text = "%s (%s) FPS: %i, Speed: %.1f, Frame %s / %i" % (self.tag, track.info.name,
                 track.info.fps, track.info.speed, frameIndex, len(track.animation.frames) - 1)
             pos = (10, self.debugY)
