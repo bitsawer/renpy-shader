@@ -55,6 +55,9 @@ class Action:
     def draw(self, editor):
         pass
 
+    def getMouseValue(self, mouse, pivot):
+        return math.atan2(mouse[0] - pivot[0], mouse[1] - pivot[1])
+
 class TranslationEdit(Action):
     def __init__(self, editor, mouse, bone, attributes):
         self.mouse = mouse
@@ -99,14 +102,14 @@ class ScaleEdit(Action):
         self.pivot = editor.getBonePivotTransformed(self.bone)
         self.original = euclid.Vector3(self.bone.scale.x, self.bone.scale.y, self.bone.scale.z)
         for attr in self.attributes:
-            self.values[attr] = getattr(self.original, attr) + math.atan2(self.mouse[0] - self.pivot[0], self.mouse[1] - self.pivot[1])
+            self.values[attr] = getattr(self.original, attr) + self.getMouseValue(editor.mouse, self.pivot)
 
     def cancel(self, editor):
         self.bone.scale = self.original
 
     def update(self, editor):
         for attr in self.values:
-            angle = math.atan2(editor.mouse[0] - self.pivot[0], editor.mouse[1] - self.pivot[1])
+            angle = self.getMouseValue(editor.mouse, self.pivot)
             setattr(self.bone.scale, attr, self.values[attr] - angle)
 
     def draw(self, editor):
@@ -155,6 +158,31 @@ class RotationEdit(Action):
         editor.context.overlayCanvas.line("#0f0", (self.pivot.x, self.pivot.y), editor.mouse)
         editor.drawText("R(%s): %s" % (", ".join(axes), ", ".join(angles)), "#fff", (editor.mouse[0] + 20, editor.mouse[1]))
 
+class TransparencyEdit(Action):
+    def __init__(self, editor, mouse, bone):
+        self.mouse = mouse
+        self.bone = bone
+        self.pivot = None
+        self.original = None
+        self.startDistance = None
+
+    def start(self, editor):
+        self.pivot = editor.getBonePivotTransformed(self.bone)
+        self.original = self.bone.transparency
+        self.startDistance = geometry.pointDistance(self.pivot, editor.mouse)
+
+    def cancel(self, editor):
+        self.bone.transparency = self.original
+
+    def update(self, editor):
+        extra = -20
+        currentDistance = geometry.pointDistance(self.pivot, editor.mouse) + extra
+        delta = (currentDistance / max(self.startDistance + extra, 0.1)) - 1.0
+        self.bone.transparency = utils.clamp(self.original - delta, 0.0, 1.0)
+
+    def draw(self, editor):
+        editor.context.overlayCanvas.line("#0f0", (self.pivot.x, self.pivot.y), editor.mouse)
+        editor.drawText("Transparency: %i" % round(self.bone.transparency * 100.0), "#fff", (editor.mouse[0] + 20, editor.mouse[1]))
 
 class ExtrudeBone(Action):
     def __init__(self, editor, mouse, bone):
@@ -292,6 +320,12 @@ class PoseMode:
                     activeBone.scale = euclid.Vector3(1.0, 1.0, 1.0)
                 else:
                     self.newEdit(ScaleEdit(self.editor, pos, activeBone, scaleAxes))
+                return True
+            if key == pygame.K_a and activeBone:
+                if alt:
+                    activeBone.transparency = 0.0
+                else:
+                    self.newEdit(TransparencyEdit(self.editor, pos, activeBone))
                 return True
             if key == pygame.K_b and activeBone:
                 activeBone.blocker = not activeBone.blocker

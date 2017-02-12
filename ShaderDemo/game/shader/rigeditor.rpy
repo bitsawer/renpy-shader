@@ -97,7 +97,6 @@ screen editorMainScreen(name, pixelShader, textures={}, uniforms={}, update=None
                     size 15
 
                 textbutton "Rename bone" action [SetVariable("editorRenameBoneFlag", True), Jump("update_editor")]
-                textbutton "Bone transparency" action [SetVariable("editorBoneTransparencyFlag", True), Jump("update_editor_ui")]
                 #textbutton "Mesh tesselation" action [SetVariable("editorTesselationFlag", True), Jump("update_editor")] TODO Use levels?
                 textbutton "Reset pose" action [SetVariable("editorResetPoseFlag", True), Jump("update_editor")]
 
@@ -179,7 +178,7 @@ init python:
 
     editorSettings = {
         "wireframe": True,
-        "edgePoints": True,
+        "edgePoints": False,
         "imageAreas": False,
         "pivots": True,
         "names": False,
@@ -205,7 +204,6 @@ init python:
     editorLoadAnimationFlag = False
     editorSaveAnimationFlag = False
     editorPauseTimeFlag = False
-    editorBoneTransparencyFlag = False
 
     editorShowFrameInfo = True
     editorFrameNumber = 0
@@ -299,21 +297,6 @@ init python:
         else:
             notify("No bone selected")
 
-    def setBoneAlpha(editor):
-        active = editor.getActiveBone()
-        if active:
-            try:
-                old = str(int(round(active.transparency * 100.0)))
-                transparency = float(userInput("Set transparency (0 to 100)", old, allow=list("1234567890")))
-                if transparency >= 0 and transparency <= 100:
-                    active.transparency = transparency / 100.0
-                else:
-                    notify("Value not in range")
-            except:
-                notify("Error")
-        else:
-            notify("No bone selected")
-
     def setActiveEasing(editor, animation):
         active = editor.getActiveBone()
         if active:
@@ -372,7 +355,7 @@ init python:
     def rigEditorUpdate(context):
         global editorSaveRigFlag, editorTesselationFlag, editorRenameBoneFlag, editorResetPoseFlag, editorShowEasingsFlag, \
             editorNewAnimationFlag, editorLoadAnimationFlag, editorSaveAnimationFlag, editorFrameNumberLast, \
-            editorBoneTransparencyFlag, editorWasReset
+            editorWasReset
 
         context.createOverlayCanvas()
 
@@ -413,10 +396,6 @@ init python:
             editorResetPoseFlag = False
             editor.resetPose()
             notify("Pose reset")
-
-        if editorBoneTransparencyFlag:
-            editorBoneTransparencyFlag = False
-            setBoneAlpha(editor)
 
         if editorShowEasingsFlag:
             editorShowEasingsFlag = False
