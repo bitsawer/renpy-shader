@@ -296,12 +296,14 @@ class SkinnedRenderer(BaseRenderer):
         self.bones = {}
         self.blackTexture = None
         self.oldFrameData = {}
+        self.pointSimplify = 30
 
     def getBones(self):
         return self.bones
 
     def init(self, image, vertexShader, pixeShader, args):
         self.shader = utils.Shader(vertexShader.replace("MAX_BONES", str(skin.MAX_BONES)), pixeShader)
+        self.pointSimplify = args.get("pointSimplify", self.pointSimplify)
 
         rig = args.get("rigFile")
         if rig:
@@ -397,7 +399,7 @@ class SkinnedRenderer(BaseRenderer):
         bone.pos = (x, y)
         bone.pivot = (bone.pos[0] + bone.image.width / 2.0, bone.pos[1] + bone.image.height / 2.0)
         bone.zOrder = zOrder
-        bone.updatePoints(surface)
+        bone.updatePoints(surface, self.pointSimplify)
 
         self.bones[bone.parent].children.append(boneName)
         self.bones[boneName] = bone

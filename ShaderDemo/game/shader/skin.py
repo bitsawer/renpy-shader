@@ -83,10 +83,9 @@ class SkinningBone:
             if func(parent, *args):
                 parent.walkParents(bones, func, args)
 
-    def updatePoints(self, surface):
+    def updatePoints(self, surface, pointSimplify):
         points = geometry.findEdgePixelsOrdered(surface)
-        distance = (surface.get_width() + surface.get_height()) / 10000.0 #TODO Magic
-        simplified = geometry.simplifyEdgePixels(points, 40)
+        simplified = geometry.simplifyEdgePixels(points, pointSimplify)
         self.points = geometry.offsetPolygon(simplified, -5) #TODO Increase this once better weighting is in?
 
     def triangulatePoints(self):
