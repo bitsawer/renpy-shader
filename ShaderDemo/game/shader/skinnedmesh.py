@@ -103,6 +103,24 @@ class SkinnedMesh:
         self.vertices = makeArray(gl.GLfloat, verts)
         self.indices = makeArray(gl.GLuint, [x for x in indices if x is not None])
 
+    def subdivideTriangleCenter(self, a, b, c, verts, indices, index):
+        v1 = self.getVertex(a)
+        v2 = self.getVertex(b)
+        v3 = self.getVertex(c)
+
+        center = geometry.triangleCentroid(v1, v2, v3)
+        verts.extend(center)
+
+        indices[index * 3] = None
+        indices[index * 3 + 1] = None
+        indices[index * 3 + 2] = None
+
+        d = (len(verts) // 2) - 1
+
+        indices.extend([a, b, d])
+        indices.extend([b, c, d])
+        indices.extend([c, a, d])
+
     def subdivideTriangle(self, a, b, c, verts, indices, index):
         v1 = self.getVertex(a)
         v2 = self.getVertex(b)
@@ -240,27 +258,29 @@ class BoneWeight:
 SHORTEN_LINE = 0.95
 
 def findBoneInfluences(vertex, transforms, blockers):
-    distances = []
+    weights = []
     nearest = findNearestBone(vertex, transforms, blockers)
     if nearest:
-        nearest.weight = calculateWeight(vertex, nearest.transform, transforms[nearest.bone.parent], transforms)
-        distances.append(nearest)
+        nearest.weight = calculateWeight(vertex, nearest.transform, transforms[nearest.bone.parent])
+        weights.append(nearest)
 
         parent = transforms[nearest.bone.parent]
-        distances.append(BoneWeight(-1, parent.index, parent))
-        distances[-1].weight = 1.0 - nearest.weight
+        weights.append(BoneWeight(-1, parent.index, parent))
+        weights[-1].weight = 1.0 - sum([w.weight for w in weights])
 
-    distances.sort(key=lambda w: -w.weight)
-    return distances[:4]
+    weights.sort(key=lambda w: -w.weight)
+    return weights[:4]
 
-def calculateWeight(vertex, a, b, transforms):
+def calculateWeight(vertex, a, b, bendyLength=0.75):
     minWeight = 0.0
     maxWeight = 0.1
-    boneLength = geometry.pointDistance(a.bone.pivot, transforms[b.bone.name].bone.pivot)
-    vertexDistance = max(geometry.pointDistance(a.bone.pivot, vertex), 0.00001)
+
+    distance = geometry.pointDistance(vertex, a.bone.pivot)
+    boneLength = geometry.pointDistance(a.bone.pivot, b.bone.pivot) * bendyLength
     if boneLength == 0:
-        return 0
-    return utils.clamp(utils.interpolate(maxWeight, minWeight, vertexDistance / boneLength), minWeight, maxWeight)
+       return 0
+    vertexDistance = min(distance / boneLength, 1.0)
+    return utils.clamp(1 - vertexDistance, minWeight, maxWeight)
 
 def findNearestBone(vertex, transforms, blockers):
     nearest = None
