@@ -14,11 +14,16 @@ class SkinnedMesh:
     jsonIgnore = ["uvs"]
 
     def __init__(self, vertices, indices, boneWeights=None, boneIndices=None):
-        self.vertices = vertices
-        self.indices = indices
-        self.uvs = None
+        self.setGeometry(vertices, indices)
         self.boneWeights = boneWeights
         self.boneIndices = boneIndices
+
+    def setGeometry(self, verts, indices):
+        self.vertices = makeArray(gl.GLfloat, verts)
+        self.indices = makeArray(gl.GLuint, indices)
+        self.uvs = None
+        self.boneWeights = None
+        self.boneIndices = None
 
     def getTriangleIndices(self):
         triangles = []
@@ -88,8 +93,7 @@ class SkinnedMesh:
         for sub in subivisions.values():
             self.subdivideTriangle(*sub)
 
-        self.vertices = makeArray(gl.GLfloat, verts)
-        self.indices = makeArray(gl.GLuint, [x for x in indices if x is not None])
+        self.setGeometry(verts, [x for x in indices if x is not None])
 
     def subdivide(self, maxSize):
         verts = self.vertices[:]
@@ -103,8 +107,7 @@ class SkinnedMesh:
             if area > maxSize: #TODO Also if triangle has a too long side
                 self.subdivideTriangle(a, b, c, verts, indices, i)
 
-        self.vertices = makeArray(gl.GLfloat, verts)
-        self.indices = makeArray(gl.GLuint, [x for x in indices if x is not None])
+        self.setGeometry(verts, [x for x in indices if x is not None])
 
     def subdivideTriangle(self, a, b, c, verts, indices, index):
         v1 = self.getVertex(a)
@@ -150,8 +153,7 @@ class SkinnedMesh:
                 newIndex = duplicates[roundPoint(v[0], v[1])]
                 indices.append(newIndex)
 
-        self.vertices = makeArray(gl.GLfloat, verts)
-        self.indices = makeArray(gl.GLuint, indices)
+        self.setGeometry(verts, indices)
 
     def sortTriangles(self, transforms):
         triangles = []

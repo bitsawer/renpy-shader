@@ -129,7 +129,7 @@ class SkinningBone:
         if len(indices) % 3 != 0:
             raise RuntimeError("Invalid index count: %i" % len(indices))
 
-        self.mesh = skinnedmesh.SkinnedMesh(makeArray(gl.GLfloat, verts), makeArray(gl.GLuint, indices))
+        self.mesh = skinnedmesh.SkinnedMesh(verts, indices)
 
 JSON_IGNORES = []
 
