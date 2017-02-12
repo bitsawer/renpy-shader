@@ -335,6 +335,7 @@ class SkinnedRenderer(BaseRenderer):
                     bone.mesh.subdivideAdaptive(transforms)
                 if sizeSubdivide > 50:
                     bone.mesh.subdivide(sizeSubdivide)
+                bone.mesh.weldVertices()
 
     def updateBones(self):
         self.oldFrameData = {}

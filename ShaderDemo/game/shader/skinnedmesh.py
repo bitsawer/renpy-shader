@@ -7,6 +7,9 @@ import utils
 def makeArray(tp, values):
     return (tp * len(values))(*values)
 
+def roundPoint(x, y):
+    return (int(round(x)), int(round(y)))
+
 class SkinnedMesh:
     jsonIgnore = ["uvs"]
 
@@ -103,24 +106,6 @@ class SkinnedMesh:
         self.vertices = makeArray(gl.GLfloat, verts)
         self.indices = makeArray(gl.GLuint, [x for x in indices if x is not None])
 
-    def subdivideTriangleCenter(self, a, b, c, verts, indices, index):
-        v1 = self.getVertex(a)
-        v2 = self.getVertex(b)
-        v3 = self.getVertex(c)
-
-        center = geometry.triangleCentroid(v1, v2, v3)
-        verts.extend(center)
-
-        indices[index * 3] = None
-        indices[index * 3 + 1] = None
-        indices[index * 3 + 2] = None
-
-        d = (len(verts) // 2) - 1
-
-        indices.extend([a, b, d])
-        indices.extend([b, c, d])
-        indices.extend([c, a, d])
-
     def subdivideTriangle(self, a, b, c, verts, indices, index):
         v1 = self.getVertex(a)
         v2 = self.getVertex(b)
@@ -146,6 +131,27 @@ class SkinnedMesh:
         indices.extend([a, d, f])
         indices.extend([d, b, e])
         indices.extend([f, e, c])
+
+    def weldVertices(self):
+        duplicates = {}
+        verts = []
+        indices = []
+
+        for i in range(self.getVertexCount()):
+            v = self.getVertex(i)
+            v = roundPoint(v[0], v[1])
+            if not v in duplicates:
+                duplicates[v] = len(verts) // 2
+                verts.extend(v)
+
+        for tri in self.getTriangleIndices():
+            for i in tri:
+                v = self.getVertex(i)
+                newIndex = duplicates[roundPoint(v[0], v[1])]
+                indices.append(newIndex)
+
+        self.vertices = makeArray(gl.GLfloat, verts)
+        self.indices = makeArray(gl.GLuint, indices)
 
     def sortTriangles(self, transforms):
         triangles = []
