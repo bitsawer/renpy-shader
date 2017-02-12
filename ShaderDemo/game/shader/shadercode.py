@@ -272,6 +272,7 @@ attribute vec4 inBoneWeights;
 attribute vec4 inBoneIndices;
 
 varying vec2 varUv;
+varying float varAlpha;
 
 vec2 toScreen(vec2 point)
 {
@@ -283,6 +284,7 @@ void main()
     varUv = inUv;
 
     vec2 pos = vec2(0.0, 0.0);
+    float transparency = 0.0;
     vec4 boneWeights = inBoneWeights;
     ivec4 boneIndex = ivec4(inBoneIndices);
 
@@ -294,9 +296,13 @@ void main()
         vec2 boneDelta = vec2(boneMatrix[0][3], boneMatrix[1][3]);
         pos += (boneDelta * boneWeights.x) * boneMatrix[2][3];
 
+        //Apply transparency
+        transparency += boneMatrix[3][3] * boneWeights.x;
+
         boneWeights = boneWeights.yzwx;
         boneIndex = boneIndex.yzwx;
     }
+    varAlpha = max(1.0 - transparency, 0.0);
 
     gl_Position = projection * vec4(toScreen(pos.xy), 0.0, 1.0);
 }
@@ -305,8 +311,8 @@ void main()
 PS_SKINNED = LIB_NOISE + LIB_WIND + """
 
 varying vec2 varUv; //Texture coordinates
+varying float varAlpha;
 
-uniform float boneAlpha;
 uniform float wireFrame;
 uniform float shownTime;
 
@@ -315,7 +321,7 @@ void main()
     vec4 color = applyWind(varUv, shownTime);
 
     color.rgb *= 1.0 - wireFrame;
-    color.a = (color.a + wireFrame) * boneAlpha;
+    color.a = (color.a * varAlpha) + wireFrame;
 
     gl_FragColor = color;
 }

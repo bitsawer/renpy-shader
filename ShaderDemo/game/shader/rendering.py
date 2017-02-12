@@ -479,6 +479,7 @@ class SkinnedRenderer(BaseRenderer):
         boneMatrixArray = []
         for i, transform in enumerate(transforms):
             boneMatrix = transform.matrix
+            boneMatrix.p = transform.transparency #Abuse unused matrix location
 
             overwrite = transform.damping > 0.0
             if overwrite and self.oldFrameData.get(transform.bone.name):
@@ -618,7 +619,7 @@ class SkinnedRenderer(BaseRenderer):
         transform.translate(-xMove, -yMove, 0)
 
         damping = max(bone.damping, parentDamping)
-        transparency = max(bone.transparency, parentTransparency)
+        transparency = 1 - ((1 - bone.transparency) * (1 - parentTransparency))
         transforms.append(BoneTransform(bone, transform, damping, transparency))
         stack.append((bone, transform, damping, transparency))
 
