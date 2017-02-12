@@ -2,6 +2,7 @@
 from OpenGL import GL as gl
 
 import geometry
+import utils
 
 def makeArray(tp, values):
     return (tp * len(values))(*values)
@@ -236,24 +237,30 @@ class BoneWeight:
 
 #Shorten bones, otherwise their points can be at the same position which
 #can make weight calculation random and order-dependant.
-SHORTEN_LINE = 0.99
+SHORTEN_LINE = 0.95
 
 def findBoneInfluences(vertex, transforms, blockers):
     distances = []
     nearest = findNearestBone(vertex, transforms, blockers)
     if nearest:
-        nearest.weight = 0.1
+        nearest.weight = calculateWeight(vertex, nearest.transform, transforms[nearest.bone.parent], transforms)
         distances.append(nearest)
 
-        if nearest.bone.parent:
-            parent = transforms[nearest.bone.parent]
-            distances.append(BoneWeight(1000, parent.index, parent))
-            distances[-1].weight = 0.9
-        else:
-            nearest.weight = 1.0
+        parent = transforms[nearest.bone.parent]
+        distances.append(BoneWeight(-1, parent.index, parent))
+        distances[-1].weight = 1.0 - nearest.weight
 
-    distances.sort(key=lambda w: w.distance)
+    distances.sort(key=lambda w: -w.weight)
     return distances[:4]
+
+def calculateWeight(vertex, a, b, transforms):
+    minWeight = 0.0
+    maxWeight = 0.1
+    boneLength = geometry.pointDistance(a.bone.pivot, transforms[b.bone.name].bone.pivot)
+    vertexDistance = max(geometry.pointDistance(a.bone.pivot, vertex), 0.00001)
+    if boneLength == 0:
+        return 0
+    return utils.clamp(utils.interpolate(maxWeight, minWeight, vertexDistance / boneLength), minWeight, maxWeight)
 
 def findNearestBone(vertex, transforms, blockers):
     nearest = None

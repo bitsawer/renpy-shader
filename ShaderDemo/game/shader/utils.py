@@ -65,6 +65,9 @@ def createPerspectiveOrtho(left, right, bottom, top, near, far):
 
     return projection
 
+def clamp(value, small, large):
+    return max(min(value, large), small)
+
 def interpolate(a, b, s):
     #Simple linear interpolation
     return a + s * (b - a)
