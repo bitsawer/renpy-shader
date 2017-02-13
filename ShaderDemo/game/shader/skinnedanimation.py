@@ -109,9 +109,11 @@ class SkinnedAnimation:
         return data
 
     def setFrameCount(self, count):
-        self.frames = self.frames[:count]
-        while len(self.frames) < count:
-            self.frames.append(Frame())
+        if count != len(self.frames):
+            self.frames = self.frames[:count]
+            while len(self.frames) < count:
+                self.frames.append(Frame())
+            self.dirty = True
 
     def update(self, frameNumber, editor):
         for event, pos in editor.context.events:
@@ -312,7 +314,7 @@ class SkinnedAnimation:
             if len(self.frames[i].keys) != 0:
                 break
             i -= 1
-        self.frames = self.frames[:i + 1]
+        self.frames = self.frames[:i + 2]
         self.dirty = True
         return len(self.frames)
 
