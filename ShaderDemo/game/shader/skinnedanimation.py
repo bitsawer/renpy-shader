@@ -278,13 +278,6 @@ class SkinnedAnimation:
                     jump = abs(boneFrames[current] - index)
                     i += jump
 
-                missing = i - len(self.frames)
-                if missing > 0:
-                    #Add a keyframe to smooth the transition back to frame 0
-                    start, end = self.findKeyFrameRange(self.frames, boneFrames[0], name)
-                    if end is not None:
-                        copyKeyData(self.frames[end].keys[name], baked[len(baked) - 1].getBoneKey(name))
-
         return baked, keyBones
 
     def findKeyFrameRange(self, frames, frameNumber, boneName):
@@ -299,12 +292,11 @@ class SkinnedAnimation:
                 break
             i -= 1
 
-        i = frameNumber
-        while i < len(frames):
-            if boneName in frames[i].keys:
-                end = i
+        for i in range(frameNumber, frameNumber + len(frames)):
+            index = i % len(frames)
+            if boneName in frames[index].keys:
+                end = (index, i)
                 break
-            i += 1
 
         return start, end
 
@@ -330,29 +322,13 @@ class SkinnedAnimation:
                 start, end = self.findKeyFrameRange(frames, frameNumber, bone.name)
                 if start is not None and end is not None:
                     startKey = frames[start].keys[name]
-                    endKey = frames[end].keys[name]
-                    if startKey == endKey:
-                        key = KeyFrame()
-                        copyKeyData(startKey, key)
-                        results[name] = key
-                    else:
-                        weight = float(frameNumber - start) / (end - start)
-                        boneEasing = easingOverride
-                        if not boneEasing:
-                            boneEasing = self.getEasing(bone.name)
-                        eased = easing.getEasing(boneEasing)(weight)
-                        results[name] = interpolateKeyData(startKey, endKey, eased)
-                elif start is not None:
-                    key = KeyFrame()
-                    copyKeyData(frames[start].keys[name], key)
-                    results[name] = key
-                elif end is not None:
-                    key = KeyFrame()
-                    copyKeyData(frames[end].keys[name], key)
-                    results[name] = key
-                else:
-                    raise RuntimeError("Invalid animation frame: %s, %i of %i" % (self.name, frameNumber, len(frames)))
-
+                    endKey = frames[end[0]].keys[name]
+                    weight = float(frameNumber - start) / max(end[1] - start, 1.0)
+                    boneEasing = easingOverride
+                    if not boneEasing:
+                        boneEasing = self.getEasing(bone.name)
+                    eased = easing.getEasing(boneEasing)(weight)
+                    results[name] = interpolateKeyData(startKey, endKey, eased)
         return results
 
     def apply(self, keys, bones):
