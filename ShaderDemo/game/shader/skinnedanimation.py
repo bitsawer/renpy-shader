@@ -7,7 +7,7 @@ import utils
 import skinnededitor
 import easing
 
-DEFAULT_EASING = "backInOut"
+DEFAULT_EASING = "sineInOut"
 
 class KeyFrame:
     def __init__(self):
@@ -149,7 +149,10 @@ class SkinnedAnimation:
             y += editor.drawText("Keyframes", color, (x, y), align)[1]
             for i, frame in enumerate(self.frames):
                 if active.name in frame.keys:
-                    y += editor.drawText("%i" % i, (0, 0, 0), (x, y), align)[1]
+                    frameColor = (0, 0, 0)
+                    if i == frameNumber:
+                        frameColor = skinnededitor.ACTIVE_COLOR
+                    y += editor.drawText("%i" % i, frameColor, (x, y), align)[1]
         else:
             for i, frame in enumerate(self.frames):
                 if frame.keys: # i > 0 and
