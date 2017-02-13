@@ -96,9 +96,9 @@ screen editorMainScreen(name, pixelShader, textures={}, uniforms={}, update=None
                 text "Operations":
                     size 15
 
-                textbutton "Rename bone" action [SetVariable("editorRenameBoneFlag", True), Jump("update_editor")]
+                textbutton "Rename bone" action [SetVariable("editorRenameBoneFlag", True), Jump("update_editor_ui")]
                 #textbutton "Mesh tesselation" action [SetVariable("editorTesselationFlag", True), Jump("update_editor")] TODO Use levels?
-                textbutton "Reset pose" action [SetVariable("editorResetPoseFlag", True), Jump("update_editor")]
+                textbutton "Reset pose" action [SetVariable("editorResetPoseFlag", True), Jump("update_editor_ui")]
 
                 text "File":
                     size 15
@@ -222,7 +222,7 @@ init python:
 
     def clearKeymapForEditor():
         #Remove mappings that would conflict with our editor
-        shortcuts = ["mouseup_3", "mousedown_4", "mousedown_5", "h", "s"]
+        shortcuts = ["mouseup_3", "mousedown_4", "mousedown_5", "h", "s", "v"]
         for key, values in config.keymap.items():
             for name in shortcuts:
                 if name in values:
@@ -422,7 +422,7 @@ init python:
             context.uniforms["animationTime"] = 1.0
 
     def listImageTags():
-        ignores = ["black", "text", "vtext", shader.ZERO_INFLUENCE.split(".")[0]]
+        ignores = ["black", "text", "vtext", "editorBackground", shader.ZERO_INFLUENCE.split(".")[0]]
         tags = renpy.get_available_image_tags()
         for ignore in ignores:
             if ignore in tags:
@@ -432,7 +432,6 @@ init python:
 #label main_menu: #TODO For fast testing
 label start_editor:
     python:
-        clearKeymapForEditor()
         #Removes the quick menu permanently...
         if "quick_menu" in config.overlay_screens:
             config.overlay_screens.remove("quick_menu")
@@ -446,16 +445,19 @@ label start_editor:
         return
 
     python:
-        renpy.show(editorDrawableName)
-        bounds = renpy.get_image_bounds(editorDrawableName)
-        config.screen_width = max(bounds[2] + 500, 1280)
-        config.screen_height = max(bounds[3] + 150, 720)
-        renpy.hide(editorDrawableName)
-        renpy.reset_physical_size()
+        if 1: #Useful, but resolution changes are not always wanted.
+            renpy.show(editorDrawableName)
+            bounds = renpy.get_image_bounds(editorDrawableName)
+            config.screen_width = max(bounds[2] + 500, 1280)
+            config.screen_height = max(bounds[3] + 150, 720)
+            renpy.hide(editorDrawableName)
+            renpy.reset_physical_size()
 
     call screen editorListScreen("Load a rig for the image", scanForFileNames("rig"), None, "Create a new rig")
     $ editorRigFile = _return
     $ editorAnimFile = ""
+
+    $ clearKeymapForEditor() #TODO Mouse scrolling lists goes away, too...
 
 label reset_editor:
     $ shader._controllerContextStore._clear()
