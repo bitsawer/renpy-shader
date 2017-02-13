@@ -424,6 +424,9 @@ class SkinnedEditor:
             else:
                 bone.rotation.z = 0.0
 
+    def drawLinesSafe(self, color, connect, points, width=1):
+        utils.drawLinesSafe(self.context.overlayCanvas, color, connect, points, width)
+
     def drawText(self, text, color, pos, align=-1):
         return utils.drawText(self.context.overlayCanvas, text, pos, color, align)
 
@@ -736,7 +739,7 @@ class SkinnedEditor:
             if self.settings["edgePoints"] and bone.visible:
                 polyPoints = self.getPolyPoints(bone)
                 if polyPoints:
-                    canvas.lines("#ff0", True, polyPoints)
+                    self.drawLinesSafe("#ff0", True, polyPoints)
                     for i, p in enumerate(polyPoints):
                         #color = (0, int(float(i) / len(polyPoints) * 255), 0)
                         color = (0, 128, 0)

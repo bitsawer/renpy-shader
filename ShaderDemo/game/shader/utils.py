@@ -22,6 +22,27 @@ def drawText(canvas, text, pos, color, align=-1, background=(128, 128, 128)):
     canvas.get_surface().blit(surface, pos)
     return surface.get_size()
 
+def drawLinesSafe(canvas, color, connect, points, width=1):
+    #Workaround for hang if two points are the same
+    safe = []
+    i = 0
+    while i < len(points):
+        p = (round(points[i][0]), round(points[i][1]))
+        safe.append(p)
+        i2 = i + 1
+        while i2 < len(points):
+            p2 = (round(points[i2][0]), round(points[i2][1]))
+            if p != p2:
+                break
+            i2 += 1
+        i = i2
+
+    if connect and len(safe) > 0:
+        first = safe[0]
+        safe.append((first[0], first[1] - 1)) #Wrong by one pixel to be sure...
+
+    canvas.lines(color, False, safe, width)
+
 def createTransform2d():
     eye = euclid.Vector3(0, 0, 1)
     at = euclid.Vector3(0, 0, 0)
