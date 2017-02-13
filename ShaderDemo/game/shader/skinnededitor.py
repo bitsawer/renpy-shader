@@ -211,7 +211,8 @@ class ExtrudeBone(Action):
         bones = editor.context.renderer.bones
         parent = bones[self.bone.name]
 
-        parts = parent.name.strip().split(" ")
+        baseName = parent.name.replace("\\", "/").rsplit("/")[-1]
+        parts = baseName.strip().split(" ")
         if parts[-1].isdigit():
             parts = parts[:-1]
         newName =  self.findNextFreeBoneName(bones, " ".join(parts))
