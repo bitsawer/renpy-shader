@@ -217,7 +217,7 @@ init python:
         "cyclic": True,
         "reverse": False,
         "autoEnd": False,
-        "clip": True,
+        "clip": False,
     }
 
     def clearKeymapForEditor():
@@ -254,7 +254,7 @@ init python:
     def changeFrameCount():
         global editorMaxFrames, editorFrameNumber
         try:
-            count = eval(userInput("Set animation end frame", str(editorMaxFrames), allow=list("1234567890*/+-")))
+            count = eval(userInput("Set animation frame count", str(editorMaxFrames), allow=list("1234567890*/+-")))
             if count > 0 and count < 10000:
                 editorMaxFrames = count
                 editorFrameNumber = min(editorFrameNumber, editorMaxFrames - 1)
@@ -453,7 +453,7 @@ label start_editor:
             renpy.hide(editorDrawableName)
             renpy.reset_physical_size()
 
-    call screen editorListScreen("Load a rig for the image", scanForFileNames("rig"), None, "Create a new rig")
+    call screen editorListScreen("Load a rig for the image", scanForFileNames("rig"), editorDrawableName.split(".")[0] + ".rig", "Create a new rig")
     $ editorRigFile = _return
     $ editorAnimFile = ""
 
