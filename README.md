@@ -1,6 +1,6 @@
 # renpy-shader
 
-Experimental OpenGL shader and skeletal animation support for Ren'Py. The ShaderDemo Ren'Py project included in this repository has many examples about what this library can do.
+Experimental OpenGL shader and [skeletal animation](doc/rigeditor.md) support for Ren'Py. The ShaderDemo Ren'Py project included in this repository has many examples about what this library can do.
 
 # Examples
 
