@@ -223,13 +223,6 @@ class SkinnedAnimation:
                 del frame.keys[oldName]
                 frame.keys[newName] = key
 
-    def updateBones(self, bones):
-        #TODO Remove frames that had their bones:
-        # -removed
-        # -renamed
-        # -etc...
-        pass
-
     def reverseKeyFrames(self, frames, keyFrames, name):
         keys = {}
         for index in keyFrames:
@@ -280,6 +273,11 @@ class SkinnedAnimation:
 
         return baked, keyBones
 
+    def updateBaked(self):
+        if self.dirty or not self.baked:
+            self.baked = self.bakeFrames()
+        self.dirty = False
+
     def findKeyFrameRange(self, frames, frameNumber, boneName):
         start = None
         end = None
@@ -311,9 +309,7 @@ class SkinnedAnimation:
         return len(self.frames)
 
     def interpolate(self, frameNumber, bones, easingOverride=None):
-        if self.dirty or not self.baked:
-            self.baked = self.bakeFrames()
-        self.dirty = False
+        self.updateBaked()
 
         results = {}
         frames, keyBones = self.baked
