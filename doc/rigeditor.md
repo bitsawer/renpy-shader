@@ -3,6 +3,8 @@
 
 This document provides some basic instructions for the rig editor. You can access the rig editor from the main menu. Make sure you have watched the [basic editor workflow video](https://www.youtube.com/watch?v=NHJu0OYBERE).
 
+Note: Starting the editor disables some screens (like quick menu) and keyboard shortcuts to prevent them from interfering with the editor controls. Restart the game to get them back.
+
 ## Rigging walkthrough
 
 You can play around with the demo project editor, but you probably want to rig your own files at some point. To do so:
@@ -60,6 +62,8 @@ Bone attributes that can be animated:
 Keyframe animation is used. This means that keyframes for bones are inserted at important positions in the timeline and the frames between those keysframes are interpolated.
 
 Playing the animation in the editor can be much slower (because of RenPy screen updates etc.) than playing it using the AnimationPlayer.
+
+Track-related options in the animation UI are available only if the animation has been saved to a file. This emulates how the TrackInfo-class will behave during the gameplay. All track animation data is loaded from the file and any changes in the editor (like adding or deleting keyframes etc.) will not take effect until you save the file again!
 
 ## Keyboard Shortcuts
 
