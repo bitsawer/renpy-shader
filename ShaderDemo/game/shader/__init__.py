@@ -4,7 +4,7 @@ import renpy
 import utils
 from controller import RenderController, RenderContext, ControllerContextStore
 from rendering import Renderer2D, Renderer3D, SkinnedRenderer
-from skinnededitor import SkinnedEditor
+from rigeditor import RigEditor
 from skinnedplayer import TrackInfo, AnimationPlayer
 from shadercode import *
 

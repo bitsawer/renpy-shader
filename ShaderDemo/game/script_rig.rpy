@@ -46,7 +46,7 @@ init python:
         #Draw some useful debug visualizations
         if debugRig:
             context.createOverlayCanvas()
-            editor = shader.SkinnedEditor(context, editorDebugSettings)
+            editor = shader.RigEditor(context, editorDebugSettings)
             editor.visualizeBones()
 
         #Only show the wireframes in debug mode

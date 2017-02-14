@@ -173,7 +173,7 @@ screen editorMainScreen(name, pixelShader, textures={}, uniforms={}, update=None
 init python:
     import os
     import shader
-    from shader import skinnededitor, skinnedanimation, skinnedplayer
+    from shader import rigeditor, skinnedanimation, skinnedplayer
     from shader import easing, utils
 
     editorSettings = {
@@ -328,7 +328,7 @@ init python:
     def getSavePath(fileName, extension):
         if not fileName.strip().lower().endswith(extension):
             fileName = fileName + extension
-        directory = skinnededitor.getSaveDir()
+        directory = rigeditor.getSaveDir()
         return fileName, os.path.join(directory, fileName)
 
     def saveAnimation(animation):
@@ -359,7 +359,7 @@ init python:
 
         context.createOverlayCanvas()
 
-        editor = skinnededitor.SkinnedEditor(context, editorSettings)
+        editor = rigeditor.RigEditor(context, editorSettings)
         editor.update()
         editor.visualizeBones()
 

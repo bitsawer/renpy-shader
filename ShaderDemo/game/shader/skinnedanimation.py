@@ -4,7 +4,7 @@ import pygame
 
 import euclid
 import utils
-import skinnededitor
+import rigeditor
 import easing
 
 DEFAULT_EASING = "sineInOut"
@@ -141,7 +141,7 @@ class SkinnedAnimation:
                         self.dirty = True
 
     def drawDebugText(self, editor, frameNumber):
-        color = skinnededitor.HEADER_COLOR
+        color = rigeditor.HEADER_COLOR
         align = 1
         x = editor.context.renderer.getSize()[0] - 10
         y = 10
@@ -153,14 +153,14 @@ class SkinnedAnimation:
                 if active.name in frame.keys:
                     frameColor = (0, 0, 0)
                     if i == frameNumber:
-                        frameColor = skinnededitor.ACTIVE_COLOR
+                        frameColor = rigeditor.ACTIVE_COLOR
                     y += editor.drawText("%i" % i, frameColor, (x, y), align)[1]
         else:
             for i, frame in enumerate(self.frames):
                 if frame.keys: # i > 0 and
                     frameColor = color
                     if i == frameNumber:
-                        frameColor = skinnededitor.ACTIVE_COLOR
+                        frameColor = rigeditor.ACTIVE_COLOR
 
                     y += editor.drawText("Frame %i" % i, frameColor, (x, y), align)[1]
                     for name, key in frame.keys.items():
@@ -186,7 +186,7 @@ class SkinnedAnimation:
 
     def drawDebugBone(self, editor, bones, boneName, hasKeyframe):
         pos = editor.getBonePivotTransformed(bones[boneName])
-        size = skinnededitor.PIVOT_SIZE * 2 + 1
+        size = rigeditor.PIVOT_SIZE * 2 + 1
         color = (255, 255, 0)
         if hasKeyframe:
             color = (0, 255, 0)

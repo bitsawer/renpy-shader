@@ -369,7 +369,7 @@ class PoseMode:
         return bool(self.active)
 
 
-class SkinnedEditor:
+class RigEditor:
     def __init__(self, context, settings):
         self.context = context
         self.settings = settings
