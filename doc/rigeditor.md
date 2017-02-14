@@ -31,6 +31,22 @@ You can play around with the demo project editor, but you probably want to rig y
 
 The saved .rig-file contains information about the RenPy images it was created from, so updating the image files afterwards can cause issues. Most importantly the image resolutions should not be changed. Changing colors or making small adjustments is usually fine, but you might need to re-adjust image edge points in the editor to re-triangulate the mesh if the image silhouette changed.
 
+## Rigging tips
+
+If some mesh part deforms in a bad way...
+
+* Move the bone slightly. Sometimes the bone is just in a bad location and mesh deformation (like rotation) looks bad especially with large triangles nearby.
+
+* Activate bone tessellation in spots that must deform alot, but be aware it can cause "holes" and tearing in the mesh if deformed enough. (To be fixed).
+
+* Create "helper" bones to control the deformation between the bones you actually care about. Possibly enable tessellation on them, too.
+
+* Combine translation with rotation. For example an elbow (or any other joint) bend animation can both rotate the joint and also move it slightly to fix or hide any bad spots.
+
+* Adjust bone z-order to make sure the "better" bone hides the "bad" geometry under it.
+
+* Try removing edge points around the important joint. Sometimes less dense mesh is actually better.
+
 ## Animation walkthrough
 
 Bone attributes that can be animated:
