@@ -137,13 +137,13 @@ label start_rig_demo:
 
     "Now, the arm should be moving around."
     "Animating bones manually can be useful in many cases, but it can also be tedious and error-prone."
-    "We will hide the rig debug visualization for now. It can slow things down quite a bit."
+    "We will hide the rig debug visualization for now. It can slow things down and be distracting."
 
     $ debugRig = False
     $ rig(doll, update=playDollAnimations)
 
     "Let's stop the manual animation and change the way we animate the rig."
-    "Next, we use an animation that has been created and saved by using the rig editor."
+    "Next, we use an animation that has been created using the rig editor."
     "You can access the editor from the main screen and create your own rigs and animations."
     "Alright, let's play a more complex animation."
 
@@ -165,15 +165,15 @@ label start_rig_demo:
 
     $ clothes[CLOTH_SHIRT] = False
 
-    "There. Let's make her bald, too!"
+    "There. Let's make her bald!"
 
     $ clothes[CLOTH_HAIR] = False
 
-    "And the skirt, too."
+    "And hide the skirt too."
 
     $ clothes[CLOTH_SKIRT] = False
 
-    "All right, I think that is enough for now. Lets put them all back."
+    "All right, I think that is enough for now. Let's put them all back."
 
     $ showDollClothes()
 
@@ -181,7 +181,7 @@ label start_rig_demo:
 
     $ anims.add(FLAIL)
 
-    "There. Let's add a kneeling animation into the mix."
+    "There. Next we add a kneeling animation into the mix."
 
     $ anims.add(KNEEL)
 
@@ -191,7 +191,7 @@ label start_rig_demo:
 
     $ anims.clear()
 
-    "That was a complex rig, but you don't have to create complex LiveComposite setups to animate images."
+    "This is a relatively complex rig, but you don't have to create complex LiveComposite setups to animate images."
     "Often it is enough to rig a single, static image."
     "First, let's hide the doll completely..."
 
@@ -232,6 +232,6 @@ label start_rig_demo:
     $ amyAnims.add(AMY_ARM_LEFT)
 
     "There you go. Three tracks mixed together."
-    "That is about it for now. Go and make your own rigs and animations now!"
+    "That is all for now. Go and make your own rigs and animations!"
     "Remember to check out the documentation and watch the videos if you haven't already."
     "Good luck!"
