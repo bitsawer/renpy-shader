@@ -8,7 +8,7 @@ init python:
     doll = "doll"
 
     #Another, simpler rig and its image.
-    amyDoll = "amypose"
+    amyDoll = "amydoll"
 
     debugRig = False #For debugging rig bones etc.
     debugAnimations = False #For debugging animation frames etc.
@@ -27,19 +27,19 @@ init python:
     #rename, delete etc. animations make sure you still keep the entries for them
     #in here if you want to support old save games.
     FLAIL = "flail"
-    SQUAT = "squat"
+    KNEEL = "kneel"
     DOLL_TRACKS = {
         FLAIL: shader.TrackInfo("doll flail.anim", cyclic=True),
-        SQUAT: shader.TrackInfo("doll squat.anim", cyclic=True),
+        KNEEL: shader.TrackInfo("doll kneel.anim", cyclic=True),
     }
 
     AMY_IDLE = "idle"
     AMY_ARM_LEFT = "waveLeft"
     AMY_ARM_RIGHT = "waveRight"
     AMY_TRACKS = {
-        AMY_IDLE: shader.TrackInfo("amypose idle.anim", repeat=True),
-        AMY_ARM_LEFT: shader.TrackInfo("amypose leftarm.anim", cyclic=True),
-        AMY_ARM_RIGHT: shader.TrackInfo("amypose rightarm.anim", cyclic=True),
+        AMY_IDLE: shader.TrackInfo("amydoll idle.anim", repeat=True),
+        AMY_ARM_LEFT: shader.TrackInfo("amydoll leftarm.anim", cyclic=True),
+        AMY_ARM_RIGHT: shader.TrackInfo("amydoll rightarm.anim", cyclic=True),
     }
 
     def visualizeRig(context):
@@ -50,7 +50,7 @@ init python:
             editor.visualizeBones()
 
         #Only show the wireframes in debug mode
-        for name, bone in context.renderer.getBones().items():
+        for name, bone in context.renderer.bones.items():
             bone.wireFrame = debugRig
 
     def showDollClothes(show=True):
@@ -89,6 +89,7 @@ screen rigScreen(name, pixelShader, textures={}, uniforms={}, update=None, args=
         xalign xalign
         yalign yalign
 
+#A helper screen for enabling or disabling debug information
 screen animationDebugScreen():
     frame:
         xalign 1.0
@@ -114,7 +115,9 @@ label start_rig_demo:
     #jump rig_dev
 
     "This demo will show you how to use and animate rigged and skinned images."
+
     #TODO Link to docs and video.
+
     "First, let's show the image itself."
 
     $ rig(doll, update=visualizeRig).dissolve()
@@ -175,9 +178,9 @@ label start_rig_demo:
 
     $ anims.add(FLAIL)
 
-    "There. And now lets add a squatting animation into the mix."
+    "There. Let's add a kneeling animation into the mix."
 
-    $ anims.add(SQUAT)
+    $ anims.add(KNEEL)
 
     "..."
     "Active lifestyle is important, don't you think?"
@@ -189,13 +192,15 @@ label start_rig_demo:
     "Often it is enough to rig a single, static image."
     "First, lets hide the doll completely..."
 
-    $ hide(doll)
+    $ hide(doll).dissolve()
 
 label rig_dev:
 
     "... And show a simpler rig which contains only one image."
 
     $ rig(amyDoll, yalign=0.1, update=playAmyAnimations).dissolve()
+
+    #TODO automatic influence image search.
 
     "There. A pretty basic rig."
     "To make it look a bit more alive, lets play an idle animation."
@@ -213,4 +218,6 @@ label rig_dev:
     $ amyAnims.add(AMY_ARM_LEFT)
 
     "There you go... A lot of movement going on."
-    "That is about it for now. Go and make your own rigs and animations now! Good luck!"
+    "That is about it for now. Go and make your own rigs and animations now!"
+    "Remember to check out the documentation and videos if you didn't already."
+    "Good luck!"
