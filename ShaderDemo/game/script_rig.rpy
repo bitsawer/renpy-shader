@@ -81,6 +81,7 @@ init python:
         player = shader.AnimationPlayer(context, amyDoll)
         player.setDebug(debugAnimations) #Enable visual debug help
         player.play([AMY_TRACKS[name] for name in amyAnims])
+        animateEyesAndMouth(context) #Animate expressione like in the first demo
         visualizeRig(context)
 
 #The screen for showing rigged images. It is usually best to use the rig() function which will show this.
@@ -110,9 +111,11 @@ label start_rig_demo:
     # Visible "clothes" for the doll. By default make them all visible.
     $ clothes = {CLOTH_BASE : True, CLOTH_SKIRT: True, CLOTH_SHIRT: True, CLOTH_HAIR: True}
 
-    scene room
+    # Expression animation targets for Amy. Same as in the first demo.
+    $ eyeTarget = (0, 0)
+    $ mouthTarget = (0, 0)
 
-    #jump rig_dev
+    scene room
 
     "This demo will show you how to use and animate rigged and skinned images."
 
@@ -190,20 +193,30 @@ label start_rig_demo:
 
     "That was a complex rig, but you don't have to create complex LiveComposite setups to animate images."
     "Often it is enough to rig a single, static image."
-    "First, lets hide the doll completely..."
+    "First, let's hide the doll completely..."
 
     $ hide(doll).dissolve()
-
-label rig_dev:
 
     "... And show a simpler rig which contains only one image."
 
     $ rig(amyDoll, yalign=0.1, update=playAmyAnimations).dissolve()
 
-    #TODO automatic influence image search.
+    "Just like in the first demo, this image has also an influence image."
+    "This makes it possible to apply pixel shader wind and expression effects."
+    "For example, we can make her frown."
 
-    "There. A pretty basic rig."
-    "To make it look a bit more alive, lets play an idle animation."
+    $ eyeTarget = (0, 2)
+    $ mouthTarget = (0, -1)
+
+    "..."
+    "Yeah, that's enough. Reset the expression."
+
+    $ eyeTarget = (0, 0)
+    $ mouthTarget = (0, 0)
+
+    "Rigs will load influence images automatically for each rig image if they exist."
+    "This should all be familiar to you if you have also checked out the first demo."
+    "To make the rig look a bit more alive, let's play an idle animation."
 
     $ amyAnims.add(AMY_IDLE)
 
@@ -213,11 +226,12 @@ label rig_dev:
 
     $ amyAnims.add(AMY_ARM_RIGHT)
 
-    "Yeah, smooth moves. Let's move the second hand, too."
+    "Yeah, smooth moves. Two animations at the same time."
+    "Let's move the second hand, too."
 
     $ amyAnims.add(AMY_ARM_LEFT)
 
-    "There you go... A lot of movement going on."
+    "There you go. Three tracks mixed together."
     "That is about it for now. Go and make your own rigs and animations now!"
-    "Remember to check out the documentation and videos if you didn't already."
+    "Remember to check out the documentation and watch the videos if you haven't already."
     "Good luck!"
