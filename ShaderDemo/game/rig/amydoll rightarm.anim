@@ -1,0 +1,503 @@
+{
+ "animation": {
+  "boneData": {
+   "amypose 23": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "amypose 5": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "amypose 6": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   }
+  },
+  "frames": [
+   {
+    "keys": {
+     "amypose 23": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "amypose 5": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "amypose 6": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     }
+    }
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {
+     "amypose 5": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.9182655058627103
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     }
+    }
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {
+     "amypose 6": {
+      "rotation": [
+       0.0,
+       0.0,
+       -1.2729374314777446
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     }
+    }
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {
+     "amypose 23": {
+      "rotation": [
+       0.0,
+       0.0,
+       -0.9048379807636997
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     }
+    }
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   }
+  ],
+  "name": "amypose rightarm.anim"
+ },
+ "version": 1
+}

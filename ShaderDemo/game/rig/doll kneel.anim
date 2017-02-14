@@ -1,0 +1,673 @@
+{
+ "animation": {
+  "boneData": {
+   "basecrop 10": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "basecrop 5": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "basecrop 6": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "basecrop 7": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "basecrop 8": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "basecrop 9": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "root": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   }
+  },
+  "frames": [
+   {
+    "keys": {
+     "basecrop 10": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 5": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 6": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 7": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 8": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 9": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "root": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     }
+    }
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {
+     "basecrop 10": {
+      "rotation": [
+       0.0,
+       0.0,
+       -0.7496975966794237
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 5": {
+      "rotation": [
+       0.0,
+       0.0,
+       -0.5463216582989041
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 6": {
+      "rotation": [
+       0.0,
+       0.0,
+       1.2487038402391546
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 7": {
+      "rotation": [
+       0.0,
+       0.0,
+       -0.6969911773875164
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 8": {
+      "rotation": [
+       0.0,
+       0.0,
+       -0.5991681048717267
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       -4.0,
+       -18.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 9": {
+      "rotation": [
+       0.0,
+       0.0,
+       1.1750212827623963
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "root": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       16.0,
+       85.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     }
+    }
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   }
+  ],
+  "name": "doll squat.anim"
+ },
+ "version": 1
+}

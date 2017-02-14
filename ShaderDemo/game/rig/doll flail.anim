@@ -1,0 +1,1044 @@
+{
+ "animation": {
+  "boneData": {
+   "basecrop 1": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "basecrop 12": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "basecrop 13": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "basecrop 14": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "basecrop 16": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "basecrop 17": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "basecrop 18": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "basecrop 2": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "basecrop 21": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "basecrop 23": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "basecrop 4": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "basecrop 5": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "basecrop 8": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "haircrop 3": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "haircrop 6": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   }
+  },
+  "frames": [
+   {
+    "keys": {
+     "basecrop 1": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 12": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 13": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 14": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 16": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 17": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 18": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 2": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 21": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 23": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 4": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 5": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 8": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "haircrop 3": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "haircrop 6": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     }
+    }
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {
+     "basecrop 8": {
+      "rotation": [
+       0.0,
+       0.0,
+       -0.18992287286026255
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     }
+    }
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {
+     "basecrop 12": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.6205786772195956
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 13": {
+      "rotation": [
+       0.0,
+       0.0,
+       1.8464637599357299
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 14": {
+      "rotation": [
+       0.0,
+       0.0,
+       -0.6407759481890196
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 5": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.1402539932006509
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "haircrop 3": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.36071542912549315
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     }
+    }
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {
+     "haircrop 6": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.24120215451844995
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     }
+    }
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {
+     "basecrop 14": {
+      "rotation": [
+       0.0,
+       0.0,
+       -1.2617929860224126
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     }
+    }
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {
+     "basecrop 21": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.402087745923352
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     }
+    }
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {
+     "basecrop 16": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.2715595127471687
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 17": {
+      "rotation": [
+       0.0,
+       0.0,
+       -2.11264317992283
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 18": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.6770495619122696
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     }
+    }
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {
+     "basecrop 2": {
+      "rotation": [
+       0.0,
+       0.0,
+       -0.11600537930446908
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     }
+    }
+   },
+   {
+    "keys": {
+     "basecrop 23": {
+      "rotation": [
+       0.0,
+       0.0,
+       -0.22240349992610375
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "basecrop 4": {
+      "rotation": [
+       0.0,
+       0.0,
+       -0.24330685020189313
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     }
+    }
+   },
+   {
+    "keys": {
+     "basecrop 1": {
+      "rotation": [
+       0.0,
+       0.0,
+       -0.15077333955908023
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     }
+    }
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   }
+  ],
+  "name": "doll flail222.anim"
+ },
+ "version": 1
+}

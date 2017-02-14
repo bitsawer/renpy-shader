@@ -1,0 +1,623 @@
+{
+ "animation": {
+  "boneData": {
+   "amypose 13": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "amypose 15": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "amypose 2": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "amypose 23": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "amypose 26": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "amypose 32": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   },
+   "amypose 6": {
+    "easing": "sineInOut",
+    "repeat": true,
+    "reversed": false
+   }
+  },
+  "frames": [
+   {
+    "keys": {
+     "amypose 13": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "amypose 15": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "amypose 2": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "amypose 23": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "amypose 26": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "amypose 32": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "amypose 6": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     }
+    }
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {
+     "amypose 15": {
+      "rotation": [
+       0.0,
+       0.0,
+       -0.13642672860965854
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     }
+    }
+   },
+   {
+    "keys": {
+     "amypose 23": {
+      "rotation": [
+       0.0,
+       0.0,
+       -0.19775695600841148
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     }
+    }
+   },
+   {
+    "keys": {
+     "amypose 32": {
+      "rotation": [
+       0.0,
+       0.0,
+       -0.04891611266678564
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     }
+    }
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {
+     "amypose 13": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.049164091189489056
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "amypose 2": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.10745599841666598
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     }
+    }
+   },
+   {
+    "keys": {
+     "amypose 26": {
+      "rotation": [
+       0.0,
+       0.0,
+       0.2571031714965403
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     },
+     "amypose 6": {
+      "rotation": [
+       0.0,
+       0.0,
+       -0.536549670308132
+      ],
+      "scale": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "translation": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transparency": 0.0,
+      "visible": true
+     }
+    }
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   },
+   {
+    "keys": {}
+   }
+  ],
+  "name": "amypose idle.anim"
+ },
+ "version": 1
+}
