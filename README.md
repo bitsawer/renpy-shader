@@ -1,6 +1,6 @@
 # renpy-shader
 
-Experimental OpenGL shader support for Ren'Py. The ShaderDemo Ren'Py project included in this repository has many examples about what this library can do.
+Experimental OpenGL shader and skeletal animation support for Ren'Py. The ShaderDemo Ren'Py project included in this repository has many examples about what this library can do.
 
 # Requirements
 
@@ -16,4 +16,9 @@ Experimental OpenGL shader support for Ren'Py. The ShaderDemo Ren'Py project inc
 
 3. Download [PyOpenGL](https://pypi.python.org/pypi/PyOpenGL/3.1.1a1) and place it's uncompressed package subdirectory "OpenGL" (the one which contains the \__init__.py) either under this project's "ShaderDemo/game"-directory or under the Ren'Py SDK's "lib/pythonlib2.7".
 
-4. Start the ShaderDemo and see what happens.
+4. Start the ShaderDemo and run the demos or the rig editor.
+
+# Links
+
+* [Shader effects demo video](https://www.youtube.com/watch?v=nyDbvAy0Xa4)
+* [Skeletal animation demo video](https://www.youtube.com/watch?v=LL2GuJG_2E0)
