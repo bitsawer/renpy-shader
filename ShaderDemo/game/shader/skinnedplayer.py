@@ -146,8 +146,7 @@ class AnimationPlayer:
                 track.info.speed, frameIndex, len(track.animation.frames) - 1)
             pos = (10, self.debugY)
             color = (0, 0, 0)
-            utils.drawText(self.context.overlayCanvas, text, pos, color)
-            self.debugY += utils.FONT_SIZE
+            self.debugY += utils.drawText(self.context.overlayCanvas, text, pos, color)[1]
 
     def play(self, infos, rest=True):
         for info in infos:
