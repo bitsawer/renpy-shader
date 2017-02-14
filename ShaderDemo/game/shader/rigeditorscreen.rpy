@@ -74,7 +74,7 @@ screen editorMainScreen(name, pixelShader, textures={}, uniforms={}, update=None
                     size 15
                     color "ff0"
 
-                text "{a=https://github.com/bitsawer/renpy-shader/doc/rigeditor.md}(Help){/a}":
+                text "{a=https://github.com/bitsawer/renpy-shader/blob/master/doc/rigeditor.md}(Help){/a}":
                     size 15
 
                 text "UI":
