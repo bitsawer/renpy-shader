@@ -119,7 +119,7 @@ init python:
 
                     overlayRender = renpy.Render(renderWidth, renderHeight)
                     renderContext = shader.RenderContext(controller.renderer,
-                        renderWidth, renderHeight, time.clock(), st, at, uniforms,
+                        renderWidth, renderHeight, time.time(), st, at, uniforms,
                         self.mousePos, self.events, context.contextStore, overlayRender)
 
                     self.events = []

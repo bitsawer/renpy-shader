@@ -76,7 +76,7 @@ class AnimationPlayer:
         self.debug = debug
 
     def getTime(self):
-        return self.context.time
+        return self.context.shownTime
 
     def getTrackInfo(self, name):
         track = self.data.tracks.get(name)

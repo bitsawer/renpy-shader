@@ -64,7 +64,7 @@ init python:
 
     def animateDollArm(context):
         bone = context.renderer.bones[ARM_BONE]
-        targetRotation = math.sin(context.time) + 0.5 #In radians, not in degrees.
+        targetRotation = math.sin(context.shownTime) + 0.5 #In radians, not in degrees.
         bone.rotation.z = shader.utils.interpolate(bone.rotation.z, targetRotation, 0.1)
         visualizeRig(context)
 

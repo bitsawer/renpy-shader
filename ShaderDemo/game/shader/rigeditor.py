@@ -421,7 +421,7 @@ class RigEditor:
         for name, bone in bones.items():
             if animate and bone.parent:
                 strength = len(self.getBone(bone.parent).children)
-                bone.rotation.z = math.sin(context.time * 0.5) * min(0.5, strength / 10.0)
+                bone.rotation.z = math.sin(context.shownTime * 0.5) * min(0.5, strength / 10.0)
             else:
                 bone.rotation.z = 0.0
 
