@@ -37,9 +37,9 @@ class SkinningBone:
         self.image = None
         self.pos = (0, 0)
         self.pivot = (0, 0)
-        self.translation = euclid.Vector3(0, 0, 0)
-        self.rotation = euclid.Vector3(0, 0, 0)
-        self.scale = euclid.Vector3(1, 1, 1)
+        self.translation = euclid.Vector3(0.0, 0.0, 0.0)
+        self.rotation = euclid.Vector3(0.0, 0.0, 0.0)
+        self.scale = euclid.Vector3(1.0, 1.0, 1.0)
         self.zOrder = -1
         self.visible = True
         self.wireFrame = False
