@@ -162,16 +162,17 @@ class SkinnedMesh:
             for edge in ((a, b), (b, c), (c, a)):
                 start = self.getVertex(edge[0])
                 end = self.getVertex(edge[1])
-                for tri, index in indexAdj.get(edge[0], []):
-                    for n in tri:
-                        v2 = self.getVertex(n)
-                        if geometry.pointDistance(start, v2) > 1.0 and geometry.pointDistance(end, v2) > 1.0:
-                            edgeDist = geometry.pointToLineDistance(v2, start, end)
-                            if edgeDist < 1.0:
-                                #Vertex is overlapping this edge
-                                splitting = split.get(i, set())
-                                splitting.add(edge)
-                                split[i] = splitting
+                if geometry.pointDistance(start, end) > 0.0:
+                    for tri, index in indexAdj.get(edge[0], []):
+                        for n in tri:
+                            v2 = self.getVertex(n)
+                            if geometry.pointDistance(start, v2) > 1.0 and geometry.pointDistance(end, v2) > 1.0:
+                                edgeDist = geometry.pointToLineDistance(v2, start, end)
+                                if edgeDist < 1.0:
+                                    #Vertex is overlapping this edge
+                                    splitting = split.get(i, set())
+                                    splitting.add(edge)
+                                    split[i] = splitting
 
         verts = self.vertices[:]
         indices = self.indices[:]
