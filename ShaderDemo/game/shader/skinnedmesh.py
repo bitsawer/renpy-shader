@@ -158,16 +158,14 @@ class SkinnedMesh:
     def sortTriangles(self, transforms):
         triangles = []
         for a, b, c in self.getTriangleIndices():
-            boneWeight = None
-            boneIndexHeaviest = None
+            zSum = 0.0
             for i in (a, b, c):
                 for x in range(4):
                     index = i * 4 + x
-                    weight = self.boneWeights[index]
-                    if boneWeight is None or weight > boneWeight:
-                        boneWeight = weight
-                        boneIndexHeaviest = int(self.boneIndices[index])
-            triangles.append((transforms[boneIndexHeaviest].bone.zOrder, a, b, c))
+                    boneIndex = int(self.boneIndices[index])
+                    boneWeight = self.boneWeights[index]
+                    zSum += transforms[boneIndex].bone.zOrder * boneWeight
+            triangles.append((zSum / (3.0 * 4.0), a, b, c))
         triangles.sort(key=lambda b: b[0])
 
         indices = []
