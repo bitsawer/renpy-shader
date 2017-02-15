@@ -466,6 +466,7 @@ label update_editor:
     python:
         if editorAnimFile:
             editorAnimation = skinnedanimation.loadAnimationFromFile(utils.findFile(editorAnimFile))
+            editorAnimation.name = editorAnimFile
             editorMaxFrames = len(editorAnimation.frames)
         else:
             editorAnimation = skinnedanimation.SkinnedAnimation("untitled.anim")
