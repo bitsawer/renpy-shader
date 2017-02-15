@@ -333,8 +333,8 @@ class SkinnedRenderer(BaseRenderer):
                 bone.mesh.moveVertices(bone.pos)
                 if autoSubdivide:
                     bone.mesh.subdivideAdaptive(transforms)
-                if sizeSubdivide > 50:
-                    bone.mesh.subdivide(sizeSubdivide)
+                    bone.mesh.weldVertices()
+                    bone.mesh.fixTJunctions()
                 bone.mesh.weldVertices()
 
     def updateBones(self):

@@ -135,6 +135,57 @@ class SkinnedMesh:
         indices.extend([d, b, e])
         indices.extend([f, e, c])
 
+    def splitEdge(self, a, b, tri, verts, indices, index):
+        v1 = self.getVertex(a)
+        v2 = self.getVertex(b)
+
+        new1 = geometry.interpolate2d(v1, v2, 0.5)
+
+        indices[index * 3] = None
+        indices[index * 3 + 1] = None
+        indices[index * 3 + 2] = None
+
+        verts.extend(new1)
+
+        c = (len(verts) // 2) - 1
+        d = set(tri).difference((a, b)).pop()
+
+        indices.extend([d, a, c])
+        indices.extend([d, b, c])
+
+    def fixTJunctions(self):
+        tris = self.getTriangleIndices()
+        indexAdj = self.getIndexAdjacency(tris)
+
+        split = {}
+        for i, (a, b, c) in enumerate(tris):
+            for edge in ((a, b), (b, c), (c, a)):
+                start = self.getVertex(edge[0])
+                end = self.getVertex(edge[1])
+                for tri, index in indexAdj.get(edge[0], []):
+                    for n in tri:
+                        v2 = self.getVertex(n)
+                        if geometry.pointDistance(start, v2) > 1.0 and geometry.pointDistance(end, v2) > 1.0:
+                            edgeDist = geometry.pointToLineDistance(v2, start, end)
+                            if edgeDist < 1.0:
+                                #Vertex is overlapping this edge
+                                splitting = split.get(i, set())
+                                splitting.add(edge)
+                                split[i] = splitting
+
+        verts = self.vertices[:]
+        indices = self.indices[:]
+        for index, edges in split.items():
+            edges = list(edges)
+            tri = tris[index]
+            if len(edges) == 1:
+                self.splitEdge(edges[0][0], edges[0][1], tri, verts, indices, index)
+            elif len(edges) > 1:
+                #TODO This can create new edges to be splitted...
+                self.subdivideTriangle(tri[0], tri[1], tri[2], verts, indices, index)
+
+        self.setGeometry(verts, [x for x in indices if x is not None])
+
     def weldVertices(self):
         duplicates = {}
         verts = []
