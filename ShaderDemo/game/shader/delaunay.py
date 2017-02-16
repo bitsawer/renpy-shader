@@ -16,6 +16,7 @@ import logging
 #     "Robust predicates not available, falling back on non-robust implementation"
 #     )
 
+
 def orient2d(pa, pb, pc):
     """Direction from pa to pc, via pb, where returned value is as follows:
 
@@ -29,6 +30,7 @@ def orient2d(pa, pb, pc):
     detright = (pa[1] - pc[1]) * (pb[0] - pc[0])
     det = detleft - detright
     return det
+
 
 def incircle(pa, pb, pc, pd):
     """Tests whether pd is in circle defined by the 3 points pa, pb and pc
@@ -72,7 +74,6 @@ def incircle(pa, pb, pc, pd):
 #   in [-1,1] range: more floating point precision available
 
 
-
 # ------------------------------------------------------------------------------
 # Iterators
 #
@@ -81,8 +82,8 @@ class FiniteEdgeIterator(object):
     def __init__(self, triangulation, constraints_only = False):
         self.triangulation = triangulation
         self.constraints_only = constraints_only
-        self.current_idx = 0 # this is index in the list
-        self.pos = -1 # this is index in the triangle (side)
+        self.current_idx = 0  # this is index in the list
+        self.pos = -1  # this is index in the triangle (side)
 
     def __iter__(self):
         return self
@@ -107,7 +108,6 @@ class FiniteEdgeIterator(object):
             raise StopIteration()
 
 
-
 class TriangleIterator(object):
     """Iterator over all triangles that are in the triangle data structure.
     The finite_only parameter determines whether only the triangles in the
@@ -115,6 +115,7 @@ class TriangleIterator(object):
     triangles are considered.
 
     """
+
     def __init__(self, triangulation, finite_only=False):
         self.triangulation = triangulation
         self.finite_only = finite_only
@@ -153,6 +154,7 @@ class ConvexHullTriangleIterator(TriangleIterator):
     point set (excludes infinite triangles).
 
     """
+
     def __init__(self, triangulation):
         # Actually, we are an alias for TriangleIterator
         # with finite_only set to True
@@ -165,6 +167,7 @@ class InteriorTriangleIterator(object):
     Assumes that a polygon has been triangulated which is closed properly
     and that the polygon consists of *exactly one* connected component!
     """
+
     def __init__(self, triangulation):
         constrained = False
         self.triangulation = triangulation
@@ -213,7 +216,6 @@ class InteriorTriangleIterator(object):
             raise StopIteration()
 
 
-
 class RegionatedTriangleIterator(object):
     """Iterator over all triangles that are fenced off by constraints.
     The constraints fencing off triangles determine the regions.
@@ -229,6 +231,7 @@ class RegionatedTriangleIterator(object):
     around the feature (the parts of the convex hull not belonging to any
     interior part).
     """
+
     def __init__(self, triangulation):
         # start at the exterior
         self.triangulation = triangulation
@@ -277,7 +280,8 @@ class StarEdgeIterator(object):
     The triangles that the edges are associated with share the vertex
     that this iterator is constructed with.
     """
-    def __init__(self, vertex): #, finite_only = True):
+
+    def __init__(self, vertex):  # , finite_only = True):
         self.vertex = vertex
         self.start = vertex.triangle
         self.triangle = self.start
@@ -291,10 +295,10 @@ class StarEdgeIterator(object):
         if not self.done:
             self.triangle = self.triangle.neighbours[self.side]
             assert self.triangle is not None
-            #self.visited.append(self.triangle)
-            #try:
+            # self.visited.append(self.triangle)
+            # try:
             side = self.triangle.vertices.index(self.vertex)
-            #except ValueError, err:
+            # except ValueError, err:
             #    print err
             #    print [id(t) for t in self.visited]
             #    raise
@@ -305,15 +309,17 @@ class StarEdgeIterator(object):
             if self.triangle is self.start:
                 self.done = True
             return e
-        else: # we are at start again
+        else:  # we are at start again
             raise StopIteration()
 
 # ------------------------------------------------------------------------------
 # Custom Exceptions
 #
 
+
 class DuplicatePointsFoundError(Exception):
     pass
+
 
 class TopologyViolationError(Exception):
     pass
@@ -332,31 +338,38 @@ def box(points):
     ymax = max(points, key = lambda x: x[1])[1]
     return (xmin, ymin), (xmax, ymax)
 
+
 def ccw(i):
     """Get index (0, 1 or 2) increased with one (ccw)"""
     return (i + 1) % 3
+
 
 def cw(i):
     """Get index (0, 1 or 2) decreased with one (cw)"""
     return (i - 1) % 3
 
+
 def apex(side):
     """Given a side, give the apex of the triangle """
     return side % 3
 
+
 def orig(side):
     """Given a side, give the origin of the triangle """
-    return (side + 1) % 3 # ccw(side)
+    return (side + 1) % 3  # ccw(side)
+
 
 def dest(side):
     """Given a side, give the destination of the triangle """
-    return (side - 1) % 3 # cw(side)
+    return (side - 1) % 3  # cw(side)
+
 
 def output_vertices(V, fh):
     """Output list of vertices as WKT to text file (for QGIS)"""
     fh.write("id;wkt\n")
     for v in V:
         fh.write("{0};POINT({1})\n".format(id(v), v))
+
 
 def output_triangles(T, fh):
     """Output list of triangles as WKT to text file (for QGIS)"""
@@ -365,6 +378,7 @@ def output_triangles(T, fh):
         if t is None:
             continue
         fh.write("{0};{1};{2[0]};{2[1]};{2[2]};{3[0]};{3[1]};{3[2]}\n".format(id(t), t, [id(n) for n in t.neighbours], [id(v) for v in t.vertices]))
+
 
 def output_edges(E, fh):
     fh.write("id;side;wkt\n")
@@ -420,7 +434,6 @@ def output_edges(E, fh):
 #             #print t1.neighbours
 #             break
 #     return result
-
 
 
 # ------------------------------------------------------------------------------
@@ -503,9 +516,9 @@ class Triangle(object):
     __slots__ = ('vertices', 'neighbours','constrained', 'info')
 
     def __init__(self, a, b, c):
-        self.vertices = [a, b, c] # orig, dest, apex -- ccw
+        self.vertices = [a, b, c]  # orig, dest, apex -- ccw
         self.neighbours = [None] * 3
-        self.constrained = [False] * 3 # FIXME: could be coded as a bitmask on an integer
+        self.constrained = [False] * 3  # FIXME: could be coded as a bitmask on an integer
         self.info = None
 
     def __str__(self):
@@ -572,10 +585,11 @@ class Edge(object):
 class Triangulation(object):
     """Triangulation data structure"""
     # This represents the mesh
+
     def __init__(self):
         self.vertices = []
         self.triangles = []
-        self.external = None # infinite, external triangle (outside convex hull)
+        self.external = None  # infinite, external triangle (outside convex hull)
 
 
 # -----------------------------------------------------------------------------
@@ -678,7 +692,7 @@ class PointInserter(object):
         self.flips = 0
         self.visits = 0
         self.queue = []
-        self.last = None # last triangle used for finding triangle
+        self.last = None  # last triangle used for finding triangle
 
     def insert(self, points):
         """Insert a list of points into the triangulation.
@@ -688,7 +702,7 @@ class PointInserter(object):
             self.append(pt)
             if (j % 10000) == 0:
                 logging.debug( " " +str( datetime.now() ) + str( j ))
-            #check_consistency(triangles)
+            # check_consistency(triangles)
 
     def initialize(self, points):
         """Initialize large triangle around point and external / dummy triangle
@@ -783,14 +797,14 @@ class PointInserter(object):
         # we could use the same set of triangles
         # O(n/3) would be good where n is the number of triangles
         candidate = self.triangulation.external
-        min_dist = None # candidate.vertices[0].distance(p)
+        min_dist = None  # candidate.vertices[0].distance(p)
         triangles = self.triangulation.triangles
         size = len(triangles)
         #
         if size != 0:
             k = int(sqrt(size) / 25)
-            #k = int(size ** (1 / 3.0)) # -- samples more triangles
-            if self.last is not None: # set by triangle_contains
+            # k = int(size ** (1 / 3.0)) # -- samples more triangles
+            if self.last is not None:  # set by triangle_contains
                 dist = self.last.vertices[0].distance2(p)
                 if min_dist is None or dist < min_dist:
                     min_dist = dist
@@ -945,6 +959,7 @@ class PointInserter(object):
         """Links triangle t0 to t1 for side0"""
         t0.neighbours[side0] = t1
 
+
 def check_consistency(triangles):
     """Check a list of triangles for consistent neighbouring relationships
 
@@ -982,7 +997,7 @@ def triangle_overlaps_ray(vertex, towards):
     """
     candidates = []
     for edge in StarEdgeIterator(vertex):
-        #if edge.isFinite:
+        # if edge.isFinite:
         start, end = edge.segment
         # start: turns ccw
         # end: turns cw
@@ -1100,6 +1115,7 @@ def mark_cavity(P, Q, triangles):
         below.reverse()
     return above, below
 
+
 def straight_walk(P, Q):
     """Obtain the list of triangles that overlap
     the line segment that goes from Vertex P to Q.
@@ -1165,6 +1181,7 @@ def straight_walk(P, Q):
             raise TopologyViolationError("Unwanted vertex collision detected")
 
     return out
+
 
 def permute(a, b, c):
     """Permutation of the triangle vertex indices from lowest to highest,
@@ -1399,8 +1416,8 @@ class CavityCDT(object):
                 elif side in self.surroundings:
                     neighbour_side = self.surroundings[side].side
                     neighbour = self.surroundings[side].triangle
-                    neighbour.neighbours[neighbour_side] = T # MM fixed
-                    constrained = neighbour.constrained[neighbour_side] #getEdgeType(neighbour_side)
+                    neighbour.neighbours[neighbour_side] = T  # MM fixed
+                    constrained = neighbour.constrained[neighbour_side]  # getEdgeType(neighbour_side)
                 # the triangle is the bottom of the evacuated cavity
                 # hence it should be linked later to the other
                 # re-triangulation of the cavity
@@ -1408,7 +1425,7 @@ class CavityCDT(object):
                     assert self.edge is None
                     neighbour = None
                     self.edge = Edge(T, i)
-                T.neighbours[i] = neighbour #setNeighbour(i, neighbour)
+                T.neighbours[i] = neighbour  # setNeighbour(i, neighbour)
                 # T.setEdgeType(i, constrained)
                 T.constrained[i] = constrained
             # Append the new triangles to the triangle list of the
@@ -1464,7 +1481,6 @@ class CavityCDT(object):
         self.triangles.add(t)
 
 
-
 class VoronoiTransformer(object):
     """Class to transform a Delaunay triangulation into a Voronoi diagram
     """
@@ -1517,6 +1533,7 @@ class VoronoiTransformer(object):
 # doi: 10.1016/j.ipl.2004.09.020
 #
 
+
 def cpo(points, c=0.5):
     """Column prime order for a set of points"""
     result = []
@@ -1556,6 +1573,7 @@ def cpo(points, c=0.5):
         result.extend(slot)
     return result
 
+
 def _hcpo(points, out, sr = 0.75, minsz = 10):
     """Constructs a hierarchical set of ordered points `out'
 
@@ -1589,6 +1607,7 @@ def _hcpo(points, out, sr = 0.75, minsz = 10):
         else:
             ordered = cpo(head)
             out.extend(ordered)
+
 
 def hcpo(points, sr = 0.75, minsz = 10):
     """Based on list with points, return a new, randomized list with points
@@ -1637,6 +1656,7 @@ def random_sorted_vertices(n = 10):
     vertices.sort()
     return vertices
 
+
 def random_circle_vertices(n = 10, cx = 0, cy = 0):
     """Returns a list with n random vertices in a circle
 
@@ -1646,8 +1666,8 @@ def random_circle_vertices(n = 10, cx = 0, cy = 0):
     """
     vertices = []
     for _ in xrange(n):
-        r = sqrt(random()) #
-        t = 2 * pi * random() #
+        r = sqrt(random())
+        t = 2 * pi * random()
         x = r * cos(t)
         y = r * sin(t)
         vertices.append((x+cx, y+cy))
@@ -1674,6 +1694,7 @@ def test_circle():
     vertices.extend(random_circle_vertices(n, 15, -5))
     triangulate(vertices)
 
+
 def test_incremental():
     L = random_sorted_vertices(n = 125000)
     tds = triangulate(L)
@@ -1683,6 +1704,7 @@ def test_incremental():
                                  fh)
     with open("/tmp/allvertices.wkt", "w") as fh:
         output_vertices(tds.vertices, fh)
+
 
 def test_cpo():
     # i = 1, j = 100 -> worst case, all end up as 1 point in slot
@@ -1695,14 +1717,15 @@ def test_cpo():
             idx += 1
     points_hcpo = hcpo(points)
     assert len(points) == len(points_hcpo)
-    #print points
+    # print points
     # build a translation table for indices in the points list
 #     index_translation = dict([(newpos, pos) for (newpos, (_, _, _, pos)) in enumerate(points_hcpo)])
-    #print index_translation
+    # print index_translation
     with open("/tmp/points.txt", "w") as fh:
         print >> fh, "i;wkt"
         for i, pt in enumerate(points_hcpo):
             print >> fh, i, ";POINT({0[0]} {0[1]})".format(pt)
+
 
 def test_square():
     triangulate([(0.,0.), (10.,0.), (10., 10.), (0.,10.)],
@@ -1749,6 +1772,7 @@ class ToPointsAndSegments(object):
         """Add a segment. Note that points should have been added before
         """
         self.segments.append((self._points_idx[start], self._points_idx[end]))
+
 
 def test_poly():
     from connection import connection
@@ -1803,13 +1827,14 @@ def test_poly():
         with open("/tmp/interiortris.wkt", "w") as fh:
                     output_triangles([t for t in InteriorTriangleIterator(dt)], fh)
 
+
 def test_small():
 #     pts = [(3421275.7657, 3198467.4977),
 #            (3421172.5598, 3198197.546)
 #            ]
 #     triangulate(pts)
     # triangulate([(0,0), (0, -1)])
-    #triangulate([(0,0)])
+    # triangulate([(0,0)])
 #     buggy = [(-120,90),(-60,40), (0,0),]# (-45, 35)]
 #     triangulate(buggy)
 #     triangulate([(0,0), (0,-20)])

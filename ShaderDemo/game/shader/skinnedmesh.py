@@ -1,14 +1,16 @@
-
 from OpenGL import GL as gl
 
 import geometry
 import utils
 
+
 def makeArray(tp, values):
     return (tp * len(values))(*values)
 
+
 def roundPoint(x, y):
-    return (int(round(x)), int(round(y)))
+    return int(round(x)), int(round(y))
+
 
 class SkinnedMesh:
     jsonIgnore = ["uvs"]
@@ -104,7 +106,7 @@ class SkinnedMesh:
             v2 = self.getVertex(b)
             v3 = self.getVertex(c)
             area = geometry.triangleArea(v1, v2, v3)
-            if area > maxSize: #TODO Also if triangle has a too long side
+            if area > maxSize:  # TODO Also if triangle has a too long side
                 self.subdivideTriangle(a, b, c, verts, indices, i)
 
         self.setGeometry(verts, [x for x in indices if x is not None])
@@ -169,7 +171,7 @@ class SkinnedMesh:
                             if geometry.pointDistance(start, v2) > 1.0 and geometry.pointDistance(end, v2) > 1.0:
                                 edgeDist = geometry.pointToLineDistance(v2, start, end)
                                 if edgeDist < 1.0:
-                                    #Vertex is overlapping this edge
+                                    # Vertex is overlapping this edge
                                     splitting = split.get(i, set())
                                     splitting.add(edge)
                                     split[i] = splitting
@@ -182,7 +184,7 @@ class SkinnedMesh:
             if len(edges) == 1:
                 self.splitEdge(edges[0][0], edges[0][1], tri, verts, indices, index)
             elif len(edges) > 1:
-                #TODO This can create new edges to be splitted...
+                # TODO This can create new edges to be splitted...
                 self.subdivideTriangle(tri[0], tri[1], tri[2], verts, indices, index)
 
         self.setGeometry(verts, [x for x in indices if x is not None])
@@ -271,17 +273,20 @@ class SkinnedMesh:
         self.boneWeights = makeArray(gl.GLfloat, weights)
         self.boneIndices = makeArray(gl.GLfloat, indices)
 
+
 def findBoneImageBone(bone, bones):
     for parent in [bone] + bone.getParents(bones):
         if parent.image:
             return parent
     return None
 
+
 def blockerFunc(bone, results):
     if bone.blocker:
         results.add(bone.name)
         return False
     return True
+
 
 def findBlockerNames(meshBone, bones):
     blockers = set()
@@ -303,6 +308,7 @@ def findBlockerNames(meshBone, bones):
 
     return results
 
+
 class BoneWeight:
     def __init__(self, distance, index, transform):
         self.distance = distance
@@ -311,9 +317,10 @@ class BoneWeight:
         self.bone = transform.bone
         self.weight = 0.0
 
-#Shorten bones, otherwise their points can be at the same position which
-#can make weight calculation random and order-dependant.
+# Shorten bones, otherwise their points can be at the same position which
+# can make weight calculation random and order-dependant.
 SHORTEN_LINE = 0.95
+
 
 def findBoneInfluences(vertex, transforms, blockers):
     weights = []
@@ -329,6 +336,7 @@ def findBoneInfluences(vertex, transforms, blockers):
     weights.sort(key=lambda w: -w.weight)
     return weights[:4]
 
+
 def calculateWeight(vertex, a, b, bendyLength=0.75):
     minWeight = 0.0
     maxWeight = 0.1
@@ -340,13 +348,14 @@ def calculateWeight(vertex, a, b, bendyLength=0.75):
     vertexDistance = min(distance / boneLength, 1.0)
     return utils.clamp(1 - vertexDistance, minWeight, maxWeight)
 
+
 def findNearestBone(vertex, transforms, blockers):
     nearest = None
     minDistance = None
 
     for trans in transforms.values():
         if not trans.bone.parent or not transforms[trans.bone.parent].bone.parent:
-            #Skip root bones
+            # Skip root bones
             continue
         if trans.bone.name in blockers:
             continue
@@ -358,8 +367,10 @@ def findNearestBone(vertex, transforms, blockers):
 
     return nearest
 
+
 def pointToBoneDistance(point, bone, transforms):
     return pointToShortenedLineDistance(point, bone.pivot, transforms[bone.parent].bone.pivot, SHORTEN_LINE)
+
 
 def pointToShortenedLineDistance(point, start, end, shorten):
     startShort, endShort = geometry.shortenLine(start, end, shorten)

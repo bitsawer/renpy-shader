@@ -1,4 +1,3 @@
-
 import json
 import pygame
 
@@ -9,15 +8,17 @@ import easing
 
 DEFAULT_EASING = "sineInOut"
 
+
 class KeyFrame:
     def __init__(self):
-        #self.pivot = None #TODO Can affect weight calculations
+        # self.pivot = None #TODO Can affect weight calculations
         self.translation = None
         self.rotation = None
         self.scale = None
-        #self.zOrder = None #TODO Can't animate this efficiently, breaks vertex sorting...
+        # self.zOrder = None #TODO Can't animate this efficiently, breaks vertex sorting...
         self.visible = None
         self.transparency = None
+
 
 def copyKeyData(source, target):
     target.translation = euclid.Vector3(source.translation.x, source.translation.y, source.translation.z)
@@ -25,6 +26,7 @@ def copyKeyData(source, target):
     target.scale = euclid.Vector3(source.scale.x, source.scale.y, source.scale.z)
     target.visible = source.visible
     target.transparency = source.transparency
+
 
 def interpolateKeyData(a, b, weight):
     key = KeyFrame()
@@ -34,6 +36,7 @@ def interpolateKeyData(a, b, weight):
     key.visible = a.visible
     key.transparency = utils.interpolate(a.transparency, b.transparency, weight)
     return key
+
 
 def mixKeys(keys, weights):
     result = KeyFrame()
@@ -51,6 +54,7 @@ def mixKeys(keys, weights):
         result.transparency = result.transparency + (key.transparency * weight)
     return result
 
+
 class Frame:
     def __init__(self):
         self.keys = {}
@@ -67,11 +71,13 @@ class Frame:
             self.keys[name] = key
         return key
 
+
 class BoneData:
     def __init__(self):
         self.repeat = False
         self.reversed = False
         self.easing = DEFAULT_EASING
+
 
 class SkinnedAnimation:
     jsonIgnore = ["dirty", "baked"]
@@ -157,7 +163,7 @@ class SkinnedAnimation:
                     y += editor.drawText("%i" % i, frameColor, (x, y), align)[1]
         else:
             for i, frame in enumerate(self.frames):
-                if frame.keys: # i > 0 and
+                if frame.keys:  # i > 0 and
                     frameColor = color
                     if i == frameNumber:
                         frameColor = rigeditor.ACTIVE_COLOR
@@ -257,7 +263,7 @@ class SkinnedAnimation:
                 i = boneFrames[-1]
                 while i < len(self.frames):
                     index = boneFrames[current]
-                    #copyKeyData(self.frames[index].keys[name], baked[i].getBoneKey(name))
+                    # copyKeyData(self.frames[index].keys[name], baked[i].getBoneKey(name))
                     copyKeyData(baked[index].keys[name], baked[i].getBoneKey(name))
 
                     current += step
@@ -282,7 +288,7 @@ class SkinnedAnimation:
         start = None
         end = None
 
-        #TODO modulo frame search?
+        # TODO modulo frame search?
         i = frameNumber
         while i >= 0 and i < len(frames):
             if boneName in frames[i].keys:
@@ -349,6 +355,7 @@ class JsonEncoder(json.JSONEncoder):
 
 DEPRECATED = []
 
+
 def checkJson(obj, data):
     ignores = getattr(obj, "jsonIgnore", []) + DEPRECATED
     for key in data:
@@ -358,6 +365,7 @@ def checkJson(obj, data):
 
 VERSION = 1
 
+
 def saveAnimationToFile(path, animation):
     data = {
         "version": VERSION,
@@ -365,6 +373,7 @@ def saveAnimationToFile(path, animation):
     }
     with open(path, "w") as f:
         json.dump(data, f, indent=1, cls=JsonEncoder, separators=(",", ": "), sort_keys=True)
+
 
 def loadAnimationFromFile(path):
     data = None

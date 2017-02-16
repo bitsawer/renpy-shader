@@ -1,5 +1,5 @@
-
 import math
+
 
 def calcoffsetpoint(pt1, pt2, offset):
     """
@@ -14,6 +14,7 @@ def calcoffsetpoint(pt1, pt2, offset):
     return (pt1[0] - math.cos(theta) * offset,
             pt1[1] - math.sin(theta) * offset)
 
+
 def getoffsetintercept(pt1, pt2, m, offset):
     """
     From points pt1 and pt2 defining a line
@@ -24,6 +25,7 @@ def getoffsetintercept(pt1, pt2, m, offset):
     """
     x, y = calcoffsetpoint(pt1, pt2, offset)
     return y - m * x
+
 
 def getpt(pt1, pt2, pt3, offset):
     """
@@ -48,6 +50,7 @@ def getpt(pt1, pt2, pt3, offset):
     newy = m * newx + boffset
     return newx, newy
 
+
 def getslopeandintercept(pt1, pt2, offset):
     """
     Gets the slope and the intercept of the
@@ -57,6 +60,7 @@ def getslopeandintercept(pt1, pt2, offset):
     m = (pt2[1] - pt1[1])/(pt2[0] - pt1[0])
     b = getoffsetintercept(pt1, pt2, m, offset)
     return m, b
+
 
 def getoffsetcornerpoint(pt1, pt2, pt3, offset):
     """
@@ -108,6 +112,7 @@ def getoffsetcornerpoint(pt1, pt2, pt3, offset):
             xcoord, ycoord = getpt(pt1, pt2, pt3, offset)
     return xcoord, ycoord
 
+
 def offsetpolygon(polyx, offset):
     """
     Offsets a clockwise list of coordinates
@@ -127,8 +132,7 @@ def offsetpolygon(polyx, offset):
         # append new point to polyy
         polyy.append(pt)
 
-
-    #try:
+    # try:
     # last three points
     pt = getoffsetcornerpoint(polyx[-3], polyx[-2], polyx[-1], offset)
     polyy.append(pt)
@@ -136,7 +140,7 @@ def offsetpolygon(polyx, offset):
     polyy.append(pt)
     pt = getoffsetcornerpoint(polyx[-1], polyx[0], polyx[1], offset)
     polyy.append(pt)
-    #except ZeroDivisionError:
+    # except ZeroDivisionError:
     #    pass
 
     return polyy

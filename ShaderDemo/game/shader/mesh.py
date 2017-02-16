@@ -1,6 +1,6 @@
-
 import shader
 import utils
+
 
 def loadObj(filename):
     verts = []
@@ -20,7 +20,7 @@ def loadObj(filename):
             verts.append(v)
         elif values[0] == "vt":
             t = map(float, values[1:3])
-            t[1] = 1.0 - t[1] #Flip texture y
+            t[1] = 1.0 - t[1]  # Flip texture y
             uvs.append(t)
         elif values[0] == "vn":
             n = map(float, values[1:4])
@@ -35,7 +35,7 @@ def loadObj(filename):
                 pointers = face.split("/")
                 vertsOut.append(list(verts[int(pointers[0]) - 1]))
                 if pointers[1]:
-                    #Has texture coordinates
+                    # Has texture coordinates
                     uvsOut.append(list(uvs[int(pointers[1]) - 1]))
                 else:
                     uvsOut.append((0, 0))
