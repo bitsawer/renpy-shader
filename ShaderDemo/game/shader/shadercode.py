@@ -45,47 +45,6 @@ void main()
 }
 """
 
-LIB_NOISE = """
-
-float randomValue(float p) {
-    return fract(sin(p)*10000.);
-}
-
-float baseNoise(vec2 p) {
-    return randomValue(p.x + p.y*10000.);
-}
-
-vec2 sw(vec2 p) {return vec2( floor(p.x) , floor(p.y) );}
-vec2 se(vec2 p) {return vec2( ceil(p.x)  , floor(p.y) );}
-vec2 nw(vec2 p) {return vec2( floor(p.x) , ceil(p.y)  );}
-vec2 ne(vec2 p) {return vec2( ceil(p.x)  , ceil(p.y)  );}
-
-float smoothNoise(vec2 p) {
-    vec2 inter = smoothstep(0., 1., fract(p));
-    float s = mix(baseNoise(sw(p)), baseNoise(se(p)), inter.x);
-    float n = mix(baseNoise(nw(p)), baseNoise(ne(p)), inter.x);
-    return mix(s, n, inter.y);
-    return baseNoise(nw(p));
-}
-
-float movingNoise(vec2 p, float time) {
-    float total = 0.0;
-    total += smoothNoise(p     - time);
-    total += smoothNoise(p*2.  + time) / 2.;
-    total += smoothNoise(p*4.  - time) / 4.;
-    total += smoothNoise(p*8.  + time) / 8.;
-    total += smoothNoise(p*16. - time) / 16.;
-    total /= 1. + 1./2. + 1./4. + 1./8. + 1./16.;
-    return total;
-}
-
-float nestedNoise(vec2 p, float time) {
-    float x = movingNoise(p, time);
-    float y = movingNoise(p + 100., time);
-    return movingNoise(p + vec2(x, y), time);
-}
-"""
-
 LIB_WIND = """
 
 uniform sampler2D tex0;
@@ -98,13 +57,13 @@ uniform vec2 eyeShift;
 uniform vec2 mouthShift;
 
 const float WIND_SPEED = 5.0;
-const float DISTANCE = 0.005;
+const float DISTANCE = 0.0075;
 const float FLUIDNESS = 0.75;
 const float TURBULENCE = 15.0;
 
 vec4 applyWind(vec2 uv, float time)
 {
-    float brightness = movingNoise(uv * TURBULENCE, time * 3.0);
+    float movement = 0.1;
 
     vec4 weights = texture2D(tex1, uv);
 
@@ -122,7 +81,7 @@ vec4 applyWind(vec2 uv, float time)
         }
     }
 
-    float influence = weights.r * (0.5 + (brightness * 1.25));
+    float influence = weights.r * (0.5 + (movement * 1.25));
 
     if (mouseEnabled > 0.0) {
         //Use mouse position to set influence
@@ -141,7 +100,7 @@ vec4 applyWind(vec2 uv, float time)
 }
 """
 
-PS_WIND_2D = LIB_NOISE + LIB_WIND + """
+PS_WIND_2D = LIB_WIND + """
 
 varying vec2 varUv;
 
@@ -308,7 +267,7 @@ void main()
 }
 """
 
-PS_SKINNED = LIB_NOISE + LIB_WIND + """
+PS_SKINNED = LIB_WIND + """
 
 varying vec2 varUv; //Texture coordinates
 varying float varAlpha;
