@@ -1,4 +1,3 @@
-
 import ctypes
 import json
 from OpenGL import GL as gl
@@ -12,8 +11,10 @@ import utils
 VERSION = 1
 MAX_BONES = 64
 
+
 def makeArray(tp, values):
     return (tp * len(values))(*values)
+
 
 class SkinnedImage:
     jsonIgnore = []
@@ -26,6 +27,7 @@ class SkinnedImage:
         self.height = height
         self.originalWidth = originalWidth
         self.originalHeight = originalHeight
+
 
 class SkinningBone:
     jsonIgnore = ["wireFrame", "gridResolution"]
@@ -50,7 +52,7 @@ class SkinningBone:
         self.points = []
         self.mesh = None
 
-        self.gridResolution = 0 #TODO See what we can do with this...
+        self.gridResolution = 0  # TODO See what we can do with this...
 
     def getAllChildren(self, bones, results=None):
         if not results:
@@ -86,7 +88,7 @@ class SkinningBone:
     def updatePoints(self, surface, pointSimplify):
         points = geometry.findEdgePixelsOrdered(surface)
         simplified = geometry.simplifyEdgePixels(points, pointSimplify)
-        self.points = geometry.offsetPolygon(simplified, -5) #TODO Increase this once better weighting is in?
+        self.points = geometry.offsetPolygon(simplified, -5)  # TODO Increase this once better weighting is in?
 
     def triangulatePoints(self):
         points = self.points[:]
@@ -116,7 +118,7 @@ class SkinningBone:
         indices = []
         for tri in triangles:
             for v in tri:
-                #Consider vertices within one pixel identical
+                # Consider vertices within one pixel identical
                 v = (int(round(v[0])), int(round(v[1])))
                 if v in duplicates and MERGE_VERTICES:
                     indices.append(duplicates[v])
@@ -133,6 +135,7 @@ class SkinningBone:
 
 JSON_IGNORES = []
 
+
 class JsonEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, (SkinningBone, SkinnedImage, skinnedmesh.SkinnedMesh)):
@@ -142,10 +145,11 @@ class JsonEncoder(json.JSONEncoder):
                     del d[ignore]
             return d
         elif isinstance(obj, euclid.Vector3):
-            return (obj.x, obj.y, obj.z)
+            return obj.x, obj.y, obj.z
         elif isinstance(obj, ctypes.Array):
             return list(obj)
         return json.JSONEncoder.default(self, obj)
+
 
 def saveToFile(context, bones, path):
     size = context.renderer.getSize()
@@ -159,11 +163,13 @@ def saveToFile(context, bones, path):
     with open(path, "w") as f:
         json.dump(data, f, indent=1, cls=JsonEncoder, separators=(",", ": "), sort_keys=True)
 
+
 def _getArray(tp, obj, key):
     data = obj.get(key)
     if data:
         return makeArray(tp, data)
     return None
+
 
 def loadFromFile(path):
     data = None

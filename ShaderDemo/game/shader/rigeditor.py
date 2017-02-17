@@ -1,4 +1,3 @@
-
 import os
 import math
 import json
@@ -31,6 +30,7 @@ MODE = "mode"
 
 SAVE_DIR = "rig"
 
+
 def getSaveDir():
     target = os.path.join(renpy.config.gamedir, SAVE_DIR)
     try:
@@ -38,6 +38,7 @@ def getSaveDir():
     except:
         pass
     return target
+
 
 class Action:
     def start(self, editor):
@@ -57,6 +58,7 @@ class Action:
 
     def getMouseValue(self, mouse, pivot):
         return math.atan2(mouse[0] - pivot[0], mouse[1] - pivot[1])
+
 
 class TranslationEdit(Action):
     def __init__(self, editor, mouse, bone, attributes):
@@ -88,6 +90,7 @@ class TranslationEdit(Action):
         pivot = editor.getBonePivotTransformed(self.bone)
         editor.context.overlayCanvas.line("#0f0", (pivot.x, pivot.y), editor.mouse)
         editor.drawText("T(%s): %s" % (", ".join(axes), ", ".join(angles)), "#fff", (editor.mouse[0] + 20, editor.mouse[1]))
+
 
 class ScaleEdit(Action):
     def __init__(self, editor, mouse, bone, attributes):
@@ -158,6 +161,7 @@ class RotationEdit(Action):
         editor.context.overlayCanvas.line("#0f0", (self.pivot.x, self.pivot.y), editor.mouse)
         editor.drawText("R(%s): %s" % (", ".join(axes), ", ".join(angles)), "#fff", (editor.mouse[0] + 20, editor.mouse[1]))
 
+
 class TransparencyEdit(Action):
     def __init__(self, editor, mouse, bone):
         self.mouse = mouse
@@ -183,6 +187,7 @@ class TransparencyEdit(Action):
     def draw(self, editor):
         editor.context.overlayCanvas.line("#0f0", (self.pivot.x, self.pivot.y), editor.mouse)
         editor.drawText("Transparency: %i" % round(self.bone.transparency * 100.0), "#fff", (editor.mouse[0] + 20, editor.mouse[1]))
+
 
 class ExtrudeBone(Action):
     def __init__(self, editor, mouse, bone):
@@ -215,7 +220,7 @@ class ExtrudeBone(Action):
         parts = baseName.strip().split(" ")
         if parts[-1].isdigit():
             parts = parts[:-1]
-        newName =  self.findNextFreeBoneName(bones, " ".join(parts))
+        newName = self.findNextFreeBoneName(bones, " ".join(parts))
 
         bone = skin.SkinningBone(newName)
         bone.pivot = editor.getBoneInverseTranslation(bones[self.bone.name], editor.mouse, False)
@@ -232,6 +237,7 @@ class ExtrudeBone(Action):
         editor.context.overlayCanvas.line(PIVOT_COLOR, (self.pivot.x, self.pivot.y), editor.mouse)
         editor.context.overlayCanvas.circle(PIVOT_COLOR, editor.mouse, PIVOT_SIZE)
 
+
 class ConnectBone(Action):
     def __init__(self, editor, mouse, bone):
         self.mouse = mouse
@@ -244,7 +250,7 @@ class ConnectBone(Action):
             while name:
                 bone = editor.getBone(name)
                 if bone.name == self.bone.name:
-                    #This bone connection would create a looping bone hierarchy
+                    # This bone connection would create a looping bone hierarchy
                     return False
                 name = bone.parent
             return True
@@ -262,6 +268,7 @@ class ConnectBone(Action):
             color = (0, 255, 0)
         editor.context.overlayCanvas.line(color, (self.pivot.x, self.pivot.y), editor.mouse)
         editor.context.overlayCanvas.circle(color, editor.mouse, PIVOT_SIZE)
+
 
 class PoseMode:
     def __init__(self):
@@ -433,9 +440,9 @@ class RigEditor:
 
     def subdivide(self, bone, minSize):
         if bone.mesh and not self.settings["autoSubdivide"]:
-            #TODO Not really needed?
-            #bone.mesh.subdivide(minSize)
-            #self.updateBones()
+            # TODO Not really needed?
+            # bone.mesh.subdivide(minSize)
+            # self.updateBones()
             return True
         return False
 
@@ -586,8 +593,8 @@ class RigEditor:
             bone, oldMouse, oldPos = dragPos
             delta = (oldMouse[0] - pos[0], oldMouse[1] - pos[1])
             pos = bone.pos
-            #TODO Breaks uv generation...
-            #bone.pos = (oldPos[0] - delta[0], oldPos[1] - delta[1])
+            # TODO Breaks uv generation...
+            # bone.pos = (oldPos[0] - delta[0], oldPos[1] - delta[1])
 
     def handleMouseUp(self, pos):
         self.stopDrag()
@@ -687,7 +694,7 @@ class RigEditor:
 
     def getBonePivotTransformed(self, bone):
         v = self.transformsMap[bone.name].matrix.transform(self.getBonePivot(bone))
-        v.z = 0.0 #Clear any depth changes, we only care about 2D
+        v.z = 0.0  # Clear any depth changes, we only care about 2D
         return v
 
     def getBonePivot(self, bone):
@@ -732,8 +739,8 @@ class RigEditor:
                     areaColor = ACTIVE_COLOR
                 canvas.lines(areaColor, False, lines, LINE_WIDTH)
 
-                #triangles = self.getTriangles(bone)
-                #for i in range(0, len(triangles), 3):
+                # triangles = self.getTriangles(bone)
+                # for i in range(0, len(triangles), 3):
                 #    tri = (triangles[i], triangles[i + 1], triangles[i + 2])
                 #    context.overlayCanvas.lines("#0f0", True, tri)
 
@@ -742,7 +749,7 @@ class RigEditor:
                 if polyPoints:
                     self.drawLinesSafe("#ff0", True, polyPoints)
                     for i, p in enumerate(polyPoints):
-                        #color = (0, int(float(i) / len(polyPoints) * 255), 0)
+                        # color = (0, int(float(i) / len(polyPoints) * 255), 0)
                         color = (0, 128, 0)
                         if hoverPoint and hoverPoint[0].name == bone.name and hoverPoint[2] == i:
                             color = (255, 255, 0)
@@ -756,9 +763,8 @@ class RigEditor:
                 if parentBone.damping > 0.0:
                     color = (0, 255, 255)
                 if geometry.pointDistance((pivot.x, pivot.y), (parentPos.x, parentPos.y)) > 1:
-                    #TODO Line drawing hangs if passed same start and end?
+                    # TODO Line drawing hangs if passed same start and end?
                     canvas.line(color, (pivot.x, pivot.y), (parentPos.x, parentPos.y), LINE_WIDTH)
-
 
         if self.settings["pivots"]:
             for trans, pivot in cached:
@@ -811,11 +817,11 @@ class RigEditor:
             name += " (%i polygons, %i vertices)" % (len(bone.mesh.indices) // 3, len(bone.mesh.vertices) // 2)
         y += self.drawText(name, HEADER_COLOR, (x, y))[1]
 
-        y += self.drawText("Translation: (%.1f, %.1f)" % (bone.translation.x,  bone.translation.y), color, (x, y))[1]
+        y += self.drawText("Translation: (%.1f, %.1f)" % (bone.translation.x, bone.translation.y), color, (x, y))[1]
 
         degrees = tuple([math.degrees(d) for d in (bone.rotation.x,  bone.rotation.y,  bone.rotation.z)])
         y += self.drawText("Rotation:      (%.1f, %.1f, %.1f)" % degrees, color, (x, y))[1]
 
-        y += self.drawText("Scale:          (%.1f, %.1f, %.1f)" % (bone.scale.x,  bone.scale.y,  bone.scale.z), color, (x, y))[1]
+        y += self.drawText("Scale:          (%.1f, %.1f, %.1f)" % (bone.scale.x, bone.scale.y,  bone.scale.z), color, (x, y))[1]
 
         self.drawText("Z-order:       %i" % bone.zOrder, color, (x, y))

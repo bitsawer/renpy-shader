@@ -1,8 +1,8 @@
-
 import skin
 import skinnedanimation
 import euclid
 import utils
+
 
 class TrackInfo:
     def __init__(self, name, repeat=False, cyclic=False, reverse=False, autoEnd=False,
@@ -17,6 +17,7 @@ class TrackInfo:
         self.speed = speed
         self.fps = float(fps)
         self.easingOverride = easingOverride
+
 
 class Track:
     def __init__(self, info, startTime):
@@ -54,9 +55,11 @@ class Track:
         lastFrame = len(self.animation.frames) - 1
         return index >= lastFrame
 
+
 class AnimationData:
     def __init__(self):
         self.tracks = {}
+
 
 class AnimationPlayer:
     def __init__(self, context, tag, reset=False):
@@ -141,7 +144,7 @@ class AnimationPlayer:
     def debugDraw(self, track, frameIndex):
         if self.debug:
             self.context.createOverlayCanvas()
-            #TODO Also tell how many keys reference missing bones
+            # TODO Also tell how many keys reference missing bones
             text = "%s (%s) Speed: %.1f, Frame %s / %i" % (self.tag, track.info.name,
                 track.info.speed, frameIndex, len(track.animation.frames) - 1)
             pos = (10, self.debugY)
@@ -172,7 +175,7 @@ class AnimationPlayer:
                 self.restBone(bones[name], target)
 
     def restBone(self, a, b):
-        weight = 0.1 #TODO Different speed for bones, use parent count etc.?
+        weight = 0.1  # TODO Different speed for bones, use parent count etc.?
         a.translation = euclid.Vector3(*utils.interpolate3d(a.translation, b.translation, weight))
         a.rotation = euclid.Vector3(*utils.interpolate3d(a.rotation, b.rotation, weight))
         a.scale = euclid.Vector3(*utils.interpolate3d(a.scale, b.scale, weight))

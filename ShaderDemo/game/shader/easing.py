@@ -1,14 +1,18 @@
 
 import math
 
+
 def linear(pos):
     return pos
+
 
 def quadIn(pos):
     return pow(pos, 2)
 
+
 def quadOut(pos):
     return -(pow((pos - 1), 2) -1)
+
 
 def quadInOut(pos):
     pos /= 0.5
@@ -17,20 +21,26 @@ def quadInOut(pos):
     pos -= 2
     return -0.5 * (pos * pos - 2);
 
+
 def sineIn(pos):
     return -math.cos(pos * (math.pi / 2)) + 1
+
 
 def sineOut(pos):
     return math.sin(pos * (math.pi / 2))
 
+
 def sineInOut(pos):
     return (-0.5 * (math.cos(math.pi * pos) - 1))
+
 
 def circIn(pos):
     return -(math.sqrt(1 - (pos * pos)) - 1)
 
+
 def circOut(pos):
     return math.sqrt(1 - pow(pos - 1, 2))
+
 
 def circInOut(pos):
     pos /= 0.5
@@ -39,14 +49,17 @@ def circInOut(pos):
     pos -= 2
     return 0.5 * (math.sqrt(1 - pos*pos) + 1)
 
+
 def backIn(pos):
     s = 1.70158
     return pos * pos * ((s + 1) * pos - s)
+
 
 def backOut(pos):
     s = 1.70158
     pos = pos - 1
     return pos * pos * ((s + 1) * pos + s) + 1
+
 
 def backInOut(pos):
     s = 1.70158 * 1.525
@@ -56,14 +69,17 @@ def backInOut(pos):
     pos -= 2
     return 0.5 * (pos * pos * ((s + 1) * pos +s) + 2)
 
+
 def swingFrom(pos):
     s = 1.70158
     return pos * pos * ((s + 1) * pos - s)
+
 
 def swingTo(pos):
     s = 1.70158
     pos -= 1
     return pos * pos * ((s + 1) * pos + s) + 1
+
 
 def swingFromTo(pos):
     s = 1.70158 * 1.525
@@ -73,8 +89,10 @@ def swingFromTo(pos):
     pos -= 2
     return 0.5 * (pos * pos * ((s + 1) * pos + s) + 2)
 
+
 def elastic(pos):
     return -1 * pow(4, -8 * pos) * math.sin((pos * 6 - 1) * (2 * math.pi) / 2) + 1
+
 
 def bounce(pos):
     if pos < (1 / 2.75):
@@ -121,8 +139,10 @@ MAP = {}
 for name, func in EASINGS:
     MAP[name] = func
 
+
 def getNames():
     return [e[0] for e in EASINGS]
+
 
 def getEasing(name):
     return MAP[name]

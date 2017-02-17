@@ -1,4 +1,3 @@
-
 import renpy
 import pygame
 import os
@@ -9,6 +8,7 @@ from OpenGL import GL as gl
 
 FONT_SIZE = 18
 FONT = None
+
 
 def drawText(canvas, text, pos, color, align=-1, background=(128, 128, 128)):
     global FONT
@@ -22,8 +22,9 @@ def drawText(canvas, text, pos, color, align=-1, background=(128, 128, 128)):
     canvas.get_surface().blit(surface, pos)
     return surface.get_size()
 
+
 def drawLinesSafe(canvas, color, connect, points, width=1):
-    #Workaround for hang if two points are the same
+    # Workaround for hang if two points are the same
     safe = []
     i = 0
     while i < len(points):
@@ -39,9 +40,10 @@ def drawLinesSafe(canvas, color, connect, points, width=1):
 
     if connect and len(safe) > 0:
         first = safe[0]
-        safe.append((first[0], first[1] - 1)) #Wrong by one pixel to be sure...
+        safe.append((first[0], first[1] - 1))  # Wrong by one pixel to be sure...
 
     canvas.lines(color, False, safe, width)
+
 
 def createTransform2d():
     eye = euclid.Vector3(0, 0, 1)
@@ -51,9 +53,11 @@ def createTransform2d():
     perspective = euclid.Matrix4.new_perspective(math.radians(90), 1.0, 0.1, 10)
     return perspective * view
 
+
 def createPerspective(fov, width, height, zMin, zMax):
-    #TODO This negates fov to flip y-axis in the framebuffer.
+    # TODO This negates fov to flip y-axis in the framebuffer.
     return euclid.Matrix4.new_perspective(-math.radians(fov), width / float(height), zMin, zMax)
+
 
 def createPerspectiveBlender(lens, xResolution, yResolution, width, height, zMin, zMax):
     factor = lens / 32.0
@@ -61,6 +65,7 @@ def createPerspectiveBlender(lens, xResolution, yResolution, width, height, zMin
     fov = math.atan(0.5 / ratio / factor)
     fov = fov * 360 / math.pi
     return createPerspective(fov, width, height, zMin, zMax)
+
 
 def createPerspectiveOrtho(left, right, bottom, top, near, far):
     projection = [0] * 16
@@ -86,23 +91,28 @@ def createPerspectiveOrtho(left, right, bottom, top, near, far):
 
     return projection
 
+
 def clamp(value, small, large):
     return max(min(value, large), small)
 
+
 def interpolate(a, b, s):
-    #Simple linear interpolation
+    # Simple linear interpolation
     return a + s * (b - a)
+
 
 def interpolate2d(p1, p2, s):
     x = interpolate(p1[0], p2[0], s)
     y = interpolate(p1[1], p2[1], s)
-    return (x, y)
+    return x, y
+
 
 def interpolate3d(p1, p2, s):
     x = interpolate(p1[0], p2[0], s)
     y = interpolate(p1[1], p2[1], s)
     z = interpolate(p1[2], p2[2], s)
-    return (x, y, z)
+    return x, y, z
+
 
 def makeFloatArray(elements, count):
     raw = (gl.GLfloat * (len(elements) * count))()
@@ -112,11 +122,13 @@ def makeFloatArray(elements, count):
             raw[(i * count) + x] = v[x]
     return raw
 
+
 def matrixToList(m):
     return [m.a, m.e, m.i, m.m,
             m.b, m.f, m.j, m.n,
             m.c, m.g, m.k, m.o,
             m.d, m.h, m.l, m.p]
+
 
 def glTextureFromSurface(surface):
     width = surface.get_width()
@@ -147,20 +159,23 @@ def glTextureFromSurface(surface):
 
     return textureId[0], width, height
 
+
 def getTexParameteriv(glTex, param):
     result = ctypes.c_int(0)
     gl.glGetTexLevelParameteriv(gl.GL_TEXTURE_2D, 0, param, ctypes.byref(result))
     return result.value
 
+
 def listFiles():
     results = []
     for root, dirs, files in os.walk(renpy.config.gamedir):
-        dirs[:] = [d for d in dirs if not d[0] == "."] #Ignore dot directories
+        dirs[:] = [d for d in dirs if not d[0] == "."]  # Ignore dot directories
         for f in files:
             match = os.path.join(root, f).replace("\\", "/")
             results.append(match)
     results.sort()
     return results
+
 
 def scanForFiles(extension):
     results = []
@@ -170,20 +185,23 @@ def scanForFiles(extension):
     results.sort()
     return results
 
+
 def findFile(name):
-    #First try fast and bundle supporting listing
+    # First try fast and bundle supporting listing
     for f in renpy.exports.list_files():
         if f.split("/")[-1] == name:
             return f
 
-    #Scan all game directories
+    # Scan all game directories
     for f in listFiles():
         if f.split("/")[-1] == name:
             return f
     return None
 
+
 def openFile(path):
     return renpy.exports.file(path)
+
 
 class Shader:
     def __init__(self, vsCode, psCode):
@@ -231,17 +249,17 @@ class Shader:
         gl.glUseProgram(0)
 
     def uniformf(self, name, *values):
-        {1 : gl.glUniform1f,
-         2 : gl.glUniform2f,
-         3 : gl.glUniform3f,
-         4 : gl.glUniform4f
+        {1: gl.glUniform1f,
+         2: gl.glUniform2f,
+         3: gl.glUniform3f,
+         4: gl.glUniform4f
         }[len(values)](gl.glGetUniformLocation(self.handle, name), *values)
 
     def uniformi(self, name, *values):
-        {1 : gl.glUniform1i,
-         2 : gl.glUniform2i,
-         3 : gl.glUniform3i,
-         4 : gl.glUniform4i
+        {1: gl.glUniform1i,
+         2: gl.glUniform2i,
+         3: gl.glUniform3i,
+         4: gl.glUniform4i
         }[len(values)](gl.glGetUniformLocation(self.handle, name), *values)
 
     def uniformMatrix4f(self, name, matrix):

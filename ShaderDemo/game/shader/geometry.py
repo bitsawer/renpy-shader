@@ -1,7 +1,7 @@
-
 import polygonoffset
 import math
 import random
+
 
 def simplifyEdgePixels(pixels, minDistance):
     results = []
@@ -23,12 +23,14 @@ def simplifyEdgePixels(pixels, minDistance):
 
     return results
 
+
 def offsetPolygon(points, size):
     results = []
     for p in points:
-        current = (float(p[0]) + random.random() * 0.00001, float(p[1]) + random.random() * 0.00001) #TODO Fix this
+        current = (float(p[0]) + random.random() * 0.00001, float(p[1]) + random.random() * 0.00001)  # TODO Fix this
         results.append(current)
     return polygonoffset.offsetpolygon(results, size)
+
 
 def findEdge(surface, xStart, yStart, xStep, yStep, xDir, yDir):
     w = surface.get_width()
@@ -57,6 +59,7 @@ def findEdge(surface, xStart, yStart, xStep, yStep, xDir, yDir):
 
     return (xStart, yStart)
 
+
 def findCropRect(surface, pad=0):
     w = surface.get_width()
     h = surface.get_height()
@@ -73,6 +76,7 @@ OFFSETS = [
     (-1, 1),  (0, 1),  (1, 1)
 ]
 
+
 def findEdgePixels(surface):
     edgePixels = []
 
@@ -82,7 +86,7 @@ def findEdgePixels(surface):
         for x in range(w):
             pixel = surface.get_at((x, y))
             if pixel[3] > 0:
-                #Not transparent, check nearby
+                # Not transparent, check nearby
                 isEdge = False
 
                 for offset in OFFSETS:
@@ -90,11 +94,11 @@ def findEdgePixels(surface):
                     if n[0] > 0 and n[0] < w and n[1] > 0 and n[1] < h:
                         near = surface.get_at(n)
                         if near[3] == 0:
-                            #Transparent near pixel, this is an edge
+                            # Transparent near pixel, this is an edge
                             isEdge = True
                             break
                     else:
-                        #Outside image bounds
+                        # Outside image bounds
                         isEdge = True
                         break
 
@@ -102,6 +106,7 @@ def findEdgePixels(surface):
                     edgePixels.append((x, y))
 
     return edgePixels
+
 
 def _getNearby(surface, x, y, size):
     w, h = surface.get_size()
@@ -118,10 +123,11 @@ def _getNearby(surface, x, y, size):
                 pixels.append((point, surface.get_at(point)))
     return pixels
 
+
 def _isEdgePixel(surface, x, y, size):
     color = surface.get_at((x, y))
     if color[3] != 0:
-        #Not transparent
+        # Not transparent
         return False
 
     w, h = surface.get_size()
@@ -140,10 +146,11 @@ def _isEdgePixel(surface, x, y, size):
             isAlpha = True
     return isAlpha and isColor
 
+
 def findEdgePixelsOrdered(surface):
     size = 1
     start = findEdge(surface, 0, 0, 0, 1, 1, 0)
-    start = (start[0] - size, start[1]) #Must have empty alpha padding!
+    start = (start[0] - size, start[1])  # Must have empty alpha padding!
     current = start
 
     results = []
@@ -182,8 +189,10 @@ def findEdgePixelsOrdered(surface):
 
 TURN_LEFT, TURN_RIGHT, TURN_NONE = (1, -1, 0)
 
+
 def _turn(p, q, r):
     return cmp((q[0] - p[0]) * (r[1] - p[1]) - (r[0] - p[0]) * (q[1] - p[1]), 0)
+
 
 def _keepLeft(hull, r):
     while len(hull) > 1 and _turn(hull[-2], hull[-1], r) != TURN_LEFT:
@@ -191,6 +200,7 @@ def _keepLeft(hull, r):
     if not len(hull) or hull[-1] != r:
         hull.append(r)
     return hull
+
 
 def convexHull(points):
     """Returns points on convex hull of an array of points in CCW order using Graham scan."""
@@ -203,6 +213,7 @@ def convexHull(points):
 RIGHT = "RIGHT"
 LEFT = "LEFT"
 
+
 def insideConvexHull(point, vertices):
     previous_side = None
     n_vertices = len(vertices)
@@ -212,12 +223,13 @@ def insideConvexHull(point, vertices):
         affine_point = _vSub(point, a)
         current_side = _getSide(affine_segment, affine_point)
         if current_side is None:
-            return False #outside or over an edge
-        elif previous_side is None: #first segment
+            return False  # outside or over an edge
+        elif previous_side is None:  # first segment
             previous_side = current_side
         elif previous_side != current_side:
             return False
     return True
+
 
 def _getSide(a, b):
     x = _xProduct(a, b)
@@ -228,11 +240,14 @@ def _getSide(a, b):
     else:
         return None
 
+
 def _vSub(a, b):
     return (a[0]-b[0], a[1]-b[1])
 
+
 def _xProduct(a, b):
     return a[0]*b[1]-a[1]*b[0]
+
 
 def insidePolygon(x, y, poly):
     n = len(poly)
@@ -252,8 +267,10 @@ def insidePolygon(x, y, poly):
 
     return inside
 
+
 def _interpolate(a, b, s):
     return a + s * (b - a)
+
 
 def createGrid(rect, xCount, yCount):
     vertices = []
@@ -276,6 +293,7 @@ def createGrid(rect, xCount, yCount):
 
     return vertices, uvs, indices
 
+
 def pointToLineDistance(point, a, b):
     x1, y1 = a
     x2, y2 = b
@@ -297,27 +315,32 @@ def pointToLineDistance(point, a, b):
     dy = y - y3
     return math.sqrt(dx*dx + dy*dy)
 
+
 def pointDistance(p1, p2):
     return math.hypot(p2[0] - p1[0], p2[1] - p1[1])
+
 
 def triangleArea(p1, p2, p3):
     a = pointDistance(p1, p2)
     b = pointDistance(p2, p3)
     c = pointDistance(p3, p1)
 
-    #Heron's formula
+    # Heron's formula
     s = (a + b + c) / 2.0
     return (s * (s - a) * (s - b) * (s - c)) ** 0.5
+
 
 def interpolate2d(p1, p2, s):
     x = _interpolate(p1[0], p2[0], s)
     y = _interpolate(p1[1], p2[1], s)
     return (x, y)
 
+
 def shortenLine(a, b, relative):
     aShort = shortenLineEnd(a, b, relative)
     bShort = shortenLineEnd(b, a, relative)
     return aShort, bShort
+
 
 def shortenLineEnd(a, b, relative):
     x1, y1 = a
@@ -336,14 +359,17 @@ def shortenLineEnd(a, b, relative):
     y3 = y1 + dy
     return x3, y3
 
+
 def _triSign(p1, p2, p3):
     return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
+
 
 def pointInTriangle(point, v1, v2, v3):
     b1 = _triSign(point, v1, v2) < 0.0
     b2 = _triSign(point, v2, v3) < 0.0
     b3 = _triSign(point, v3, v1) < 0.0
     return (b1 == b2) and (b2 == b3)
+
 
 def triangleCentroid(v1, v2, v3):
     centerX = (v1[0] + v2[0] + v3[0]) / 3.0

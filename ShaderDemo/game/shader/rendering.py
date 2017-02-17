@@ -1,4 +1,3 @@
-
 import renpy
 import renpy.display
 import pygame_sdl2 as pygame
@@ -14,6 +13,7 @@ import shadercode
 import mesh
 import utils
 import skin
+
 
 class TextureEntry:
     def __init__(self, image, sampler):
@@ -34,6 +34,7 @@ class TextureEntry:
         if self.glTexture:
             gl.glDeleteTextures(1, self.glTexture)
             self.glTexture = 0
+
 
 class TextureMap:
     def __init__(self):
@@ -135,13 +136,13 @@ class Renderer2D(BaseRenderer):
         return tex.width, tex.height
 
     def createVertexQuad(self):
-        tx2 = 1.0 #Adjust if rounding textures to power of two
+        tx2 = 1.0  # Adjust if rounding textures to power of two
         ty2 = 1.0
         vertices = [
-            -1, -1, 0.0, 0.0, #Bottom left
-            1, -1, tx2, 0.0, #Bottom right
-            -1, 1, 0.0, ty2, #Top left
-            1, 1, tx2, ty2, #Top right
+            -1, -1, 0.0, 0.0,  # Bottom left
+            1, -1, tx2, 0.0,  # Bottom right
+            -1, 1, 0.0, ty2,  # Top left
+            1, 1, tx2, ty2,  # Top right
         ]
         return (gl.GLfloat * len(vertices))(*vertices)
 
@@ -169,7 +170,6 @@ class Renderer2D(BaseRenderer):
         self.shader.unbind()
 
 
-
 def createDefaultMatrices(width, height, context):
     eye = euclid.Vector3(0, 0, -5)
     at = euclid.Vector3(0, 0, 0)
@@ -177,6 +177,7 @@ def createDefaultMatrices(width, height, context):
     view = euclid.Matrix4.new_look_at(eye, at, up)
     projection = utils.createPerspective(60, width, height, 0.1, 100)
     return view, projection
+
 
 class ModelEntry:
     def __init__(self, mesh, matrix):
@@ -187,6 +188,7 @@ class ModelEntry:
     def free(self):
         self.textureMap.free()
         self.textureMap = None
+
 
 class Renderer3D(BaseRenderer):
     def __init__(self):
@@ -272,6 +274,7 @@ class Renderer3D(BaseRenderer):
 
         self.shader.unbind()
 
+
 class BoneTransform:
     def __init__(self, bone, matrix, damping, transparency):
         self.bone = bone
@@ -279,10 +282,12 @@ class BoneTransform:
         self.damping = damping
         self.transparency = transparency
 
+
 class SkinnedFrameData:
     def __init__(self, time, transform):
         self.time = time
         self.transform = transform
+
 
 class SkinnedRenderer(BaseRenderer):
     BLACK_TEXTURE = "__black"
@@ -361,7 +366,7 @@ class SkinnedRenderer(BaseRenderer):
                 self.skinTextures.setTexture(bone.image.name, surface)
 
     def isLiveComposite(self, image):
-        #TODO There must be a better way to get this...
+        # TODO There must be a better way to get this...
         container = image.visit()[0]
         return container.style.xmaximum and container.style.ymaximum
 
@@ -387,7 +392,7 @@ class SkinnedRenderer(BaseRenderer):
     def createImageBone(self, surface, boneName, fileName, placement, zOrder):
         originalWidth, originalHeight = surface.get_size()
         crop = surface.get_bounding_rect()
-        crop.inflate_ip(10, 10) #TODO For testing
+        crop.inflate_ip(10, 10)  # TODO For testing
         surface = self.cropSurface(surface, crop)
         x = placement[0] + crop[0]
         y = placement[1] + crop[1]
@@ -479,7 +484,7 @@ class SkinnedRenderer(BaseRenderer):
         boneMatrixArray = []
         for i, transform in enumerate(transforms):
             boneMatrix = transform.matrix
-            boneMatrix.p = transform.transparency #Abuse unused matrix location
+            boneMatrix.p = transform.transparency  # Abuse unused matrix location
 
             overwrite = transform.damping > 0.0
             if overwrite and self.oldFrameData.get(transform.bone.name):
@@ -506,7 +511,7 @@ class SkinnedRenderer(BaseRenderer):
         data = self.oldFrameData[transform.bone.name]
         old = data.transform.matrix
 
-        #Abuse unused matrix locations
+        # Abuse unused matrix locations
         boneMatrix = transform.matrix
         boneMatrix.m = 0
         boneMatrix.n = 0
@@ -535,11 +540,11 @@ class SkinnedRenderer(BaseRenderer):
         mesh = bone.mesh
 
         if not bone.image or not mesh:
-            #No image or mesh attached
+            # No image or mesh attached
             return
 
         if not bone.visible or transform.transparency >= 1.0:
-            #Nothing to draw
+            # Nothing to draw
             return
 
         tex = self.skinTextures.textures[bone.image.name]
