@@ -203,24 +203,20 @@ class Shader:
         gl.glShaderSource(shader, shaderCode)
         gl.glCompileShader(shader)
 
-        status = ctypes.c_int(0)
-        gl.glGetShaderiv(shader, gl.GL_COMPILE_STATUS, ctypes.byref(status))
-
-        if not status:
-            raise RuntimeError("Compile error: %s" % gl.glGetShaderInfoLog(shader))
-        else:
+        status = gl.glGetShaderiv(shader, gl.GL_COMPILE_STATUS)
+        if status:
             gl.glAttachShader(self.handle, shader)
+        else:
+            raise RuntimeError("Shader compile error: %s" % gl.glGetShaderInfoLog(shader))
 
     def link(self):
         gl.glLinkProgram(self.handle)
 
-        status = ctypes.c_int(0)
-        gl.glGetProgramiv(self.handle, gl.GL_LINK_STATUS, ctypes.byref(status))
-
-        if not status:
-            raise RuntimeError("Link error: %s" % gl.glGetShaderInfoLog(shader))
-        else:
+        status = gl.glGetProgramiv(self.handle, gl.GL_LINK_STATUS)
+        if status:
             self.linked = True
+        else:
+            raise RuntimeError("Link error: %s" % gl.glGetProgramInfoLog(self.handle))
 
     def free(self):
         if self.handle:
