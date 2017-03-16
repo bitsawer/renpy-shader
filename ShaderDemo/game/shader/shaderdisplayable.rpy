@@ -92,10 +92,20 @@ init python:
             if self.getContext().modeChangeCount != shader.getModeChangeCount():
                 self.resetController()
 
+        def checkOpenGLState(self):
+            oldError = gl.glGetError() #Get and clear error flag
+            if oldError != gl.GL_NO_ERROR and config.developer:
+                #This is not vital, but if RenPy (or us) has previously caused an error state
+                #this will let us know about it so we can investigate more. Also otherwise
+                #it will be automatically converted into an exception which we don't want.
+                shader.log("Unknown developer mode OpenGL error: %s" % oldError)
+
         def render(self, width, height, st, at):
             result = None
 
             if persistent.shader_effects_enabled and not renpy.predicting() and shader.isSupported():
+                self.checkOpenGLState()
+
                 context = self.getContext()
                 if not context.controller:
                     self.resetController()
