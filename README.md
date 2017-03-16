@@ -20,6 +20,24 @@ OpenGL shader and [skeletal animation](doc/rigeditor.md) support for Ren'Py. The
 
 2. Copy the contents of the "pythonlib2.7"-directory to your Ren'Py SDK installation subdirectory "lib/pythonlib2.7". This is required because Ren'Py ships with a stripped down Python standard library which is missing some required files.
 
-3. Download [PyOpenGL](https://pypi.python.org/pypi/PyOpenGL/3.1.1a1) and place it's uncompressed package subdirectory "OpenGL" (the one which contains the \__init__.py) either under this project's "ShaderDemo/game"-directory or under the Ren'Py SDK's "lib/pythonlib2.7". If you are usig Linux you might want to get the latest version directly from the [repository](https://github.com/mcfletch/pyopengl), but don't do this on Windows or Mac unless PyOpenGL does not import correctly. 
+3. Download [PyOpenGL](https://pypi.python.org/pypi/PyOpenGL/3.1.1a1) and place its uncompressed package subdirectory "OpenGL" (the one which contains the \__init__.py) either under this projects "ShaderDemo/game"-directory or under the Ren'Py SDK's "lib/pythonlib2.7". If you are using Linux you might want to get the latest version directly from the [repository](https://github.com/mcfletch/pyopengl), but don't do this on Windows or Mac unless PyOpenGL does not get imported correctly. 
 
 4. Start the ShaderDemo and run the demos or the rig editor.
+
+# Troubleshooting
+
+**1) An exception occurs when starting the game: "TypeError: 'NoneType' object is not callable"**
+
+You probably forgot to do installation step 2 or you put the files in a wrong place.
+
+**2) An exception occurs when starting the game: "ImportError: No module named OpenGL"**
+
+You probably forgot to do installation step 3 or you put the files in a wrong place. 
+
+**3) An exception occurs when starting the game: "AttributeError: 'NoneType' object has no attribute 'glGetError'"**
+
+Some versions of PyOpenGL can have issues with certain platforms. Try the latest (or alternatively the older official) PyOpenGL source code.
+
+**4) Shader effects are not applied and/or rigs are not moving.**
+
+You are probably seeing the normal, static fallback images. Make sure the computer and RenPy mode (OpenGL vs software) supports shaders. Most should if the computer is not ancient and the graphics card is not blacklisted. Also make sure that the effects have not been disabled by setting "shader.config.enabled" to False or by the user in the preferences screen (persistent.shader_effects_enabled).
