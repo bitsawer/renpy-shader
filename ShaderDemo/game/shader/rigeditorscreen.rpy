@@ -475,8 +475,10 @@ label update_editor:
 
 label update_editor_ui:
     $ editorWasReset = True
-    call screen editorMainScreen(editorDrawableName, shader.PS_SKINNED, {},
-        update=rigEditorUpdate, args={"rigFile": utils.findFile(editorRigFile), "persist": True}, _layer="master") #nopredict
+    call screen editorMainScreen(editorDrawableName, shader.PS_SKINNED, {}, update=rigEditorUpdate,
+        args={"rigFile": utils.findFile(editorRigFile), "persist": True, "pointResolution": 30,
+              "gridResolution": 0},
+        _layer="master") #nopredict
 
     $ shader._controllerContextStore._clear()
     return

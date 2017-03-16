@@ -28,7 +28,7 @@ class SkinnedImage:
         self.originalHeight = originalHeight
 
 class SkinningBone:
-    jsonIgnore = ["wireFrame", "gridResolution"]
+    jsonIgnore = ["wireFrame"]
 
     def __init__(self, name):
         self.name = name
@@ -49,8 +49,6 @@ class SkinningBone:
         self.damping = 0.0
         self.points = []
         self.mesh = None
-
-        self.gridResolution = 0 #TODO See what we can do with this...
 
     def getAllChildren(self, bones, results=None):
         if not results:
@@ -88,10 +86,9 @@ class SkinningBone:
         simplified = geometry.simplifyEdgePixels(points, pointSimplify)
         self.points = geometry.offsetPolygon(simplified, -5) #TODO Increase this once better weighting is in?
 
-    def triangulatePoints(self):
+    def triangulatePoints(self, gridResolution):
         points = self.points[:]
-        if self.gridResolution > 0:
-            gridResolution = self.gridResolution
+        if gridResolution > 0:
             verts, uvs, indices = geometry.createGrid((0, 0, self.image.width, self.image.height), gridResolution, gridResolution)
             points.extend(verts)
 

@@ -294,16 +294,17 @@ class SkinnedRenderer(BaseRenderer):
         self.size = None
         self.root = None
         self.bones = {}
-        self.blackTexture = None
         self.oldFrameData = {}
-        self.pointSimplify = 30
+        self.pointResolution = 30
+        self.gridResolution = 0
 
     def getBones(self):
         return self.bones
 
     def init(self, image, vertexShader, pixeShader, args):
         self.shader = utils.Shader(vertexShader.replace("MAX_BONES", str(skin.MAX_BONES)), pixeShader)
-        self.pointSimplify = args.get("pointSimplify", self.pointSimplify)
+        self.pointResolution = args.get("pointResolution", self.pointResolution)
+        self.gridResolution = args.get("gridResolution", self.gridResolution)
 
         rig = args.get("rigFile")
         if rig:
@@ -328,7 +329,7 @@ class SkinnedRenderer(BaseRenderer):
         for transform in transforms:
             bone = transform.bone
             if bone.image and bone.points:
-                tris = bone.triangulatePoints()
+                tris = bone.triangulatePoints(self.gridResolution)
                 bone.updateMeshFromTriangles(tris)
                 bone.mesh.moveVertices(bone.pos)
                 if autoSubdivide:
@@ -400,7 +401,7 @@ class SkinnedRenderer(BaseRenderer):
         bone.pos = (x, y)
         bone.pivot = (bone.pos[0] + bone.image.width / 2.0, bone.pos[1] + bone.image.height / 2.0)
         bone.zOrder = zOrder
-        bone.updatePoints(surface, self.pointSimplify)
+        bone.updatePoints(surface, self.pointResolution)
 
         self.bones[bone.parent].children.append(boneName)
         self.bones[boneName] = bone
