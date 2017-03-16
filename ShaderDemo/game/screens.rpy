@@ -756,6 +756,12 @@ screen preferences():
                     textbutton _("After Choices") action Preference("after choices", "toggle")
                     textbutton _("Transitions") action InvertSelected(Preference("transitions", "toggle"))
 
+                vbox:
+                    style_prefix "check"
+                    label _("Shader Effects")
+                    textbutton _("On") action SetField(persistent, "shader_effects_enabled", True)
+                    textbutton _("Off") action SetField(persistent, "shader_effects_enabled", False)
+
                 ## Additional vboxes of type "radio_pref" or "check_pref" can be
                 ## added here, to add additional creator-defined preferences.
 

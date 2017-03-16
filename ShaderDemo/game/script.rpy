@@ -138,6 +138,9 @@ label start:
         a "At the moment, there is nothing we can do. The end. For now."
         return
 
+    a "The user can also manually disable shader effects in the Preferences screen."
+    a "If you or your users can't see the effects, make sure that setting is on."
+    a "Current value of that setting is: '[persistent.shader_effects_enabled]'."
     a "Either way, feedback would be useful. What kind of computer, OS and graphics card you have etc."
     a "First, I'm going to show you how to make my hair and skirt wavy. Like in a wind."
     a "To do that, we are going to use a simple influence image. Let's check it out."

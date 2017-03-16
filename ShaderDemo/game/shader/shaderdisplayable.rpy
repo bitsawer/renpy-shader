@@ -5,6 +5,9 @@ init python:
     import shader
     from OpenGL import GL as gl
 
+    if persistent.shader_effects_enabled is None:
+        persistent.shader_effects_enabled = True
+
     def _interactCallback():
         shader._controllerContextStore.checkDisplayableVisibility(ShaderDisplayable)
 
@@ -92,7 +95,7 @@ init python:
         def render(self, width, height, st, at):
             result = None
 
-            if not renpy.predicting() and shader.isSupported():
+            if persistent.shader_effects_enabled and not renpy.predicting() and shader.isSupported():
                 context = self.getContext()
                 if not context.controller:
                     self.resetController()
