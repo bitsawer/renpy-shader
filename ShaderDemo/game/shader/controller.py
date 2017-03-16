@@ -219,7 +219,7 @@ class FrameBuffer:
         bufferId = (gl.GLuint * 1)()
         gl.glGenFramebuffers(1, bufferId);
         gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, bufferId[0])
-        gl.glFramebufferTexture(gl.GL_FRAMEBUFFER, gl.GL_COLOR_ATTACHMENT0, texture, 0)
+        gl.glFramebufferTexture2D(gl.GL_FRAMEBUFFER, gl.GL_COLOR_ATTACHMENT0, gl.GL_TEXTURE_2D, texture, 0)
         if depthBuffer:
             gl.glFramebufferRenderbuffer(gl.GL_FRAMEBUFFER, gl.GL_DEPTH_ATTACHMENT, gl.GL_RENDERBUFFER, depthBuffer);
         gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0)
