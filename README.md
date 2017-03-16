@@ -20,6 +20,6 @@ OpenGL shader and [skeletal animation](doc/rigeditor.md) support for Ren'Py. The
 
 2. Copy the contents of the "pythonlib2.7"-directory to your Ren'Py SDK installation subdirectory "lib/pythonlib2.7". This is required because Ren'Py ships with a stripped down Python standard library which is missing some required files.
 
-3. Clone or download [PyOpenGL](https://github.com/mcfletch/pyopengl) and place it's uncompressed package subdirectory "OpenGL" (the one which contains the \__init__.py) either under this project's "ShaderDemo/game"-directory or under the Ren'Py SDK's "lib/pythonlib2.7".
+3. Download [PyOpenGL](https://pypi.python.org/pypi/PyOpenGL/3.1.1a1) and place it's uncompressed package subdirectory "OpenGL" (the one which contains the \__init__.py) either under this project's "ShaderDemo/game"-directory or under the Ren'Py SDK's "lib/pythonlib2.7". If you are usig Linux you might want to get the latest version directly from the [repository](https://github.com/mcfletch/pyopengl), but don't do this on Windows or Mac unless PyOpenGL does not import correctly. 
 
 4. Start the ShaderDemo and run the demos or the rig editor.
