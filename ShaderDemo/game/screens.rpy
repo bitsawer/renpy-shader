@@ -179,6 +179,7 @@ screen input(prompt):
     style_prefix "input"
 
     window:
+        textbutton _("Cancel") text_color "#a88" ypos 10 xpos 0.65 action Return("") keysym "K_ESCAPE"
 
         vbox:
             xpos gui.text_xpos
