@@ -60,6 +60,7 @@ const float WIND_SPEED = 5.0;
 const float DISTANCE = 0.0075;
 const float FLUIDNESS = 0.75;
 const float TURBULENCE = 15.0;
+const float FADE_IN = 1.0; //In seconds
 
 vec4 applyWind(vec2 uv, float time)
 {
@@ -81,7 +82,8 @@ vec4 applyWind(vec2 uv, float time)
         }
     }
 
-    float influence = weights.r * (0.5 + (movement * 1.25));
+    float timeFade = min(time / FADE_IN, 1.0);
+    float influence = weights.r * (0.5 + (movement * 1.25)) * timeFade;
 
     if (mouseEnabled > 0.0) {
         //Use mouse position to set influence
