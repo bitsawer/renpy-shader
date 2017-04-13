@@ -14,6 +14,7 @@ import shadercode
 import mesh
 import utils
 import skin
+import gpu
 
 class TextureEntry:
     def __init__(self, image, sampler):
@@ -26,14 +27,12 @@ class TextureEntry:
             self.image = image
             surface = renpy.display.im.load_surface(self.image)
 
-        self.glTexture, self.width, self.height = utils.glTextureFromSurface(surface)
-        if self.glTexture == 0:
+        self.texture = gpu.Texture(surface)
+        if not self.texture.valid():
             raise RuntimeError("Can't load gl texture from image: %s" % image)
 
     def free(self):
-        if self.glTexture:
-            gl.glDeleteTextures(1, self.glTexture)
-            self.glTexture = 0
+        self.texture.free()
 
 class TextureMap:
     def __init__(self):
@@ -56,7 +55,7 @@ class TextureMap:
         for sampler, entry in self.textures.items():
             shader.uniformi(sampler, index)
             gl.glActiveTexture(gl.GL_TEXTURE0 + index)
-            gl.glBindTexture(gl.GL_TEXTURE_2D, entry.glTexture)
+            gl.glBindTexture(gl.GL_TEXTURE_2D, entry.texture.textureId)
             index += 1
 
     def unbindTextures(self):
@@ -114,7 +113,7 @@ class Renderer2D(BaseRenderer):
         self.textureMap = TextureMap()
 
     def init(self, image, vertexShader, pixeShader):
-        self.shader = utils.Shader(vertexShader, pixeShader)
+        self.shader = gpu.ShaderProgram(vertexShader, pixeShader)
 
         self.textureMap.setTexture(shader.TEX0, image)
 
@@ -131,8 +130,8 @@ class Renderer2D(BaseRenderer):
             self.shader = None
 
     def getSize(self):
-        tex = self.textureMap.textures[shader.TEX0]
-        return tex.width, tex.height
+        entry = self.textureMap.textures[shader.TEX0]
+        return entry.texture.width, entry.texture.height
 
     def createVertexQuad(self):
         tx2 = 1.0 #Adjust if rounding textures to power of two
@@ -200,7 +199,7 @@ class Renderer3D(BaseRenderer):
     def init(self, vertexShader, pixelShader, width, height):
         self.width = width
         self.height = height
-        self.shader = utils.Shader(vertexShader, pixelShader)
+        self.shader = gpu.ShaderProgram(vertexShader, pixelShader)
 
     def setTexture(self, sampler, image):
         self.models.itervalues().next().textureMap.setTexture(sampler, image)
@@ -302,7 +301,7 @@ class SkinnedRenderer(BaseRenderer):
         return self.bones
 
     def init(self, image, vertexShader, pixeShader, args):
-        self.shader = utils.Shader(vertexShader.replace("MAX_BONES", str(skin.MAX_BONES)), pixeShader)
+        self.shader = gpu.ShaderProgram(vertexShader.replace("MAX_BONES", str(skin.MAX_BONES)), pixeShader)
         self.pointResolution = args.get("pointResolution", self.pointResolution)
         self.gridResolution = args.get("gridResolution", self.gridResolution)
 
@@ -549,12 +548,10 @@ class SkinnedRenderer(BaseRenderer):
             texInfluence = self.skinTextures.textures[self.BLACK_TEXTURE]
 
         self.shader.uniformi(shader.TEX0, 0)
-        gl.glActiveTexture(gl.GL_TEXTURE0 + 0)
-        gl.glBindTexture(gl.GL_TEXTURE_2D, tex.glTexture)
+        tex.texture.bind(0)
 
         self.shader.uniformi(shader.TEX1, 1)
-        gl.glActiveTexture(gl.GL_TEXTURE0 + 1)
-        gl.glBindTexture(gl.GL_TEXTURE_2D, texInfluence.glTexture)
+        texInfluence.texture.bind(1)
 
         self.shader.uniformMatrix4f(shader.PROJECTION, self.getProjection())
 
