@@ -25,7 +25,7 @@ init python:
     #A simple, custom pixel shader. Feel free to edit this and
     #see what changes. Also check out the shaders bundled with this library if you want to.
     PS_COLOR_WAVE = """
-        varying vec2 varUv; //Texture coordinates
+        in vec2 varUv; //Texture coordinates
 
         uniform sampler2D tex0; //Texture bound to slot 0
         uniform float shownTime; //RenPy provided displayable time

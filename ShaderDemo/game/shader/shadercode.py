@@ -1,11 +1,11 @@
 
 VS_2D = """
 
+in vec4 inVertex;
+
+out vec2 varUv;
+
 uniform mat4 projection;
-
-attribute vec4 inVertex;
-
-varying vec2 varUv;
 
 void main()
 {
@@ -16,7 +16,7 @@ void main()
 
 PS_WALK_2D = """
 
-varying vec2 varUv;
+in vec2 varUv;
 
 uniform sampler2D tex0;
 uniform sampler2D tex1;
@@ -101,7 +101,7 @@ vec4 applyWind(vec2 uv, float time)
 
 PS_WIND_2D = LIB_WIND + """
 
-varying vec2 varUv;
+in vec2 varUv;
 
 uniform float shownTime;
 uniform float animationTime;
@@ -114,7 +114,7 @@ void main()
 
 PS_BEAM_FADE_2D = """
 
-varying vec2 varUv;
+in vec2 varUv;
 
 uniform sampler2D tex0;
 uniform float shownTime;
@@ -138,7 +138,7 @@ void main()
 
 PS_BLUR_2D = """
 
-varying vec2 varUv;
+in vec2 varUv;
 
 uniform sampler2D tex0;
 uniform float blurSize;
@@ -168,12 +168,12 @@ void main()
 
 VS_3D = """
 
-attribute vec4 inPosition;
-attribute vec3 inNormal;
-attribute vec2 inUv;
+in vec4 inPosition;
+in vec3 inNormal;
+in vec2 inUv;
 
-varying vec3 varNormal;
-varying vec2 varUv;
+out vec3 varNormal;
+out vec2 varUv;
 
 uniform mat4 worldMatrix;
 uniform mat4 viewMatrix;
@@ -189,7 +189,7 @@ void main()
 
 PS_3D_BAKED = """
 
-varying vec2 varUv;
+in vec2 varUv;
 
 uniform sampler2D tex0;
 
@@ -201,8 +201,8 @@ void main()
 
 PS_3D_NORMALS = """
 
-varying vec3 varNormal;
-varying vec2 varUv;
+in vec3 varNormal;
+in vec2 varUv;
 
 uniform sampler2D tex0;
 
@@ -217,20 +217,18 @@ void main()
 
 VS_SKINNED = """
 
+in vec2 inVertex;
+in vec2 inUv;
+in vec4 inBoneWeights;
+in vec4 inBoneIndices;
+
+out vec2 varUv;
+out float varAlpha;
+
 uniform mat4 projection;
-
 uniform mat4 boneMatrices[MAX_BONES];
-
 uniform vec2 screenSize;
 uniform float shownTime;
-
-attribute vec2 inVertex;
-attribute vec2 inUv;
-attribute vec4 inBoneWeights;
-attribute vec4 inBoneIndices;
-
-varying vec2 varUv;
-varying float varAlpha;
 
 vec2 toScreen(vec2 point)
 {
@@ -268,8 +266,8 @@ void main()
 
 PS_SKINNED = LIB_WIND + """
 
-varying vec2 varUv; //Texture coordinates
-varying float varAlpha;
+in vec2 varUv;
+in float varAlpha;
 
 uniform float wireFrame;
 uniform float shownTime;
