@@ -1,7 +1,4 @@
 
-def wrapShader(code):
-    return code
-
 VS_2D = """
 
 uniform mat4 projection;
