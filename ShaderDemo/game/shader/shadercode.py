@@ -18,6 +18,8 @@ PS_WALK_2D = """
 
 in vec2 varUv;
 
+out vec4 outColor;
+
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform float shownTime;
@@ -34,10 +36,10 @@ void main()
         float xShift = sin(speed + varUv.x * varUv.y * 10) * influence * 0.01;
         float yShift = cos(speed + varUv.x * varUv.y * 5) * influence * 0.01;
 
-        gl_FragColor = texture2D(tex0, varUv + vec2(xShift, yShift));
+        outColor = texture2D(tex0, varUv + vec2(xShift, yShift));
     }
     else {
-        gl_FragColor = color1;
+        outColor = color1;
     }
 }
 """
@@ -103,18 +105,22 @@ PS_WIND_2D = LIB_WIND + """
 
 in vec2 varUv;
 
+out vec4 outColor;
+
 uniform float shownTime;
 uniform float animationTime;
 
 void main()
 {
-    gl_FragColor = applyWind(varUv, shownTime);
+    outColor = applyWind(varUv, shownTime);
 }
 """
 
 PS_BEAM_FADE_2D = """
 
 in vec2 varUv;
+
+out vec4 outColor;
 
 uniform sampler2D tex0;
 uniform float shownTime;
@@ -132,13 +138,15 @@ void main()
 
     vec4 color = vec4(-f * 0.5, f * 0.5, f, 0.0);
     vec4 diffuse = texture2D(tex0, varUv);
-    gl_FragColor = vec4((diffuse * gl_Color + color * intensity).rgb, max(diffuse.a - fade, 0.0));
+    outColor = vec4((diffuse * gl_Color + color * intensity).rgb, max(diffuse.a - fade, 0.0));
 }
 """
 
 PS_BLUR_2D = """
 
 in vec2 varUv;
+
+out vec4 outColor;
 
 uniform sampler2D tex0;
 uniform float blurSize;
@@ -162,7 +170,7 @@ vec4 blur(sampler2D image, vec2 uv, vec2 resolution, vec2 direction) {
 
 void main()
 {
-    gl_FragColor = blur(tex0, varUv, imageSize.xy, vec2(blurSize, blurSize));
+    outColor = blur(tex0, varUv, imageSize.xy, vec2(blurSize, blurSize));
 }
 """
 
@@ -191,11 +199,13 @@ PS_3D_BAKED = """
 
 in vec2 varUv;
 
+out vec4 outColor;
+
 uniform sampler2D tex0;
 
 void main()
 {
-    gl_FragColor = texture2D(tex0, varUv);
+    outColor = texture2D(tex0, varUv);
 }
 """
 
@@ -204,6 +214,8 @@ PS_3D_NORMALS = """
 in vec3 varNormal;
 in vec2 varUv;
 
+out vec4 outColor;
+
 uniform sampler2D tex0;
 
 void main()
@@ -211,7 +223,7 @@ void main()
     float r = (varNormal.x + 1.0) / 2.0;
     float g = (varNormal.y + 1.0) / 2.0;
     float b = (varNormal.z + 1.0) / 2.0;
-    gl_FragColor = vec4(r, g, b, 1.0);
+    outColor = vec4(r, g, b, 1.0);
 }
 """
 
@@ -269,6 +281,8 @@ PS_SKINNED = LIB_WIND + """
 in vec2 varUv;
 in float varAlpha;
 
+out vec4 outColor;
+
 uniform float wireFrame;
 uniform float shownTime;
 
@@ -278,7 +292,6 @@ void main()
 
     color.rgb *= 1.0 - wireFrame;
     color.a = (color.a * varAlpha) + wireFrame;
-
-    gl_FragColor = color;
+    outColor = color;
 }
 """

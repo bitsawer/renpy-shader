@@ -27,6 +27,8 @@ init python:
     PS_COLOR_WAVE = """
         in vec2 varUv; //Texture coordinates
 
+        out vec4 outColor; //Final pixel output color
+
         uniform sampler2D tex0; //Texture bound to slot 0
         uniform float shownTime; //RenPy provided displayable time
 
@@ -36,7 +38,7 @@ init python:
             float red = color.r * ((sin(shownTime) + 1.0) / 2.0);
             float green = color.g * ((sin(shownTime + 2.0) + 1.0) / 2.0);
             float blue = color.b * ((sin(shownTime + 4.0) + 1.0) / 2.0);
-            gl_FragColor = vec4(red, green, blue, color.a);
+            outColor = vec4(red, green, blue, color.a);
         }
     """
 
