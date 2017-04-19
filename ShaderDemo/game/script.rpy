@@ -4,8 +4,6 @@ image eileen = "eileen.png"
 image sky = "sky.jpg"
 image cg = "cg.jpg"
 
-#TODO Links
-
 define a = Character("Amy", color="#BE795C", image="amy")
 define e = Character("Eileen", color="#FFFFFF", image="eileen")
 
@@ -19,8 +17,9 @@ init python:
     import math
     import shader
 
-    #Can help in debugging
-    renpy.display.log.flush = True
+    if config.developer:
+        #Can help in debugging
+        renpy.display.log.flush = True
 
     #A simple, custom pixel shader. Feel free to edit this and
     #see what changes. Also check out the shaders bundled with this library if you want to.
