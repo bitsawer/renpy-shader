@@ -448,8 +448,8 @@ label start_editor:
         if 1: #Useful, but resolution changes are not always wanted.
             renpy.show(editorDrawableName)
             bounds = renpy.get_image_bounds(editorDrawableName)
-            config.screen_width = max(bounds[2] + 500, 1280)
-            config.screen_height = max(bounds[3] + 150, 720)
+            config.screen_width = int(max(bounds[2] + 500, 1280))
+            config.screen_height = int(max(bounds[3] + 150, 720))
             renpy.hide(editorDrawableName)
             renpy.reset_physical_size()
 
