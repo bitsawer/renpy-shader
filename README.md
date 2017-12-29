@@ -16,6 +16,8 @@ OpenGL shader and [skeletal animation](doc/rigeditor.md) support for Ren'Py. The
 
 # Installation
 
+If you are updating your local version instead of installing the first time, it is recommended that you first remove all files belonging to this library before copying in the new ones. Otherwise if files are renamed, moved etc. old files might be lying around and cause some hard-to-debug naming or behavior conflicts with new files.
+
 1. Clone or download this repository to your machine.
 
 2. Copy the contents of the "pythonlib2.7"-directory to your Ren'Py SDK installation subdirectory "lib/pythonlib2.7". This is required because Ren'Py ships with a stripped down Python standard library which is missing some required files.
