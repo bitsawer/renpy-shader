@@ -24,12 +24,10 @@ init python:
     #A simple, custom pixel shader. Feel free to edit this and
     #see what changes. Also check out the shaders bundled with this library if you want to.
     PS_COLOR_WAVE = """
-        in vec2 varUv; //Texture coordinates
+        VARYING vec2 varUv; //Texture coordinates
 
-        out vec4 outColor; //Final pixel output color
-
-        uniform sampler2D tex0; //Texture bound to slot 0
-        uniform float shownTime; //RenPy provided displayable time
+        UNIFORM sampler2D tex0; //Texture bound to slot 0
+        UNIFORM float shownTime; //RenPy provided displayable time
 
         void main()
         {
@@ -37,7 +35,7 @@ init python:
             float red = color.r * ((sin(shownTime) + 1.0) / 2.0);
             float green = color.g * ((sin(shownTime + 2.0) + 1.0) / 2.0);
             float blue = color.b * ((sin(shownTime + 4.0) + 1.0) / 2.0);
-            outColor = vec4(red, green, blue, color.a);
+            gl_FragColor = vec4(red, green, blue, color.a);
         }
     """
 

@@ -1,11 +1,11 @@
 
 VS_2D = """
 
-in vec4 inVertex;
+ATTRIBUTE vec4 inVertex;
 
-out vec2 varUv;
+VARYING vec2 varUv;
 
-uniform mat4 projection;
+UNIFORM mat4 projection;
 
 void main()
 {
@@ -16,14 +16,12 @@ void main()
 
 PS_WALK_2D = """
 
-in vec2 varUv;
+VARYING vec2 varUv;
 
-out vec4 outColor;
-
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float shownTime;
-uniform float animationTime;
+UNIFORM sampler2D tex0;
+UNIFORM sampler2D tex1;
+UNIFORM float shownTime;
+UNIFORM float animationTime;
 
 void main()
 {
@@ -36,24 +34,24 @@ void main()
         float xShift = sin(speed + varUv.x * varUv.y * 10) * influence * 0.01;
         float yShift = cos(speed + varUv.x * varUv.y * 5) * influence * 0.01;
 
-        outColor = texture2D(tex0, varUv + vec2(xShift, yShift));
+        gl_FragColor = texture2D(tex0, varUv + vec2(xShift, yShift));
     }
     else {
-        outColor = color1;
+        gl_FragColor = color1;
     }
 }
 """
 
 LIB_WIND = """
 
-uniform sampler2D tex0;
-uniform sampler2D tex1;
+UNIFORM sampler2D tex0;
+UNIFORM sampler2D tex1;
 
-uniform float mouseEnabled;
-uniform vec2 mousePos;
+UNIFORM float mouseEnabled;
+UNIFORM vec2 mousePos;
 
-uniform vec2 eyeShift;
-uniform vec2 mouthShift;
+UNIFORM vec2 eyeShift;
+UNIFORM vec2 mouthShift;
 
 const float WIND_SPEED = 5.0;
 const float DISTANCE = 0.0075;
@@ -103,27 +101,23 @@ vec4 applyWind(vec2 uv, float time)
 
 PS_WIND_2D = LIB_WIND + """
 
-in vec2 varUv;
+VARYING vec2 varUv;
 
-out vec4 outColor;
-
-uniform float shownTime;
-uniform float animationTime;
+UNIFORM float shownTime;
+UNIFORM float animationTime;
 
 void main()
 {
-    outColor = applyWind(varUv, shownTime);
+    gl_FragColor = applyWind(varUv, shownTime);
 }
 """
 
 PS_BEAM_FADE_2D = """
 
-in vec2 varUv;
+VARYING vec2 varUv;
 
-out vec4 outColor;
-
-uniform sampler2D tex0;
-uniform float shownTime;
+UNIFORM sampler2D tex0;
+UNIFORM float shownTime;
 
 const float intensity = 1.0;
 
@@ -138,20 +132,18 @@ void main()
 
     vec4 color = vec4(-f * 0.5, f * 0.5, f, 0.0);
     vec4 diffuse = texture2D(tex0, varUv);
-    outColor = vec4((diffuse * gl_Color + color * intensity).rgb, max(diffuse.a - fade, 0.0));
+    gl_FragColor = vec4((diffuse * gl_Color + color * intensity).rgb, max(diffuse.a - fade, 0.0));
 }
 """
 
 PS_BLUR_2D = """
 
-in vec2 varUv;
+VARYING vec2 varUv;
 
-out vec4 outColor;
-
-uniform sampler2D tex0;
-uniform float blurSize;
-uniform float shownTime;
-uniform vec2 imageSize;
+UNIFORM sampler2D tex0;
+UNIFORM float blurSize;
+UNIFORM float shownTime;
+UNIFORM vec2 imageSize;
 
 vec4 blur(sampler2D image, vec2 uv, vec2 resolution, vec2 direction) {
     vec4 color = vec4(0.0);
@@ -170,22 +162,22 @@ vec4 blur(sampler2D image, vec2 uv, vec2 resolution, vec2 direction) {
 
 void main()
 {
-    outColor = blur(tex0, varUv, imageSize.xy, vec2(blurSize, blurSize));
+    gl_FragColor = blur(tex0, varUv, imageSize.xy, vec2(blurSize, blurSize));
 }
 """
 
 VS_3D = """
 
-in vec4 inPosition;
-in vec3 inNormal;
-in vec2 inUv;
+ATTRIBUTE vec4 inPosition;
+ATTRIBUTE vec3 inNormal;
+ATTRIBUTE vec2 inUv;
 
-out vec3 varNormal;
-out vec2 varUv;
+VARYING vec3 varNormal;
+VARYING vec2 varUv;
 
-uniform mat4 worldMatrix;
-uniform mat4 viewMatrix;
-uniform mat4 projMatrix;
+UNIFORM mat4 worldMatrix;
+UNIFORM mat4 viewMatrix;
+UNIFORM mat4 projMatrix;
 
 void main()
 {
@@ -197,50 +189,46 @@ void main()
 
 PS_3D_BAKED = """
 
-in vec2 varUv;
+VARYING vec2 varUv;
 
-out vec4 outColor;
-
-uniform sampler2D tex0;
+UNIFORM sampler2D tex0;
 
 void main()
 {
-    outColor = texture2D(tex0, varUv);
+    gl_FragColor = texture2D(tex0, varUv);
 }
 """
 
 PS_3D_NORMALS = """
 
-in vec3 varNormal;
-in vec2 varUv;
+VARYING vec3 varNormal;
+VARYING vec2 varUv;
 
-out vec4 outColor;
-
-uniform sampler2D tex0;
+UNIFORM sampler2D tex0;
 
 void main()
 {
     float r = (varNormal.x + 1.0) / 2.0;
     float g = (varNormal.y + 1.0) / 2.0;
     float b = (varNormal.z + 1.0) / 2.0;
-    outColor = vec4(r, g, b, 1.0);
+    gl_FragColor = vec4(r, g, b, 1.0);
 }
 """
 
 VS_SKINNED = """
 
-in vec2 inVertex;
-in vec2 inUv;
-in vec4 inBoneWeights;
-in vec4 inBoneIndices;
+ATTRIBUTE vec2 inVertex;
+ATTRIBUTE vec2 inUv;
+ATTRIBUTE vec4 inBoneWeights;
+ATTRIBUTE vec4 inBoneIndices;
 
-out vec2 varUv;
-out float varAlpha;
+VARYING vec2 varUv;
+VARYING float varAlpha;
 
-uniform mat4 projection;
-uniform mat4 boneMatrices[MAX_BONES];
-uniform vec2 screenSize;
-uniform float shownTime;
+UNIFORM mat4 projection;
+UNIFORM mat4 boneMatrices[MAX_BONES];
+UNIFORM vec2 screenSize;
+UNIFORM float shownTime;
 
 vec2 toScreen(vec2 point)
 {
@@ -278,13 +266,11 @@ void main()
 
 PS_SKINNED = LIB_WIND + """
 
-in vec2 varUv;
-in float varAlpha;
+VARYING vec2 varUv;
+VARYING float varAlpha;
 
-out vec4 outColor;
-
-uniform float wireFrame;
-uniform float shownTime;
+UNIFORM float wireFrame;
+UNIFORM float shownTime;
 
 void main()
 {
@@ -292,6 +278,6 @@ void main()
 
     color.rgb *= 1.0 - wireFrame;
     color.a = (color.a * varAlpha) + wireFrame;
-    outColor = color;
+    gl_FragColor = color;
 }
 """

@@ -2,10 +2,15 @@
 import ctypes
 from OpenGL import GL as gl
 
-GLSL_VERSION = "130"
+#Possible compatibility defines for GLSL ES etc.
+DEFINES = """
+#define ATTRIBUTE attribute
+#define VARYING varying
+#define UNIFORM uniform
+"""
 
-def addShaderVersion(code):
-    return "#version " + GLSL_VERSION + "\n\n" + code
+def wrapShaderCode(code):
+    return DEFINES + "\n\n" + code
 
 class ShaderProgram:
     def __init__(self, vsCode, psCode):
@@ -22,7 +27,7 @@ class ShaderProgram:
 
     def createShader(self, shaderCode, type):
         shader = gl.glCreateShader(type)
-        gl.glShaderSource(shader, addShaderVersion(shaderCode))
+        gl.glShaderSource(shader, wrapShaderCode(shaderCode))
         gl.glCompileShader(shader)
 
         status = gl.glGetShaderiv(shader, gl.GL_COMPILE_STATUS)
