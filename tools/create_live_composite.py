@@ -1,6 +1,6 @@
 
 """
-    Helper script for cropping images and creating a RenPy LiveComposite for them.
+    Helper script for cropping images and creating a RenPy Composite for them.
     Quite specific and mostly useful for processing images exported from a
     rendering program like Blender or from Photoshop layers.
 
@@ -11,8 +11,8 @@
         python tools/create_live_composite.py ShaderDemo/game/images/doll
 
     This assumes all images in the source directory have the same size. The script
-    crops them and creates an efficient LiveComposite that can be used for rigging
-    or just normally. The resulting LiveComposite is written into a .rpy-file
+    crops them and creates an efficient Composite that can be used for rigging
+    or just normally. The resulting Composite is written into a .rpy-file
     in the target directory.
 """
 
@@ -70,7 +70,7 @@ with open(os.path.join(sourceDir, name + ".rpy"), "w") as f:
     base = results[0]
 
     f.write("#Automatically generated file\n\n")
-    f.write("image %s = LiveComposite(\n" % name)
+    f.write("image %s = Composite(\n" % name)
     f.write("    (%i, %i),\n" % base[1].size)
     for result in results:
         name, image, crop = result

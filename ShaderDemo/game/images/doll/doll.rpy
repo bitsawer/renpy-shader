@@ -1,6 +1,6 @@
 #Automatically generated file
 
-image doll = LiveComposite(
+image doll = Composite(
     (700, 700),
     (83, 10), "images/doll/basecrop.png",
     (263, 105), "images/doll/shirtcrop.png",

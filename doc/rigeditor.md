@@ -9,7 +9,7 @@ Note: Starting the editor disables some screens (like quick menu) and keyboard s
 
 You can play around with the demo project editor, but you probably want to rig your own files at some point. To do so:
 
-* Place your image file(s) in the "images"-folder (or anywhere where they can be found by RenPy) and depending from your project config create an explicit image tag (normal or a LiveComposite) for them. It would be nice to work with all files and folders, but RenPy can do some very useful work for us this way.
+* Place your image file(s) in the "images"-folder (or anywhere where they can be found by RenPy) and depending from your project config create an explicit image tag (normal or a Composite) for them. It would be nice to work with all files and folders, but RenPy can do some very useful work for us this way.
 
 * Add buttons to your game main menu (or anywhere else you like)
 
@@ -23,7 +23,7 @@ You can play around with the demo project editor, but you probably want to rig y
 
 * Start the editor.
 
-* In the first dialog select the image tag you want to rig. Only choose a tag that references a real image file or a LiveComposite that contains image files.
+* In the first dialog select the image tag you want to rig. Only choose a tag that references a real image file or a Composite that contains image files.
 
 * In the second dialog choose "Create a new rig". If you have previously saved a rig, you can choose it here. The editor can crash here if the image has some problematic areas (constructing the triangulated mesh from an arbitary image is tricky business). File a bug report (or contact me in another way) and send me the image that causes problems so I can hopefully fix the issue.
 
@@ -97,4 +97,3 @@ The editor relies heavily on keyboard shortcuts.
 * j: Move one frame backwards.
 * k: Start and stop the animation.
 * l: Move one frame forward.
-
