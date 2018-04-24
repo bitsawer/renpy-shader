@@ -3,7 +3,7 @@ init python:
     import math
     import shader
 
-    #Our LiveComposite image name (defined in images/doll/doll.rpy).
+    #Our Composite image name (defined in images/doll/doll.rpy).
     #We add the .rig extension to this to find the rig file associated with the image.
     doll = "doll"
 
@@ -191,7 +191,7 @@ label start_rig_demo:
 
     $ anims.clear()
 
-    "This is a relatively complex rig, but you don't have to create complex LiveComposite setups to animate images."
+    "This is a relatively complex rig, but you don't have to create complex Composite setups to animate images."
     "Often it is enough to rig a single, static image."
     "First, let's hide the doll completely..."
 

@@ -12,7 +12,7 @@ style edit_button_text:
     properties gui.button_text_properties("quick_button")
     size 20
 
-image editorBackground = LiveTile("editorbackground.png")
+image editorBackground = Tile("editorbackground.png")
 
 screen editorListScreen(title, items, current=None, cancel=None):
     modal True
@@ -439,7 +439,7 @@ label start_editor:
     scene
     show editorBackground
 
-    call screen editorListScreen("Select an Image or a LiveComposite", listImageTags())
+    call screen editorListScreen("Select an Image or a Composite", listImageTags())
     $ editorDrawableName = _return
     if not editorDrawableName:
         return
