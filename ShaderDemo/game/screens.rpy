@@ -305,10 +305,11 @@ screen navigation():
 
         if main_menu:
 
-            textbutton _("Start Demo") action Start()
-            textbutton _("Start Rig Demo") action Start("start_rig_demo")
+            textbutton _("Basic Demo") action Start()
+            textbutton _("Deferred Demo") action Start("start_deferred_demo")
+            textbutton _("Rig Demo") action Start("start_rig_demo")
             if renpy.config.developer:
-                textbutton _("Start Rig Editor") action Start("start_editor")
+                textbutton _("Rig Editor") action Start("start_editor")
                 textbutton _("Reset window") action Function(renpy.reset_physical_size)
             null height 50
 

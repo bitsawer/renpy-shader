@@ -33,6 +33,7 @@ class ControllerContext:
         self.controller = None
         self.createCalled = False
         self.contextStore = {}
+        self.mousePos = (0, 0)
         self.modeChangeCount = 0
         self.delayFree = False
         self.persist = False

@@ -31,8 +31,6 @@ init python:
             self.tag = mode + "/" + image + "/" + vertexShader + "/" + pixelShader + "/" + str(textures) + "/" + str(uniforms) + "/" + str(args)
             self.args = args or {}
 
-            self.mousePos = (0, 0)
-            self.mouseVelocity = (0, 0)
             self.events = []
 
             if not renpy.predicting():
@@ -124,8 +122,7 @@ init python:
                     uniforms = {
                         "shownTime": st,
                         "animationTime": at,
-                        "mousePos": self.screenToTexture(self.mousePos, width, height),
-                        "mouseVelocity": self.mouseVelocity,
+                        "mousePos": self.screenToTexture(context.mousePos, width, height),
                     }
                     if self.uniforms:
                         uniforms.update(self.uniforms)
@@ -133,7 +130,7 @@ init python:
                     overlayRender = renpy.Render(renderWidth, renderHeight)
                     renderContext = shader.RenderContext(controller.renderer,
                         renderWidth, renderHeight, time.time(), st, at, uniforms,
-                        self.mousePos, self.events, context.contextStore, overlayRender)
+                        context.mousePos, self.events, context.contextStore, overlayRender)
 
                     self.events = []
 
@@ -173,7 +170,7 @@ init python:
             if pos:
                 #Only makes sense with untransformed fullscreen images...
                 return (pos[0] / float(width), pos[1] / float(height))
-            return (-1.0, -1.0)
+            return (0.0, 0.0)
 
         def event(self, ev, x, y, st):
             self.events.append((ev, (x, y)))
@@ -182,7 +179,7 @@ init python:
                 self.events.pop(0)
 
             if ev.type == pygame.MOUSEMOTION or ev.type == pygame.MOUSEBUTTONDOWN or ev.type == pygame.MOUSEBUTTONUP:
-                self.mousePos = (x, y)
+                self.getContext().mousePos = (x, y)
 
         def visit(self):
             return [self.image]

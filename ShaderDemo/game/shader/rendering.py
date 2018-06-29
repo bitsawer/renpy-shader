@@ -76,10 +76,19 @@ class BaseRenderer(object):
                 shader.uniformf(key, value)
             elif isinstance(value, euclid.Matrix4):
                 shader.uniformMatrix4f(key, utils.matrixToList(value))
-            elif len(value) == 16:
-                shader.uniformMatrix4f(key, value)
+            elif hasattr(type(value), "__getitem__"):
+                if len(value) > 0:
+                    if len(value) == 16 and isinstance(value[0], (int, float)):
+                        shader.uniformMatrix4f(key, value)
+                    elif isinstance(value[0], euclid.Matrix4):
+                        matrices = []
+                        for m in value:
+                           matrices.extend(utils.matrixToList(m))
+                        shader.uniformMatrix4fArray(key, matrices)
+                    else:
+                        shader.uniformf(key, *value)
             else:
-                shader.uniformf(key, *value)
+                raise RuntimeError("Unknown uniform type: %s" % type(value))
 
     def bindAttributeArray(self, shader, name, data, count):
         location = gl.glGetAttribLocation(shader.handle, name)
@@ -166,7 +175,6 @@ class Renderer2D(BaseRenderer):
         self.textureMap.unbindTextures()
 
         self.shader.unbind()
-
 
 
 def createDefaultMatrices(width, height, context):

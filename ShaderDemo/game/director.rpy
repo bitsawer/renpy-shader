@@ -47,18 +47,22 @@ init python:
         renpy.show_layer_at([], layer=active) #Stop any animations
         return CallChain
 
-    def show(image, pixelShader=shader.PS_WIND_2D, uniforms={}, update=None, xalign=0.5, yalign=0.1, layer=None):
+    def show(image, pixelShader=shader.PS_WIND_2D, uniforms={}, update=None, xalign=0.5, yalign=0.1, layer=None, textures=None):
         #TODO use **kwargs and pass them to show_screen...
         active = findLayer(image, layer)
 
-        textures = None
+        if textures:
+            textures = textures.copy()
+        else:
+            textures = {}
+
         influence = image + " influence"
         if renpy.has_image(influence, exact=True):
             #Has an influence image
-            textures = {"tex1" : influence}
+            textures["tex1"] = influence
         else:
             #No influence image for this image, so use all black zero influence image.
-            textures = {"tex1" : shader.ZERO_INFLUENCE}
+            textures["tex1"] = shader.ZERO_INFLUENCE
 
         #Hide the old one (if any) so animation times are reset. This might not be desirable in all cases.
         hide(image, layer=active)
@@ -68,6 +72,17 @@ init python:
             _tag=getImageBase(image), _layer=active)
         renpy.show_layer_at([], layer=active) #Stop any animations
         return CallChain
+
+    def deferred(name, update=None, sprite=None):
+        textures = {
+            "depthMap": name + " depth.png",
+            "normalMap": name + " normal.png",
+        }
+        if sprite:
+            textures["sprite"] = sprite
+
+        return show(name, pixelShader=shader.PS_DEFERRED, update=update,
+            textures=textures, xalign=0.5, yalign=0.5)
 
     def hide(image, layer=None):
         renpy.hide_screen(getImageBase(image), layer=findLayer(image, layer))
@@ -86,6 +101,7 @@ init python:
         return CallChain
 
     CallChain.show = staticmethod(show)
+    CallChain.deferred = staticmethod(deferred)
     CallChain.hide = staticmethod(hide)
     CallChain.warp = staticmethod(warp)
     CallChain.scene = staticmethod(scene)
