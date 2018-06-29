@@ -5,6 +5,7 @@ OpenGL shader and [skeletal animation](doc/rigeditor.md) support for Ren'Py. The
 # Examples
 
 * [Shader effects demo video](https://www.youtube.com/watch?v=nyDbvAy0Xa4)
+* [Deferred shading demo video](https://www.youtube.com/watch?v=FceQEEXn7Bg)
 * [Skeletal rig animation demo video](https://www.youtube.com/watch?v=LL2GuJG_2E0)
 * [Rig editor basics](https://www.youtube.com/watch?v=NHJu0OYBERE)
 
