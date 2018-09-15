@@ -21,7 +21,7 @@ If you are updating your local version instead of installing the first time, it 
 
 1. Clone or download this repository to your machine.
 
-2. Copy the contents of the "pythonlib2.7"-directory to your Ren'Py SDK installation subdirectory "lib/pythonlib2.7". This is required because Ren'Py ships with a stripped down Python standard library which is missing some required files.
+2. **This step is not always needed if you are using Ren'Py 7.x or newer.** Copy the contents of the "pythonlib2.7"-directory to your Ren'Py SDK installation subdirectory "lib/pythonlib2.7". This is required because some versions of Ren'Py ship with a stripped down Python standard library which is missing some required files.
 
 3. Download [PyOpenGL](https://pypi.python.org/pypi/PyOpenGL/3.1.1a1) and place its uncompressed package subdirectory "OpenGL" (the one which contains the \__init__.py) either under this projects "ShaderDemo/game"-directory or under the Ren'Py SDK's "lib/pythonlib2.7". If you are using Linux you might want to get the latest version directly from the [repository](https://github.com/mcfletch/pyopengl), but don't do this on Windows or Mac unless PyOpenGL does not get imported correctly. 
 
